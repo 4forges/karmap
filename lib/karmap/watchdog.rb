@@ -60,25 +60,18 @@ module Karma
 
             when 'ProcessCommandMessage'
               Karma::Messages::ProcessCommandMessage.services = services
-              msg_struct = Karma::Messages::ProcessCommandMessage.new(body_hash)
-              Karma.error(msg_struct.errors) unless msg_struct.valid?
-              case msg_struct.command
-                when 'start'
-                  engine.start_service(services[msg_struct.service])
-                when 'stop'
-                  engine.stop_service(services[msg_struct.service], {pid: msg_struct.pid})
-                else
-                  Karma.logger.warn("Invalid process command: #{msg_struct.command} - #{body_hash.inspect}")
-              end
+              msg = Karma::Messages::ProcessCommandMessage.new(body_hash)
+              Karma.error(msg.errors) unless msg.valid?
+              handle_process_command(msg)
 
             when 'ProcessConfigUpdateMessage'
               msg = Karma::Messages::ProcessConfigUpdateMessage.new(body_hash)
-              Karma.errors(msg_struct.errors) unless msg_struct.valid?
+              Karma.error(msg.errors) unless msg.valid?
               handle_process_config_update(msg)
 
             when 'ThreadConfigUpdateMessage'
               msg = Karma::Messages::ThreadConfigUpdateMessage.new(body_hash)
-              Karma.errors(msg_struct.errors) unless msg_struct.valid?
+              Karma.error(msg.errors) unless msg.valid?
               handle_thread_config_update(msg)
 
             else
@@ -160,6 +153,18 @@ module Karma
     def queue_client
       @@client ||= Karma::Queue::Client.new(self.class.name.to_s)
       return @@client
+    end
+
+    def handle_process_command(msg)
+      s = services[msg.delete(:service)]
+      case msg.command
+        when 'start'
+          engine.start_service(s)
+        when 'stop'
+          engine.stop_service(s, {pid: msg.pid})
+        else
+          Karma.logger.warn("Invalid process command: #{msg.command} - #{msg.inspect}")
+      end
     end
 
     def handle_process_config_update(config)
