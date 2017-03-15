@@ -5,14 +5,12 @@ module Karma::Engine
 
   class Systemd < Base
 
-    SHOW_PROPERTIES = ['LoadState', 'ActiveState', 'SubState', 'MainPID', 'ExecMainStartTimestamp'].freeze
-
     def location
       "/home/#{Karma.user}/.config/systemd/user"
     end
 
     def show_service(service)
-      SystemdParser.systemctl_show(service: service.name, user: true, properties: SHOW_PROPERTIES)
+      SystemdParser.systemctl_show(service: service.name, user: true)
     end
 
     def show_all_services
