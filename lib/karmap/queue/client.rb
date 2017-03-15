@@ -21,6 +21,7 @@ module Karma::Queue
       poller = Aws::SQS::QueuePoller.new(queue_url)
       poller.poll(skip_delete: true) do |msg|
         begin
+          Karma.logger.debug "MSG: #{msg}"
           yield(msg)
         rescue Exception => e
           Karma.logger.error("ERROR")

@@ -3,6 +3,9 @@ require 'karmap'
 module Karma
 
   class Watchdog
+    SHUTDOWN_SEC = 2
+    START_COMMAND = 'start'
+    STOP_COMMAND = 'stop'
 
     attr_accessor :services, :engine
 
@@ -46,42 +49,7 @@ module Karma
         Karma.logger.debug 'gracefully shutdown...'
       end
       @poller.kill
-      sec = 2
-      (0..sec-1).each{|i| Karma.logger.debug(sec-i);sleep 1}
-    end
-
-    def perform
-      queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
-        Karma.logger.debug "MSG: #{msg}"
-        begin
-          body_hash = JSON.parse(msg.body).deep_symbolize_keys
-
-          case body_hash[:type]
-
-            when 'ProcessCommandMessage'
-              Karma::Messages::ProcessCommandMessage.services = services
-              msg = Karma::Messages::ProcessCommandMessage.new(body_hash)
-              Karma.error(msg.errors) unless msg.valid?
-              handle_process_command(msg)
-
-            when 'ProcessConfigUpdateMessage'
-              msg = Karma::Messages::ProcessConfigUpdateMessage.new(body_hash)
-              Karma.error(msg.errors) unless msg.valid?
-              handle_process_config_update(msg)
-
-            when 'ThreadConfigUpdateMessage'
-              msg = Karma::Messages::ThreadConfigUpdateMessage.new(body_hash)
-              Karma.error(msg.errors) unless msg.valid?
-              handle_thread_config_update(msg)
-
-            else
-              Karma.error("Invalid message: #{body_hash[:type]} - #{body_hash.inspect}")
-          end
-        rescue Exception => e
-          Karma.logger.error "Error during message processing... #{msg.inspect}"
-          Karma.logger.error e.message
-        end
-      end
+      (0..Karma::Watchdog::SHUTDOWN_SEC-1).each{|i| Karma.logger.debug(sec-i);sleep 1}
     end
 
     #################################################
@@ -133,6 +101,39 @@ module Karma
 
     private
 
+    def perform
+      queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
+        begin
+          body_hash = JSON.parse(msg.body).deep_symbolize_keys
+
+          case body_hash[:type]
+
+            when 'Karma::Messages::ProcessCommandMessage'
+              Karma::Messages::ProcessCommandMessage.services = services
+              msg = Karma::Messages::ProcessCommandMessage.new(body_hash)
+              Karma.error(msg.errors) unless msg.valid?
+              handle_process_command(msg)
+
+            when 'Karma::Messages::ProcessConfigUpdateMessage'
+              msg = Karma::Messages::ProcessConfigUpdateMessage.new(body_hash)
+              Karma.error(msg.errors) unless msg.valid?
+              handle_process_config_update(msg)
+
+            when 'Karma::Messages::ThreadConfigUpdateMessage'
+              msg = Karma::Messages::ThreadConfigUpdateMessage.new(body_hash)
+              Karma.error(msg.errors) unless msg.valid?
+              handle_thread_config_update(msg)
+
+            else
+              Karma.error("Invalid message: #{body_hash[:type]} - #{body_hash.inspect}")
+          end
+        rescue Exception => e
+          Karma.logger.error "Error during message processing... #{msg.inspect}"
+          Karma.logger.error e.message
+        end
+      end
+    end
+
     # Notifies the Karma server about the current host and all Karma::Service subclasses
     def register
       subclasses = Karma::Service.subclasses
@@ -158,9 +159,9 @@ module Karma
     def handle_process_command(msg)
       s = services[msg.delete(:service)]
       case msg.command
-        when 'start'
+        when START_COMMAND
           engine.start_service(s)
-        when 'stop'
+        when STOP_COMMAND
           engine.stop_service(s, {pid: msg.pid})
         else
           Karma.logger.warn("Invalid process command: #{msg.command} - #{msg.inspect}")
