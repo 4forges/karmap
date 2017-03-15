@@ -10,11 +10,15 @@ module Karma::Engine
     end
 
     def show_service(service)
-      SystemdParser.systemctl_show(service: service.name, user: true)
+      SystemdParser.systemctl_status(service: service.name, user: true)
+    end
+
+    def show_service_by_pid(pid)
+      SystemdParser.systemctl_status(service: pid, user: true)
     end
 
     def show_all_services
-      SystemdParser.systemctl_status(prefix: "#{project_name}-*@*", user: true)
+      SystemdParser.systemctl_status(service: "#{project_name}-*@*", user: true)
     end
 
     def enable_service(service, params = {})

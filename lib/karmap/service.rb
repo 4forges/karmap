@@ -3,7 +3,7 @@ require 'karmap'
 module Karma
 
   class Service
-    attr_accessor :notifier, :process_config, :thread_config
+    attr_accessor :notifier, :engine, :init_status, :process_config, :thread_config, :sleep_time
 
     def initialize
       @notifier = case Karma.notifier
@@ -12,6 +12,10 @@ module Karma
                     when 'log'
                       Karma::Queue::LoggerNotifier.new
                   end
+      @engine = case Karma.engine
+                  when 'systemd'
+                    Karma::Engine::Systemd.new
+                end
       @thread_config = {
         num_threads: self.num_threads,
         log_level: self.log_level
@@ -24,6 +28,7 @@ module Karma
         auto_start: self.auto_start,
         auto_restart: self.auto_restart,
       }
+      @init_status = {}
       @running = false
       @thread_pool = Karma::Thread::ThreadPool.new(Proc.new { perform })
       @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(@thread_config)
@@ -124,27 +129,33 @@ module Karma
     def main_loop
       Signal.trap('INT') do
         puts 'int trapped'
-        @thread_config[:running] = false
+        thread_config[:running] = false
       end
       Signal.trap('TERM') do
         puts 'term trapped'
-        @thread_config[:running] = false
+        thread_config[:running] = false
       end
       before_start
       @thread_config_reader.start
-      @thread_config[:running] = true
+      thread_config[:running] = true
       after_start
-      @notifier.notify_start
-      while @thread_config[:running] do
-        @notifier.notify_running
-        @thread_config.merge!(@thread_config_reader.config)
-        @thread_pool.manage(@thread_config)
-        sleep @sleep_time
+      notifier.notify_start
+      while thread_config[:running] do
+        @init_status = engine.show_service_by_pid($$)
+        params = {
+          pid: $$,
+          instance_name: init_status.keys[0],
+          status: init_status.values[0]["Active"] # TODO translate this
+        }
+        notifier.notify_running(params)
+        thread_config.merge!(@thread_config_reader.config)
+        @thread_pool.manage(thread_config)
+        sleep(sleep_time)
       end
       before_stop
       @thread_pool.stop_all
       after_stop
-      @notifier.notify_stop
+      notifier.notify_stop
     end
 
   end

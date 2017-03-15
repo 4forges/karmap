@@ -4,7 +4,7 @@ module Karma::Queue
 
   class QueueNotifier < BaseNotifier
 
-    def register_host
+    def register_host(params)
       body = {
           state: 'host-created'
       }
@@ -12,35 +12,33 @@ module Karma::Queue
     end
 
     # Called by Watchdog on each Karma::Service subclass on deploy.
-    def notify_created
+    def notify_created(params)
       body = {
           state: 'created'
       }
       queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, body: body)
     end
 
-    def notify_start
+    def notify_start(params)
       body = {
           state: 'started'
       }
       queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, body: body)
     end
 
-    def notify_running
-      body = {
-          state: 'running'
-      }
-      queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, body: body)
+    def notify_running(params)
+      msg = StatusUpdateMessage.new(params)
+      queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, body: msg.to_message)
     end
 
-    def notify_stop
+    def notify_stop(params)
       body = {
           state: 'stopped'
       }
       queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, body: body)
     end
 
-    def notify_alive
+    def notify_alive(params)
       Karma.logger.error 'Hello karmaP... I\'m here!'
     end
 
