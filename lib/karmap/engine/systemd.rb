@@ -1,11 +1,22 @@
 require 'karmap/engine'
+require 'karmap/engine/parser/systemd_parser'
 
 module Karma::Engine
 
   class Systemd < Base
 
+    SHOW_PROPERTIES = ['LoadState', 'ActiveState', 'SubState', 'MainPID', 'ExecMainStartTimestamp'].freeze
+
     def location
       "/home/#{Karma.user}/.config/systemd/user"
+    end
+
+    def show_service(service)
+      SystemdParser.systemctl_show(service: service.name, user: true, properties: SHOW_PROPERTIES)
+    end
+
+    def show_all_services
+      SystemdParser.systemctl_status(prefix: "#{project_name}-*@*", user: true)
     end
 
     def enable_service(service, params = {})
