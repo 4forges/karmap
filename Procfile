@@ -1,0 +1,1 @@
+watchdog: bundle exec rails runner -e production "p = Karma::Watchdog.new; p.perform"

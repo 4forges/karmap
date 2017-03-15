@@ -1,0 +1,243 @@
+# Logfile created on 2017-03-10 14:44:58 +0100 by logger.rb/56438
+I, [2017-03-10T14:44:58.989220 #18538]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T15:00:55.520599 #1558]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T15:39:57.690103 #1615]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T15:49:50.997820 #1645]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T15:49:51.000924 #1645]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:35:30.276575 #1688]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:35:30.276941 #1688]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:35:30.277166 #1688]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:35:30.278272 #1688]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:35:30.279371 #1688]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:36:39.948645 #1886]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user//karmap_test-test_service.target
+I, [2017-03-10T16:36:39.949081 #1886]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user//karmap_test.target
+I, [2017-03-10T16:36:39.949196 #1886]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user//karmap_test-test_service@.service
+I, [2017-03-10T16:36:39.949315 #1886]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user//karmap_test-test_service.target.wants/karmap_test-test_service@5000.service
+I, [2017-03-10T16:36:39.949449 #1886]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user//karmap_test-test_service.target.wants
+I, [2017-03-10T16:36:39.950885 #1886]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:36:39.951151 #1886]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:36:39.951289 #1886]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:36:39.952386 #1886]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:36:39.953866 #1886]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:36:39.954284 #1886]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user//karmap_test-test_service.target
+I, [2017-03-10T16:36:39.954411 #1886]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user//karmap_test.target
+I, [2017-03-10T16:36:39.954587 #1886]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user//karmap_test-test_service@.service
+I, [2017-03-10T16:36:39.954698 #1886]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user//karmap_test-test_service.target.wants/karmap_test-test_service@5000.service
+I, [2017-03-10T16:36:39.954800 #1886]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user//karmap_test-test_service.target.wants
+I, [2017-03-10T16:36:39.955847 #1886]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:36:39.956096 #1886]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:36:39.956227 #1886]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:36:39.957223 #1886]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:36:39.958158 #1886]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:36:39.960102 #1886]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user//karmap_test-test_service.target
+I, [2017-03-10T16:36:39.960255 #1886]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user//karmap_test.target
+I, [2017-03-10T16:36:39.960365 #1886]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user//karmap_test-test_service@.service
+I, [2017-03-10T16:36:39.960560 #1886]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user//karmap_test-test_service.target.wants
+I, [2017-03-10T16:36:39.961785 #1886]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:36:39.961944 #1886]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:36:39.962104 #1886]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:36:39.963064 #1886]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:36:39.963850 #1886]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:38:04.109899 #1920]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:38:04.110087 #1920]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:38:04.110222 #1920]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:38:04.110344 #1920]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants/karmap_test-test_service@5000.service
+I, [2017-03-10T16:38:04.110487 #1920]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:38:04.112582 #1920]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:38:04.112948 #1920]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:38:04.113121 #1920]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:38:04.114731 #1920]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:38:04.116231 #1920]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:38:04.116651 #1920]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:38:04.116864 #1920]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:38:04.116937 #1920]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:38:04.117018 #1920]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants/karmap_test-test_service@5000.service
+I, [2017-03-10T16:38:04.117108 #1920]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:38:04.118002 #1920]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:38:04.118199 #1920]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:38:04.118324 #1920]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:38:04.119831 #1920]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:38:04.120845 #1920]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:38:04.123124 #1920]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:38:04.123286 #1920]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:38:04.123398 #1920]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:38:04.123525 #1920]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:38:04.125870 #1920]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:38:04.126022 #1920]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:38:04.126155 #1920]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:38:04.126992 #1920]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:38:04.127924 #1920]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:41:28.918531 #1950]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:41:28.919024 #1950]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:41:28.919139 #1950]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:41:28.919306 #1950]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants/karmap_test-test_service@5000.service
+I, [2017-03-10T16:41:28.919451 #1950]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:41:28.921638 #1950]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:41:28.921889 #1950]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:41:28.922122 #1950]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:41:28.923885 #1950]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:41:28.925194 #1950]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:41:28.925618 #1950]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:41:28.925713 #1950]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:41:28.925788 #1950]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:41:28.925856 #1950]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants/karmap_test-test_service@5000.service
+I, [2017-03-10T16:41:28.925963 #1950]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:41:28.926887 #1950]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:41:28.927089 #1950]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:41:28.927212 #1950]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:41:28.927970 #1950]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:41:28.929437 #1950]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:41:28.932112 #1950]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:41:28.932280 #1950]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:41:28.932402 #1950]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:41:28.932556 #1950]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:41:28.933515 #1950]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:41:28.933653 #1950]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:41:28.933792 #1950]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:41:28.934620 #1950]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:41:28.935534 #1950]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:43:08.855837 #1980]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:43:08.856240 #1980]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:43:08.856382 #1980]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:43:08.856525 #1980]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:43:08.858612 #1980]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:43:08.858831 #1980]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:43:08.858986 #1980]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:43:08.859933 #1980]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:43:08.860867 #1980]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:43:08.878365 #1980]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:43:08.878546 #1980]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:43:08.878682 #1980]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:43:08.878829 #1980]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants/karmap_test-test_service@5000.service
+I, [2017-03-10T16:43:08.878924 #1980]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:43:08.880446 #1980]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:43:08.880802 #1980]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:43:08.881061 #1980]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:43:08.882721 #1980]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:43:08.884644 #1980]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:43:08.885432 #1980]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:43:08.885692 #1980]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:43:08.885902 #1980]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:43:08.886073 #1980]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants/karmap_test-test_service@5000.service
+I, [2017-03-10T16:43:08.886295 #1980]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:43:08.888680 #1980]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:43:08.889033 #1980]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:43:08.889230 #1980]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:43:08.890245 #1980]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:43:08.891337 #1980]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:43:53.418127 #2010]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:43:53.418329 #2010]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:43:53.418420 #2010]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:43:53.418522 #2010]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:43:53.420676 #2010]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:43:53.420868 #2010]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:43:53.421083 #2010]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:43:53.422014 #2010]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:43:53.422826 #2010]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:43:53.428788 #2010]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:43:53.428990 #2010]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:43:53.429102 #2010]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:43:53.429243 #2010]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants/karmap_test-test_service@5000.service
+I, [2017-03-10T16:43:53.429396 #2010]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:43:53.431173 #2010]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:43:53.431404 #2010]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:43:53.431607 #2010]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:43:53.432775 #2010]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:43:53.433893 #2010]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:43:53.434320 #2010]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:43:53.434419 #2010]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:43:53.434493 #2010]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:43:53.434592 #2010]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants/karmap_test-test_service@5000.service
+I, [2017-03-10T16:43:53.434724 #2010]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:43:53.435657 #2010]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:43:53.436063 #2010]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:43:53.436225 #2010]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:43:53.437155 #2010]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:43:53.438203 #2010]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:44:38.663938 #2040]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:44:38.664320 #2040]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:44:38.664438 #2040]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:44:38.664615 #2040]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:44:38.666037 #2040]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:44:38.666313 #2040]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:44:38.666469 #2040]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:44:38.667549 #2040]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:44:38.669050 #2040]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:44:38.675102 #2040]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:44:38.675289 #2040]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:44:38.675363 #2040]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:44:38.675433 #2040]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants/karmap_test-test_service@5000.service
+I, [2017-03-10T16:44:38.675521 #2040]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:44:38.676437 #2040]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:44:38.676670 #2040]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:44:38.676821 #2040]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:44:38.677582 #2040]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:44:38.678453 #2040]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:44:38.678839 #2040]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:44:38.678925 #2040]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:44:38.678994 #2040]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:44:38.679061 #2040]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants/karmap_test-test_service@5000.service
+I, [2017-03-10T16:44:38.679155 #2040]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:44:38.679969 #2040]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:44:38.680168 #2040]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:44:38.680286 #2040]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:44:38.681443 #2040]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:44:38.682341 #2040]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:46:24.686430 #2070]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:46:24.686912 #2070]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:46:24.687033 #2070]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:46:24.687166 #2070]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:46:24.689507 #2070]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:46:24.689691 #2070]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:46:24.689887 #2070]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:46:24.691034 #2070]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:46:24.692480 #2070]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:46:24.698363 #2070]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:46:24.698521 #2070]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:46:24.698596 #2070]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:46:24.698714 #2070]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants/karmap_test-test_service@5000.service
+I, [2017-03-10T16:46:24.698822 #2070]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:46:24.699990 #2070]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:46:24.700207 #2070]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:46:24.700439 #2070]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:46:24.702053 #2070]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:46:24.703595 #2070]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:46:24.704025 #2070]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:46:24.704123 #2070]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:46:24.704198 #2070]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:46:24.704265 #2070]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants/karmap_test-test_service@5000.service
+I, [2017-03-10T16:46:24.704353 #2070]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:46:24.705237 #2070]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:46:24.705460 #2070]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:46:24.705607 #2070]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:46:24.706367 #2070]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:46:24.708266 #2070]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:47:05.777412 #2100]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:47:05.777601 #2100]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:47:05.777715 #2100]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:47:05.777895 #2100]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants/karmap_test-test_service@5000.service
+I, [2017-03-10T16:47:05.778015 #2100]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:47:05.779382 #2100]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:47:05.779619 #2100]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:47:05.779802 #2100]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:47:05.781625 #2100]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:47:05.782834 #2100]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:47:05.783297 #2100]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:47:05.783436 #2100]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:47:05.783583 #2100]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:47:05.783669 #2100]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants/karmap_test-test_service@5000.service
+I, [2017-03-10T16:47:05.783767 #2100]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:47:05.784953 #2100]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:47:05.785113 #2100]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:47:05.785286 #2100]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:47:05.786060 #2100]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:47:05.787240 #2100]  INFO -- Karma: writing: karmap_test.target
+I, [2017-03-10T16:47:05.789295 #2100]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service.target
+I, [2017-03-10T16:47:05.789420 #2100]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test.target
+I, [2017-03-10T16:47:05.789495 #2100]  INFO -- Karma: cleaning up: /home/extendi/.config/systemd/user/karmap_test-test_service@.service
+I, [2017-03-10T16:47:05.789584 #2100]  INFO -- Karma: cleaning up directory: /home/extendi/.config/systemd/user/karmap_test-test_service.target.wants
+I, [2017-03-10T16:47:05.790584 #2100]  INFO -- Karma: writing: karmap_test-test_service@.service
+I, [2017-03-10T16:47:05.790729 #2100]  INFO -- Karma: creating: karmap_test-test_service.target.wants
+I, [2017-03-10T16:47:05.790880 #2100]  INFO -- Karma: symlinking: karmap_test-test_service.target.wants/karmap_test-test_service@5000.service -> ../karmap_test-test_service@.service
+I, [2017-03-10T16:47:05.791752 #2100]  INFO -- Karma: writing: karmap_test-test_service.target
+I, [2017-03-10T16:47:05.792601 #2100]  INFO -- Karma: writing: karmap_test.target
