@@ -43,15 +43,15 @@ module Karma::Queue
       })
       _client.send_message(queue_url: queue_url, message_body: body.to_json)
     end
-    
+
     def send_message2(queue_url:, msg:)
       _client.send_message(queue_url: queue_url, message_body: msg.to_message.to_json)
     end
 
     def _client
       @@client ||= Aws::SQS::Client.new(
-          access_key_id: Karma.aws_access_key_id || ENV['KARMA_AWS_ACCESS_KEY_ID'],
-          secret_access_key: Karma.aws_secret_access_key || ENV['KARMA_AWS_SECRET_ACCESS_KEY'],
+          access_key_id: Karma.aws_access_key_id,
+          secret_access_key: Karma.aws_secret_access_key,
           region: 'eu-west-1'
       )
       return @@client
