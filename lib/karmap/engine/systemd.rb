@@ -9,6 +9,10 @@ module Karma::Engine
       "/home/#{Karma.user}/.config/systemd/user"
     end
 
+    def reload
+      `systemctl --user daemon-reload`
+    end
+
     def show_service(service)
       SystemdParser.systemctl_status(service: service.name, user: true)
     end
@@ -42,19 +46,22 @@ module Karma::Engine
       Karma.logger.debug("starting #{service.full_name}")
       status = SystemdParser.systemctl_status(service: "#{service.full_name}@*", user: true)
       (1..service.process_config[:max_running]).each do |i|
-        instance_name = "#{service.full_name}@#{service.port+(i-1)}"
-        Karma.logger.debug("looking for #{instance_name}")
+        instance_name = "#{service.full_name}@#{service.port+(i-1)}.service"
         if status[instance_name].nil?
-          Karma.logger.debug("starting #{instance_name}!")
+          Karma.logger.debug("starting instance #{instance_name}!")
           `systemctl --user start #{instance_name}`
           return
         end
       end
-      # START ALL systemctl --user start karmat-testservice@*
     end
 
     def stop_service(service, params = {})
-      `systemctl --user stop #{service.name}`
+      # get last running instance name and stop it
+      Karma.logger.debug("stopping #{service.full_name}")
+      status = SystemdParser.systemctl_status(service: "#{service.full_name}@*", user: true)
+      instance_name = status.keys.sort.last
+      Karma.logger.debug("stopping instance #{instance_name}!")
+      `systemctl --user stop #{instance_name}`
     end
 
     def restart_service(service, params = {})

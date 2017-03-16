@@ -60,7 +60,7 @@ module Karma
     end
 
     def command
-      "bundle exec rails runner -e production \"o = Karma::Watchdog.new; o.main_loop\""
+      "bundle exec rails runner -e production \"Karma::Watchdog.new.main_loop\""
     end
 
     def port
@@ -82,6 +82,7 @@ module Karma
     def self.export
       s = self.new
       s.engine.export_service(s)
+      s.engine.reload
     end
 
     def self.kill
@@ -101,8 +102,8 @@ module Karma
           case body_hash[:type]
 
             when Karma::Messages::ProcessCommandMessage.name
-              Karma.logger.debug services.map(&:full_name)
-              Karma::Messages::ProcessCommandMessage.services = services.map(&:full_name)
+              Karma.logger.debug services.keys
+              Karma::Messages::ProcessCommandMessage.services = services.keys
               msg = Karma::Messages::ProcessCommandMessage.new(body_hash)
               Karma.error(msg.errors) unless msg.valid?
               handle_process_command(msg)
@@ -134,10 +135,11 @@ module Karma
         Karma.logger.info("Watchdog: found service class #{cls.name}")
         s = cls.new
         engine.export_service(s)
-        services[s.name] = s
+        services[s.full_name] = s
         # register_service(s.name)  TODO RIATTIVARE
         # s.notifier.notify_created  TODO RIATTIVARE
       end
+      engine.reload
     end
 
     def register_service(service)
@@ -156,7 +158,7 @@ module Karma
         when START_COMMAND
           engine.start_service(s)
         when STOP_COMMAND
-          engine.stop_service(s, {pid: msg.pid})
+          engine.stop_service(s)
         else
           Karma.logger.warn("Invalid process command: #{msg.command} - #{msg.inspect}")
       end
