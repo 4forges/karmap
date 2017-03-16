@@ -4,28 +4,18 @@ module Karma::Queue
 
   class BaseNotifier
 
-    def register_host
+    # Called by Watchdog on deploy.
+    def register_host(params)
       # abstract
     end
 
     # Called by Watchdog on each Karma::Service subclass on deploy.
-    def notify_created
+    def notify_created(params)
       # abstract
     end
 
-    def notify_start
-      # abstract
-    end
-
-    def notify_running
-      # abstract
-    end
-
-    def notify_stop
-      # abstract
-    end
-
-    def notify_alive
+    # Called by each service instance when starting/running/stopping.
+    def notify_status(process_status_update_message)
       # abstract
     end
 

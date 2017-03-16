@@ -63,28 +63,19 @@ module Karma
       "bundle exec rails runner -e production \"o = Karma::Watchdog.new; o.perform\""
     end
 
-    def min_running
-      1
+    def port
+      4999 # TODO
     end
 
-    def max_running
-      1
-    end
-
-    def memory_max
-      nil
-    end
-
-    def cpu_quota
-      nil
-    end
-
-    def auto_start
-      true
-    end
-
-    def auto_restart
-      true
+    def process_config
+      return {
+        min_running: 1,
+        max_running: 1,
+        memory_max: nil,
+        cpu_quota: nil,
+        auto_start: true,
+        auto_restart: true,
+      }
     end
     #################################################
 

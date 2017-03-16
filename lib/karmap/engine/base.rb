@@ -26,6 +26,23 @@ module Karma::Engine
       Dir.pwd
     end
 
+    def show_service(service)
+      # abstract
+    end
+
+    def show_service_by_pid(pid)
+      # abstract
+    end
+
+    def show_all_services
+      # abstract
+    end
+
+    def get_process_status_message(pid)
+      # abstract
+      # must return a Karma::Messages::ProcessStatusUpdateMessage
+    end
+
     def enable_service(service, params = {})
       # abstract
     end
