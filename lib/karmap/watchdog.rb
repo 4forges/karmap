@@ -25,7 +25,7 @@ module Karma
                   when 'log'
                     Karma::Queue::LoggerNotifier.new
                 end
-      register
+      # register TODO RIATTIVARE
     end
 
     def main_loop
@@ -64,7 +64,7 @@ module Karma
     end
 
     def port
-      4999 # TODO
+      32000 # TODO
     end
 
     def process_config
@@ -143,7 +143,7 @@ module Karma
     end
 
     def queue_client
-      @@client ||= Karma::Queue::Client.new(self.class.name.to_s)
+      @@client ||= Karma::Queue::Client.new
       return @@client
     end
 

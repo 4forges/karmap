@@ -24,7 +24,7 @@ module Karma::Engine
     def get_process_status_message(pid)
       status = show_service_by_pid(pid)
       return Karma::Messages::ProcessStatusUpdateMessage.new(
-        host: Socket.gethostname,
+        host: ::Socket.gethostname,
         project: Karma.karma_project_id,
         service: status.keys[0].split('@')[0],
         pid: pid,
@@ -61,9 +61,8 @@ module Karma::Engine
 
       super
 
-      remove_instance(service, params)
-
       service_fn = "#{project_name}-#{service.name}@.service"
+      clean "#{location}/#{service_fn}"
       write_template 'systemd/process.service.erb', service_fn, binding
 
       create_directory("#{project_name}-#{service.name}.target.wants")
@@ -91,23 +90,16 @@ module Karma::Engine
         end
       end
 
-      write_template 'systemd/process_master.target.erb', "#{project_name}-#{service.name}.target", binding
+      target_fn = "#{project_name}-#{service.name}.target"
+      clean "#{location}/#{target_fn}"
+      write_template 'systemd/process_master.target.erb', target_fn, binding
       # process_master_names = ["#{project_name}-#{service.name}.target"]
 
       write_template 'systemd/master.target.erb', "#{project_name}.target", binding
     end
 
-    def remove_instance(service, params = {})
-      Dir["#{location}/#{project_name}*.target"]
-        .concat(Dir["#{location}/#{project_name}*.service"])
-        .each do |file|
-        clean file
-      end
-    end
-
     def remove_service(service, params = {})
-      Dir["#{location}/#{project_name}*.target"]
-          .concat(Dir["#{location}/#{project_name}*.service"])
+      Dir["#{location}/#{project_name}*.service"]
           .concat(Dir["#{location}/#{project_name}*.target.wants/#{project_name}*.service"])
           .each do |file|
         clean file
