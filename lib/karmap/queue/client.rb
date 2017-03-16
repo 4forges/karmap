@@ -9,15 +9,15 @@ module Karma::Queue
 
     def poll(queue_url:)
       Karma.logger.debug("Start polling from queue #{queue_url}")
-      Aws::SQS::QueuePoller.new(queue_url, { client: _client })
-        .poll(skip_delete: true) do |msg|
+      poller = Aws::SQS::QueuePoller.new(queue_url, { client: _client })
+      poller.poll(skip_delete: true) do |msg|
         begin
           yield(msg)
         rescue Exception => e
           Karma.logger.error("ERROR")
         end
         Karma.logger.debug("delete_message")
-        ret = _poller.delete_message(msg)
+        ret = poller.delete_message(msg)
         Karma.logger.debug(ret)
         # sleep(1)
       end

@@ -58,18 +58,18 @@ module Karma
 
           case body_hash[:type]
 
-            when 'ProcessCommandMessage'
+            when Karma::Messages::ProcessCommandMessage.name
               Karma::Messages::ProcessCommandMessage.services = services
               msg = Karma::Messages::ProcessCommandMessage.new(body_hash)
               Karma.error(msg.errors) unless msg.valid?
               handle_process_command(msg)
 
-            when 'ProcessConfigUpdateMessage'
+            when Karma::Messages::ProcessConfigUpdateMessage.name
               msg = Karma::Messages::ProcessConfigUpdateMessage.new(body_hash)
               Karma.error(msg.errors) unless msg.valid?
               handle_process_config_update(msg)
 
-            when 'ThreadConfigUpdateMessage'
+            when Karma::Messages::ThreadConfigUpdateMessage.name
               msg = Karma::Messages::ThreadConfigUpdateMessage.new(body_hash)
               Karma.error(msg.errors) unless msg.valid?
               handle_thread_config_update(msg)
