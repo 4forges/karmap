@@ -38,7 +38,18 @@ module Karma::Engine
     end
 
     def start_service(service, params = {})
-      `systemctl --user start #{service.name}`
+      # get first stopped instance name and start it
+      Karma.logger.debug("starting #{service.full_name}")
+      status = SystemdParser.systemctl_status(service: "#{service.full_name}@*", user: true)
+      (1..service.process_config[:max_running]).each do |i|
+        instance_name = "#{service.full_name}@#{service.port+(i-1)}"
+        Karma.logger.debug("looking for #{instance_name}")
+        if status[instance_name].nil?
+          Karma.logger.debug("starting #{instance_name}!")
+          `systemctl --user start #{instance_name}`
+          return
+        end
+      end
       # START ALL systemctl --user start karmat-testservice@*
     end
 
@@ -61,13 +72,13 @@ module Karma::Engine
 
       super
 
-      service_fn = "#{project_name}-#{service.name}@.service"
+      service_fn = "#{service.full_name}@.service"
       clean "#{location}/#{service_fn}"
       write_template 'systemd/process.service.erb', service_fn, binding
 
-      create_directory("#{project_name}-#{service.name}.target.wants")
+      create_directory("#{service.full_name}.target.wants")
 
-      instances_dir = "#{project_name}-#{service.name}.target.wants"
+      instances_dir = "#{service.full_name}.target.wants"
       instances = Dir["#{location}/#{instances_dir}/*"]
 
       max = service.process_config[:max_running]
@@ -84,13 +95,13 @@ module Karma::Engine
       # check if there are less instances than max, and create if needed
       if instances.size < max
         (instances.size+1..max)
-          .map{ |num| "#{project_name}-#{service.name}@#{service.port+(num-1)}.service" }
+          .map{ |num| "#{service.full_name}@#{service.port+(num-1)}.service" }
           .each do |process_name|
           create_symlink("#{instances_dir}/#{process_name}", "../#{service_fn}") rescue Errno::EEXIST
         end
       end
 
-      target_fn = "#{project_name}-#{service.name}.target"
+      target_fn = "#{service.full_name}.target"
       clean "#{location}/#{target_fn}"
       write_template 'systemd/process_master.target.erb', target_fn, binding
       # process_master_names = ["#{project_name}-#{service.name}.target"]

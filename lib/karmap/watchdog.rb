@@ -3,7 +3,7 @@ require 'karmap'
 module Karma
 
   class Watchdog
-    SHUTDOWN_SEC = 2
+    SHUTDOWN_SEC = 3
     START_COMMAND = 'start'
     STOP_COMMAND = 'stop'
 
@@ -25,7 +25,7 @@ module Karma
                   when 'log'
                     Karma::Queue::LoggerNotifier.new
                 end
-      # register TODO RIATTIVARE
+      register
     end
 
     def main_loop
@@ -49,7 +49,7 @@ module Karma
         Karma.logger.debug 'gracefully shutdown...'
       end
       @poller.kill
-      (0..Karma::Watchdog::SHUTDOWN_SEC-1).each{|i| Karma.logger.debug(sec-i);sleep 1}
+      (1..Karma::Watchdog::SHUTDOWN_SEC-1).each{|i| Karma.logger.debug(Karma::Watchdog::SHUTDOWN_SEC-i); sleep 1}
     end
 
     #################################################
@@ -60,7 +60,7 @@ module Karma
     end
 
     def command
-      "bundle exec rails runner -e production \"o = Karma::Watchdog.new; o.perform\""
+      "bundle exec rails runner -e production \"o = Karma::Watchdog.new; o.main_loop\""
     end
 
     def port
@@ -94,14 +94,15 @@ module Karma
 
     def perform
       queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
-        Karma.logger.debug "MSG: #{msg}"
+        Karma.logger.debug "Watchdog: got message from queue #{msg.body}"
         begin
           body_hash = JSON.parse(msg.body).deep_symbolize_keys
 
           case body_hash[:type]
 
             when Karma::Messages::ProcessCommandMessage.name
-              Karma::Messages::ProcessCommandMessage.services = services
+              Karma.logger.debug services.map(&:full_name)
+              Karma::Messages::ProcessCommandMessage.services = services.map(&:full_name)
               msg = Karma::Messages::ProcessCommandMessage.new(body_hash)
               Karma.error(msg.errors) unless msg.valid?
               handle_process_command(msg)
@@ -130,11 +131,12 @@ module Karma
     def register
       subclasses = Karma::Service.subclasses
       subclasses.each do |cls|
+        Karma.logger.info("Watchdog: found service class #{cls.name}")
         s = cls.new
         engine.export_service(s)
         services[s.name] = s
-        register_service(s.name)
-        s.notifier.notify_created
+        # register_service(s.name)  TODO RIATTIVARE
+        # s.notifier.notify_created  TODO RIATTIVARE
       end
     end
 
@@ -149,7 +151,7 @@ module Karma
     end
 
     def handle_process_command(msg)
-      s = services[msg.delete(:service)]
+      s = services[msg.service]
       case msg.command
         when START_COMMAND
           engine.start_service(s)

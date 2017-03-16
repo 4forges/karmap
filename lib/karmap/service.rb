@@ -39,6 +39,10 @@ module Karma
       self.class.name.demodulize.downcase
     end
 
+    def full_name
+      "#{Karma.project_name}-#{name}"
+    end
+
     def command
       "rails runner -e production \"o = #{self.class.name}.new; o.main_loop\"" # override if needed
     end
