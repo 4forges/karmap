@@ -26,9 +26,8 @@ module Karma::Queue
       queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, body: body)
     end
 
-    def notify_running(params)
-      msg = StatusUpdateMessage.new(params)
-      queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, body: msg.to_message)
+    def notify_running(process_status_update_message)
+      queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, body: process_status_update_message.to_message)
     end
 
     def notify_stop(params)

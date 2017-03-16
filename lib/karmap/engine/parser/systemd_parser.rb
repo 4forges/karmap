@@ -2,9 +2,9 @@ class SystemdParser
 
   SHOW_PROPERTIES = ['LoadState', 'ActiveState', 'SubState', 'MainPID', 'ExecMainStartTimestamp']
 
-  # Calls systemctl show and returns a hash.
-  # User: adds the '--user' flag if true.
-  # Properties: pass an empty array to get all of them (very verbose).
+  # Calls systemctl show and returns a properties hash.
+  # @param user: adds the '--user' flag if true.
+  # @param properties: pass an empty array to get all of them (very verbose).
   # Example output:
   #   => {"MainPID"=>"1477", "ExecMainStartTimestamp"=>"Wed 2017-03-15 11:01:59 CET", "LoadState"=>"loaded", "ActiveState"=>"active", "SubState"=>"running"}
   def self.systemctl_show(service:, user: false, properties: SHOW_PROPERTIES)
@@ -17,11 +17,11 @@ class SystemdParser
   STATUS_PROPERTIES = ['Loaded', 'Active', 'Main PID', 'Tasks', 'Memory', 'CPU']
 
   # Calls systemctl status and returns a structured hash.
-  # Service: you can use an instance name or PID. Also accepts wildcards. Examples:
+  # @param service: you can use an instance name or PID. Also accepts wildcards. Examples:
   #   SystemdParser.systemctl_status(service: 'ssh')
   #   SystemdParser.systemctl_status(service: 24722)
   #   SystemdParser.systemctl_status(service: 'test-*@*')
-  # User: adds the '--user' flag if true.
+  # @param user: adds the '--user' flag if true.
   # Example output:
   #   => {"ssh.service"=>{"Loaded"=>"loaded", "Active"=>"active", "Main PID"=>"1477", "Tasks"=>"1", "Memory"=>"7.0M", "CPU"=>"49ms"}}
   def self.systemctl_status(service:, user: false)

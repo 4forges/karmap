@@ -21,21 +21,30 @@ module Karma::Engine
       SystemdParser.systemctl_status(service: "#{project_name}-*@*", user: true)
     end
 
+    def get_process_status_message(pid)
+      status = show_service_by_pid(pid)
+      return Karma::Messages::ProcessStatusUpdateMessage.new(
+        pid: pid,
+        instance_name: status.keys[0],
+        status: to_karma_status(status.values[0]['Active'])
+      )
+    end
+
     def enable_service(service, params = {})
-      Kernel.exec "systemctl --user enable #{service.name}"
+      `systemctl --user enable #{service.name}`
     end
 
     def start_service(service, params = {})
-      Kernel.exec "systemctl --user start #{service.name}"
+      `systemctl --user start #{service.name}`
       # START ALL systemctl --user start karmat-testservice@*
     end
 
     def stop_service(service, params = {})
-      Kernel.exec "systemctl --user stop #{service.name}"
+      `systemctl --user stop #{service.name}`
     end
 
     def restart_service(service, params = {})
-      Kernel.exec "systemctl --user restart #{service.name}"
+      `systemctl --user restart #{service.name}`
     end
 
     def export_service(service, params = {})
@@ -61,11 +70,11 @@ module Karma::Engine
 
       max = service.process_config[:max_running]
 
-      # check if there are more instances than max, and kill if needed
+      # check if there are more instances than max, and delete/stop if needed
       if instances.size > max
         instances[max..-1].each do |file|
           instance_name = file.split('/').last
-          Kernel.exec "systemctl --user stop #{instance_name}"
+          `systemctl --user stop #{instance_name}`
           clean file
         end
       end
@@ -103,6 +112,20 @@ module Karma::Engine
 
       Dir["#{location}/#{project_name}*.target.wants"].each do |file|
         clean_dir file
+      end
+    end
+
+    private ####################
+
+    def to_karma_status(process_status)
+      # "active" or "inactive" "activating" or "deactivating" "failed"
+      case process_status
+        when "active", "deactivating"
+          Karma::Messages::StatusUpdateMessage::STATUSES[:running]
+        when 'inactive', 'activating'
+          Karma::Messages::StatusUpdateMessage::STATUSES[:stopped]
+        else
+          Karma::Messages::StatusUpdateMessage::STATUSES[:dead]
       end
     end
 

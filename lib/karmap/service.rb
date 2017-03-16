@@ -141,13 +141,8 @@ module Karma
       after_start
       notifier.notify_start
       while thread_config[:running] do
-        @init_status = engine.show_service_by_pid($$)
-        params = {
-          pid: $$,
-          instance_name: init_status.keys[0],
-          status: init_status.values[0]["Active"] # TODO translate this
-        }
-        notifier.notify_running(params)
+        message = engine.get_process_status_message($$)
+        notifier.notify_running(message)
         thread_config.merge!(@thread_config_reader.config)
         @thread_pool.manage(thread_config)
         sleep(sleep_time)
