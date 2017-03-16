@@ -57,7 +57,7 @@ module Karma
     end
 
     #################################################
-    # process configuration
+    # default process configuration
     #################################################
     def min_running
       1 # override this
