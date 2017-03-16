@@ -124,8 +124,6 @@ module Karma
     end
     #################################################
 
-    # private
-
     def main_loop
       Signal.trap('INT') do
         puts 'int trapped'
@@ -135,22 +133,34 @@ module Karma
         puts 'term trapped'
         thread_config[:running] = false
       end
+
       before_start
       @thread_config_reader.start
       thread_config[:running] = true
       after_start
-      notifier.notify_start
+
+      # notify queue after start
+      message = engine.get_process_status_message($$)
+      notifier.notify_status(message)
+
       while thread_config[:running] do
+
+        # notify queue each loop
         message = engine.get_process_status_message($$)
-        notifier.notify_running(message)
+        notifier.notify_status(message)
+
         thread_config.merge!(@thread_config_reader.config)
         @thread_pool.manage(thread_config)
         sleep(sleep_time)
       end
+
       before_stop
       @thread_pool.stop_all
       after_stop
-      notifier.notify_stop
+
+      # notify queue after stop
+      message = engine.get_process_status_message($$)
+      notifier.notify_status(message)
     end
 
   end

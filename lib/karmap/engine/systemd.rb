@@ -24,6 +24,9 @@ module Karma::Engine
     def get_process_status_message(pid)
       status = show_service_by_pid(pid)
       return Karma::Messages::ProcessStatusUpdateMessage.new(
+        host: Socket.gethostname,
+        project: Karma.karma_project_id,
+        service: status.keys[0].split('@')[0],
         pid: pid,
         instance_name: status.keys[0],
         status: to_karma_status(status.values[0]['Active'])
@@ -118,14 +121,13 @@ module Karma::Engine
     private ####################
 
     def to_karma_status(process_status)
-      # "active" or "inactive" "activating" or "deactivating" "failed"
       case process_status
-        when "active", "deactivating"
-          Karma::Messages::StatusUpdateMessage::STATUSES[:running]
+        when 'active', 'deactivating'
+          Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]
         when 'inactive', 'activating'
-          Karma::Messages::StatusUpdateMessage::STATUSES[:stopped]
+          Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]
         else
-          Karma::Messages::StatusUpdateMessage::STATUSES[:dead]
+          Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]
       end
     end
 

@@ -5,43 +5,15 @@ module Karma::Queue
   class LoggerNotifier < BaseNotifier
 
     def register_host(params)
-      body = {
-          state: 'host-created'
-      }
-      Karma.logger.debug("Outgoing message: #{body}")
+      Karma.logger.debug("Outgoing message: #{params}")
     end
 
-    # Called by Watchdog on each Karma::Service subclass on deploy.
     def notify_created(params)
-      body = {
-          state: 'created'
-      }
-      Karma.logger.debug("Outgoing message: #{body}")
+      Karma.logger.debug("Outgoing message: #{params}")
     end
 
-    def notify_start(params)
-      body = {
-          state: 'started'
-      }
-      Karma.logger.debug("Outgoing message: #{body}")
-    end
-
-    def notify_running(params)
-      body = {
-          state: 'running'
-      }
-      Karma.logger.debug("Outgoing message: #{body}")
-    end
-
-    def notify_stop(params)
-      body = {
-          state: 'stopped'
-      }
-      Karma.logger.debug("Outgoing message: #{body}")
-    end
-
-    def notify_alive(params)
-      Karma.logger.error 'Hello karmaP... I\'m here!'
+    def notify_status(process_status_update_message)
+      Karma.logger.debug("Outgoing message: #{process_status_update_message.to_message}")
     end
 
   end
