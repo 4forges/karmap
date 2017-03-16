@@ -11,6 +11,10 @@ module Karma
 
     def initialize
       @services = {}
+      Karma::Service.descendants.each do |service|
+        s_obj = service.new
+        @services[s_obj.full_name] = s_obj
+      end
       @engine = case Karma.engine
                   when 'systemd'
                     Karma::Engine::Systemd.new
