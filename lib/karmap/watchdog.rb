@@ -94,23 +94,24 @@ module Karma
 
     def perform
       queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
+        Karma.logger.debug "MSG: #{msg}"
         begin
           body_hash = JSON.parse(msg.body).deep_symbolize_keys
 
           case body_hash[:type]
 
-            when 'Karma::Messages::ProcessCommandMessage'
+            when Karma::Messages::ProcessCommandMessage.name
               Karma::Messages::ProcessCommandMessage.services = services
               msg = Karma::Messages::ProcessCommandMessage.new(body_hash)
               Karma.error(msg.errors) unless msg.valid?
               handle_process_command(msg)
 
-            when 'Karma::Messages::ProcessConfigUpdateMessage'
+            when Karma::Messages::ProcessConfigUpdateMessage.name
               msg = Karma::Messages::ProcessConfigUpdateMessage.new(body_hash)
               Karma.error(msg.errors) unless msg.valid?
               handle_process_config_update(msg)
 
-            when 'Karma::Messages::ThreadConfigUpdateMessage'
+            when Karma::Messages::ThreadConfigUpdateMessage.name
               msg = Karma::Messages::ThreadConfigUpdateMessage.new(body_hash)
               Karma.error(msg.errors) unless msg.valid?
               handle_thread_config_update(msg)
@@ -139,7 +140,7 @@ module Karma
 
     def register_service(service)
       msg = Karma::Messages::ProcessRegisterMessage.new(service: service, host: Karma::Queue.host_name, project: Karma.karma_project_id)
-      queue_client.send_message2(queue_url: Karma::Queue.outgoing_queue_url, msg: msg)
+      queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, message: msg.to_message)
     end
 
     def queue_client

@@ -9,8 +9,8 @@ module Karma::Queue
 
     def poll(queue_url:)
       Karma.logger.debug("Start polling from queue #{queue_url}")
-      Aws::SQS::QueuePoller.new(queue_url, { client: _client })
-        .poll(skip_delete: true) do |msg|
+      poller = Aws::SQS::QueuePoller.new(queue_url, { client: _client })
+      poller.poll(skip_delete: true) do |msg|
         begin
           Karma.logger.debug "MSG: #{msg}"
           yield(msg)
@@ -18,7 +18,7 @@ module Karma::Queue
           Karma.logger.error("ERROR")
         end
         Karma.logger.debug("delete_message")
-        ret = _poller.delete_message(msg)
+        ret = poller.delete_message(msg)
         Karma.logger.debug(ret)
         # sleep(1)
       end
@@ -26,10 +26,6 @@ module Karma::Queue
 
     def send_message(queue_url:, message:)
       _client.send_message(queue_url: queue_url, message_body: message.to_json)
-    end
-
-    def send_message2(queue_url:, msg:)
-      _client.send_message(queue_url: queue_url, message_body: msg.to_message.to_json)
     end
 
     private ####################
