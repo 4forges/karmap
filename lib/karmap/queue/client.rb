@@ -14,11 +14,8 @@ module Karma::Queue
     end
 
     def poll(queue_url:)
-      ENV['AWS_REGION'] = 'eu-west-1'
-      ENV['AWS_ACCESS_KEY_ID'] = ENV['KARMA_AWS_ACCESS_KEY_ID']
-      ENV['AWS_SECRET_ACCESS_KEY'] = ENV['KARMA_AWS_SECRET_ACCESS_KEY']
       Karma.logger.debug("Start polling from queue #{queue_url}")
-      poller = Aws::SQS::QueuePoller.new(queue_url)
+      poller = Aws::SQS::QueuePoller.new(queue_url, { client: _client })
       poller.poll(skip_delete: true) do |msg|
         begin
           Karma.logger.debug "MSG: #{msg}"
