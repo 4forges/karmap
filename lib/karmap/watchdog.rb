@@ -96,7 +96,7 @@ module Karma
       s.engine.stop_service(s)
       # engine.remove_service(s)
     end
-
+    
     private
 
     def perform
@@ -167,18 +167,46 @@ module Karma
       Karma.services.select{|c| c.is_a?(Class) rescue false}
     end
 
-    def handle_process_config_update(config)
-      s = services[config.delete(:service)]
-      s.update_process_config(config)
+    # keys: [:service, :type, :memory_max, :cpu_quota, :min_running, :max_running, :auto_restart, :auto_start]
+    def handle_process_config_update(msg)
+      s = services[msg.service]
+      s.update_process_config(msg)
       engine.export_service(s)
-    end
+      
+      running_instances = engine.running_instances_for_service(s) #keys: [:pid, :full_name, :port]
+      num_running = running_instances.size
+      all_ports_max = ( s.port..s.port + msg.max_running - 1 ).to_a
+      all_ports_min = ( s.port..s.port + msg.min_running - 1 ).to_a
+      running_ports = running_instances.map{ |instance| instance[:port] }
+      Karma.logger.debug("Running instances found: #{num_running}")
 
-    def handle_thread_config_update(config)
-      s = services[config.delete(:service)]
-      s.update_thread_config(config)
+      # stop instances
+      to_be_stopped_ports = running_ports - all_ports_max
+      Karma.logger.debug("Running instances to be stopped: #{to_be_stopped_ports.size}")
+      running_instances.each do |instance|
+        engine.stop_service(instance[:pid]) if to_be_stopped_ports.include?(instance[:port])
+      end
+      
+      # start instances
+      to_be_started_ports = all_ports_min - running_ports
+      Karma.logger.debug("Running instances to be started: #{to_be_started_ports.size}")
+      to_be_started_ports.each do |port|
+        engine.start_service(s)
+      end
+
+    end
+    
+    def maintain_worker_count
+      # spawn_missing_workers
+      # worker_loop
+    end
+      
+    def handle_thread_config_update(msg)
+      s = services[msg.service]
+      s.update_thread_config(msg)
 
       s = TCPSocket.new('127.0.0.1', s.port)
-      s.puts(config.to_json)
+      s.puts(msg.to_json)
       s.close
     end
 

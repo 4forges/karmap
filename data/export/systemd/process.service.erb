@@ -12,6 +12,6 @@ StandardError=syslog
 SyslogIdentifier=%n
 KillMode=mixed
 TimeoutStopSec=5
-<% if service.process_config[:cpu_quota].present? -%>CPUAccounting=true<% end -%>
-<% if service.process_config[:cpu_quota].present? -%>CPUQuota=<%= service.process_config[:cpu_quota] %>%<% end -%>
-<% if service.process_config[:memory_max].present? -%>MemoryMax=<%= service.process_config[:memory_max] %><% end -%>
+<% if service.process_config[:cpu_quota].present? %>CPUAccounting=true<% end %>
+<% if service.process_config[:cpu_quota].present? %>CPUQuota=<%= service.process_config[:cpu_quota] %>%<% end %>
+<% if service.process_config[:memory_max].present? %>MemoryMax=<%= service.process_config[:memory_max] %><% end %>
