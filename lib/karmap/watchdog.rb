@@ -25,10 +25,10 @@ module Karma
                   when 'log'
                     Karma::Queue::LoggerNotifier.new
                 end
-      register
     end
 
     def main_loop
+      register
       @poller = ::Thread.new do
         perform
       end
