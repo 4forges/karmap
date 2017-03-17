@@ -32,7 +32,6 @@ module Karma::Engine
         project: Karma.karma_project_id,
         service: status.keys[0].split('@')[0],
         pid: pid,
-        instance_name: status.keys[0],
         status: to_karma_status(status.values[0]['Active'])
       )
     end
@@ -76,6 +75,8 @@ module Karma::Engine
       # https://wiki.archlinux.org/index.php/Systemd/User
       # https://fedoramagazine.org/systemd-template-unit-files/
 
+      Karma.logger.debug("started systemd export for service #{service.name}")
+
       super
 
       service_fn = "#{service.full_name}@.service"
@@ -113,6 +114,8 @@ module Karma::Engine
       # process_master_names = ["#{project_name}-#{service.name}.target"]
 
       write_template 'systemd/master.target.erb', "#{project_name}.target", binding
+
+      Karma.logger.debug("end systemd export for service #{service.name}")
     end
 
     def remove_service(service, params = {})
