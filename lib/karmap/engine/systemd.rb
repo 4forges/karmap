@@ -9,8 +9,12 @@ module Karma::Engine
       "/home/#{Karma.user}/.config/systemd/user"
     end
 
+    def reload
+      `systemctl --user daemon-reload`
+    end
+
     def show_service(service)
-      SystemdParser.systemctl_status(service: service.name, user: true)
+      SystemdParser.systemctl_status(service: "#{service.full_name}@*", user: true)
     end
 
     def show_service_by_pid(pid)
@@ -28,7 +32,6 @@ module Karma::Engine
         project: Karma.karma_project_id,
         service: status.keys[0].split('@')[0],
         pid: pid,
-        instance_name: status.keys[0],
         status: to_karma_status(status.values[0]['Active'])
       )
     end
@@ -40,21 +43,23 @@ module Karma::Engine
     def start_service(service, params = {})
       # get first stopped instance name and start it
       Karma.logger.debug("starting #{service.full_name}")
-      status = SystemdParser.systemctl_status(service: "#{service.full_name}@*", user: true)
+      status = show_service(service)
       (1..service.process_config[:max_running]).each do |i|
-        instance_name = "#{service.full_name}@#{service.port+(i-1)}"
-        Karma.logger.debug("looking for #{instance_name}")
+        instance_name = "#{service.full_name}@#{service.port+(i-1)}.service"
         if status[instance_name].nil?
-          Karma.logger.debug("starting #{instance_name}!")
+          Karma.logger.debug("starting instance #{instance_name}!")
           `systemctl --user start #{instance_name}`
           return
         end
       end
-      # START ALL systemctl --user start karmat-testservice@*
     end
 
-    def stop_service(service, params = {})
-      `systemctl --user stop #{service.name}`
+    def stop_service(pid, params = {})
+      # get instance by pid and stop it
+      status = show_service_by_pid(pid)
+      instance_name = status.keys[0]
+      Karma.logger.debug("stopping instance #{instance_name}!")
+      `systemctl --user stop #{instance_name}`
     end
 
     def restart_service(service, params = {})
@@ -69,6 +74,8 @@ module Karma::Engine
       # https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/System_Administrators_Guide/sect-Managing_Services_with_systemd-Unit_Files.html
       # https://wiki.archlinux.org/index.php/Systemd/User
       # https://fedoramagazine.org/systemd-template-unit-files/
+
+      Karma.logger.debug("started systemd export for service #{service.name}")
 
       super
 
@@ -107,6 +114,8 @@ module Karma::Engine
       # process_master_names = ["#{project_name}-#{service.name}.target"]
 
       write_template 'systemd/master.target.erb', "#{project_name}.target", binding
+
+      Karma.logger.debug("end systemd export for service #{service.name}")
     end
 
     def remove_service(service, params = {})

@@ -26,6 +26,10 @@ module Karma::Engine
       Dir.pwd
     end
 
+    def reload
+      # abstract
+    end
+
     def show_service(service)
       # abstract
     end
