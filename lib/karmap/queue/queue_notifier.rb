@@ -8,12 +8,8 @@ module Karma::Queue
       # TODO
     end
 
-    def notify_created(params)
-      # TODO
-    end
-
-    def notify_status(process_status_update_message)
-      queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, message: process_status_update_message.to_message)
+    def notify(message)
+      queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, message: message.to_message)
     end
 
     private #########################################

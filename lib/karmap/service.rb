@@ -145,13 +145,13 @@ module Karma
 
       # notify queue after start
       message = engine.get_process_status_message($$)
-      notifier.notify_status(message)
+      notifier.notify(message)
 
       while thread_config[:running] do
 
         # notify queue each loop
         message = engine.get_process_status_message($$)
-        notifier.notify_status(message)
+        notifier.notify(message)
 
         thread_config.merge!(@thread_config_reader.config)
         @thread_pool.manage(thread_config)
@@ -164,8 +164,18 @@ module Karma
 
       # notify queue after stop
       message = engine.get_process_status_message($$)
-      notifier.notify_status(message)
+      notifier.notify(message)
     end
+
+    def register
+      message = Karma::Messages::ProcessRegisterMessage.new(
+        host: ::Socket.gethostname,
+        project: Karma.karma_project_id,
+        service: full_name
+      )
+      notifier.notify(message)
+    end
+
 
   end
 end

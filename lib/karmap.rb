@@ -9,6 +9,7 @@ module Karma
 
   define_setting :user # deploy user (required)
   define_setting :project_name # project name as string (required)
+  define_setting :services, [] # managed services classes
   define_setting :karma_user_id # (required)
   define_setting :karma_project_id # (required)
   define_setting :aws_access_key_id, ENV['KARMA_AWS_ACCESS_KEY_ID']
@@ -16,7 +17,6 @@ module Karma
   define_setting :engine, 'systemd'
   define_setting :notifier, 'queue'
   define_setting :template_folder # custom engine templates folder
-  define_setting :services, []
 
   class << self
     attr_writer :logger

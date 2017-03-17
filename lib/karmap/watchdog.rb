@@ -142,11 +142,6 @@ module Karma
       engine.reload
     end
 
-    def register_service(service)
-      msg = Karma::Messages::ProcessRegisterMessage.new(service: service, host: Karma::Queue.host_name, project: Karma.karma_project_id)
-      queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, message: msg.to_message)
-    end
-
     def queue_client
       @@client ||= Karma::Queue::Client.new
       return @@client
@@ -163,13 +158,9 @@ module Karma
           Karma.logger.warn("Invalid process command: #{msg.command} - #{msg.inspect}")
       end
     end
-    
+
     def discover_services
-      #ret = Karma::Service.descendants
-      ret = Karma.services.select do |c|
-        c.is_a?(Class) rescue false
-      end
-      ret
+      Karma.services.select{|c| c.is_a?(Class) rescue false}
     end
 
     def handle_process_config_update(config)

@@ -11,6 +11,7 @@ module Karma::Engine
 
     def reload
       `systemctl --user daemon-reload`
+      # `systemctl --user reset-failed`
     end
 
     def show_service(service)
