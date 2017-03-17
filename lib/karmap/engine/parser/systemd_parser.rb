@@ -40,7 +40,7 @@ class SystemdParser
           attr = line.split(':', 2)
           key = attr[0].strip
           if STATUS_PROPERTIES.include? key
-            val = attr[1].split('(', 2)[0].strip
+            val = attr[1].split(' ', 2)[0].strip
             status[current_service][key] = val
           end
         rescue
