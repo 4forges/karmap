@@ -55,6 +55,10 @@ module Karma
     #################################################
     # watchdog config (for export)
     #################################################
+    def full_name
+      "#{Karma.project_name}-#{name}"
+    end
+
     def name
       'watchdog'
     end
