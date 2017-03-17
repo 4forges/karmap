@@ -72,6 +72,10 @@ module Karma::Engine
     def remove_service(service, params = {})
       # abstract
     end
+    
+    def running_instances_for_service(service, params = {})
+      # abstract
+    end
 
     private ######################################################################
 
