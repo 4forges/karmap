@@ -14,7 +14,7 @@ module Karma::Engine
     end
 
     def show_service(service)
-      SystemdParser.systemctl_status(service: service.name, user: true)
+      SystemdParser.systemctl_status(service: "#{service.full_name}@*", user: true)
     end
 
     def show_service_by_pid(pid)
@@ -44,7 +44,7 @@ module Karma::Engine
     def start_service(service, params = {})
       # get first stopped instance name and start it
       Karma.logger.debug("starting #{service.full_name}")
-      status = SystemdParser.systemctl_status(service: "#{service.full_name}@*", user: true)
+      status = show_service(service)
       (1..service.process_config[:max_running]).each do |i|
         instance_name = "#{service.full_name}@#{service.port+(i-1)}.service"
         if status[instance_name].nil?
@@ -55,11 +55,10 @@ module Karma::Engine
       end
     end
 
-    def stop_service(service, params = {})
-      # get last running instance name and stop it
-      Karma.logger.debug("stopping #{service.full_name}")
-      status = SystemdParser.systemctl_status(service: "#{service.full_name}@*", user: true)
-      instance_name = status.keys.sort.last
+    def stop_service(pid, params = {})
+      # get instance by pid and stop it
+      status = show_service_by_pid(pid)
+      instance_name = status.keys[0]
       Karma.logger.debug("stopping instance #{instance_name}!")
       `systemctl --user stop #{instance_name}`
     end

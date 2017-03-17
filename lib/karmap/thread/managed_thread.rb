@@ -83,32 +83,32 @@ module Karma::Thread
     end
 
     def outer_block(blocks = {})
-      logger.debug "#{$$}::#{Thread.current.to_s} pre starting"
+      # logger.debug "#{$$}::#{Thread.current.to_s} pre starting"
       blocks[:starting].call
-      logger.debug "#{$$}::#{Thread.current.to_s} post starting"
+      # logger.debug "#{$$}::#{Thread.current.to_s} post starting"
       while @thread[:status] != :stopping
         begin
-          logger.debug "#{$$}::#{Thread.current.to_s} loop start"
+          # logger.debug "#{$$}::#{Thread.current.to_s} loop start"
           case @thread[:status]
           when :running
-            logger.debug "#{$$}::#{Thread.current.to_s} pre running"
+            # logger.debug "#{$$}::#{Thread.current.to_s} pre running"
             blocks[:running].call
-            logger.debug "#{$$}::#{Thread.current.to_s} post running"
+            # logger.debug "#{$$}::#{Thread.current.to_s} post running"
           when :stopping
           when :error
-            logger.debug "#{$$}::#{Thread.current.to_s} thread in error. sleep 10 sec"
+            # logger.debug "#{$$}::#{Thread.current.to_s} thread in error. sleep 10 sec"
             sleep 10
           end
           sleep @running_sleep_time
-          logger.debug "#{$$}::#{Thread.current.to_s} loop end"
+          # logger.debug "#{$$}::#{Thread.current.to_s} loop end"
         rescue Exception => e
-          full_log_exception(logger: @@logger, message: "Thread #{$$} in error", e: e, send_notify_now: true)
+          # full_log_exception(logger: @@logger, message: "Thread #{$$} in error", e: e, send_notify_now: true)
           @thread[:status] == :error
         end
       end
-      logger.debug "#{$$}::#{Thread.current.to_s} pre finishing"
+      # logger.debug "#{$$}::#{Thread.current.to_s} pre finishing"
       blocks[:finishing].call
-      logger.debug "#{$$}::#{Thread.current.to_s} post finishing"
+      # logger.debug "#{$$}::#{Thread.current.to_s} post finishing"
       @thread[:status] = :stopped
       Thread.current[:stopped_at] = Time.now
     end

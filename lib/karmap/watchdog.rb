@@ -153,12 +153,12 @@ module Karma
     end
 
     def handle_process_command(msg)
-      s = services[msg.service]
       case msg.command
         when START_COMMAND
+          s = services[msg.service]
           engine.start_service(s)
         when STOP_COMMAND
-          engine.stop_service(s)
+          engine.stop_service(msg.pid)
         else
           Karma.logger.warn("Invalid process command: #{msg.command} - #{msg.inspect}")
       end

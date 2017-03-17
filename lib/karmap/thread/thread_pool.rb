@@ -1,6 +1,7 @@
 module Karma::Thread
 
   class ThreadPool
+
     FREEZED_THREADS_TIMEOUT = 1.hours
 
     attr_accessor :thread
@@ -15,41 +16,30 @@ module Karma::Thread
     def manage(config = nil)
       @default_config ||= config
       @current_config = config || @default_config
-      plogger = Karma.logger
-      #manage workers
+
       max_workers = @current_config[:num_threads]
-      plogger.info "manage workers max_workers: #{max_workers}"
-      plogger.info "kill freezed from more than older than #{FREEZED_THREADS_TIMEOUT.to_i} sec"
+      # Karma.logger.debug "manage workers max_workers: #{max_workers}"
+      # Karma.logger.debug "kill freezed from more than older than #{FREEZED_THREADS_TIMEOUT.to_i} sec"
       num_killed = kill_freezed(FREEZED_THREADS_TIMEOUT.to_i)
-      plogger.info "num_killed: #{num_killed}"
-      plogger.info "#prune freezed and stopped"
+      # Karma.logger.debug "num_killed: #{num_killed}"
+      # Karma.logger.debug '#prune freezed and stopped'
       num_pruned = prune_list
-      plogger.info "num_pruned: #{num_pruned}"
+      # Karma.logger.debug "num_pruned: #{num_pruned}"
       while (running.size +  initing.size) < max_workers
-        plogger.info "inited new thread"
+        # Karma.logger.debug 'inited new thread'
         add({running: @task_block}, { running_sleep_time: @current_config[:sleep_time] })
       end
       while (running.size + initing.size) > max_workers
         stop
       end
 
-      plogger.info "#allocated threads:"
+      # Karma.logger.info "#allocated threads:"
       @list.collect do |thread_string|
-        plogger.info thread_string
+        # Karma.logger.info thread_string
       end
     end
 
     #private
-
-    def logger_debug(s)
-      #@@logger.debug s
-      #puts s
-    end
-
-    def logger_info(s)
-      #@@logger.info s
-      #puts s
-    end
 
     def running
       @list.select{|thread| thread.running?}
@@ -103,7 +93,7 @@ module Karma::Thread
     end
 
     def stop
-      running.last.stop if !running.last.nil?
+      running.last.stop unless running.last.nil?
     end
 
     def stop_all
