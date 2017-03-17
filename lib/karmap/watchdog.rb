@@ -46,10 +46,12 @@ module Karma
       end
       if @trapped_signal
         Karma.logger.debug "#{@trapped_signal} trapped"
-        Karma.logger.debug 'gracefully shutdown...'
       end
       @poller.kill
-      (1..Karma::Watchdog::SHUTDOWN_SEC-1).each{|i| Karma.logger.debug(Karma::Watchdog::SHUTDOWN_SEC-i); sleep 1}
+      (0..Karma::Watchdog::SHUTDOWN_SEC-1).each do |i|
+        Karma.logger.debug("Watchdog: gracefully shutdown... #{Karma::Watchdog::SHUTDOWN_SEC-i}")
+        sleep 1
+      end
     end
 
     #################################################
@@ -136,8 +138,7 @@ module Karma
         s = cls.new
         engine.export_service(s)
         services[s.full_name] = s
-        # register_service(s.name)  TODO RIATTIVARE
-        # s.notifier.notify_created  TODO RIATTIVARE
+        s.register
       end
       engine.reload
     end
