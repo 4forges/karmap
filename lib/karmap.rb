@@ -16,6 +16,7 @@ module Karma
   define_setting :engine, 'systemd'
   define_setting :notifier, 'queue'
   define_setting :template_folder # custom engine templates folder
+  define_setting :services, []
 
   class << self
     attr_writer :logger

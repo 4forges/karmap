@@ -11,10 +11,6 @@ module Karma
 
     def initialize
       @services = {}
-      Karma::Service.descendants.each do |service|
-        s_obj = service.new
-        @services[s_obj.full_name] = s_obj
-      end
       @engine = case Karma.engine
                   when 'systemd'
                     Karma::Engine::Systemd.new
@@ -133,12 +129,12 @@ module Karma
 
     # Notifies the Karma server about the current host and all Karma::Service subclasses
     def register
-      subclasses = Karma::Service.subclasses
-      subclasses.each do |cls|
+      service_classes = discover_services
+      service_classes.each do |cls|
         Karma.logger.info("Watchdog: found service class #{cls.name}")
         s = cls.new
         engine.export_service(s)
-        services[s.name] = s
+        services[s.full_name] = s
         # register_service(s.name)  TODO RIATTIVARE
         # s.notifier.notify_created  TODO RIATTIVARE
       end
@@ -164,6 +160,14 @@ module Karma
         else
           Karma.logger.warn("Invalid process command: #{msg.command} - #{msg.inspect}")
       end
+    end
+    
+    def discover_services
+      #ret = Karma::Service.descendants
+      ret = Karma.services.select do |c|
+        c.is_a?(Class) rescue false
+      end
+      ret
     end
 
     def handle_process_config_update(config)

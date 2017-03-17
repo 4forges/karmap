@@ -1,5 +1,4 @@
 require 'socket'
-require 'faraday'
 require 'aws-sdk'
 require 'karmap/queue'
 
