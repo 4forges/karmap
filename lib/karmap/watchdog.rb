@@ -88,7 +88,6 @@ module Karma
     def self.export
       s = self.new
       s.engine.export_service(s)
-      s.engine.reload
     end
 
     def self.kill
@@ -144,7 +143,6 @@ module Karma
         services[s.full_name] = s
         s.register
       end
-      engine.reload
     end
 
     def queue_client

@@ -38,7 +38,7 @@ module Karma::Engine
     end
 
     def enable_service(service, params = {})
-      `systemctl --user enable #{service.name}`
+      `systemctl --user enable #{service.full_name}`
     end
 
     def start_service(service, params = {})
@@ -64,7 +64,7 @@ module Karma::Engine
     end
 
     def restart_service(service, params = {})
-      `systemctl --user restart #{service.name}`
+      `systemctl --user restart #{service.full_name}`
     end
 
     def export_service(service, params = {})
@@ -84,11 +84,10 @@ module Karma::Engine
       clean "#{location}/#{service_fn}"
       write_template 'systemd/process.service.erb', service_fn, binding
 
-      create_directory("#{service.full_name}.target.wants")
-
       instances_dir = "#{service.full_name}.target.wants"
-      instances = Dir["#{location}/#{instances_dir}/*"]
+      create_directory(instances_dir)
 
+      instances = Dir["#{location}/#{instances_dir}/*"].sort
       max = service.process_config[:max_running]
 
       # check if there are more instances than max, and delete/stop if needed
@@ -98,15 +97,15 @@ module Karma::Engine
           `systemctl --user stop #{instance_name}`
           clean file
         end
-      end
 
       # check if there are less instances than max, and create if needed
-      if instances.size < max
+      elsif instances.size < max
         (instances.size+1..max)
           .map{ |num| "#{service.full_name}@#{service.port+(num-1)}.service" }
-          .each do |process_name|
-          create_symlink("#{instances_dir}/#{process_name}", "../#{service_fn}") rescue Errno::EEXIST
+          .each do |instance_name|
+          create_symlink("#{instances_dir}/#{instance_name}", "../#{service_fn}") # rescue Errno::EEXIST
         end
+
       end
 
       target_fn = "#{service.full_name}.target"
@@ -115,6 +114,8 @@ module Karma::Engine
       # process_master_names = ["#{project_name}-#{service.name}.target"]
 
       write_template 'systemd/master.target.erb', "#{project_name}.target", binding
+
+      reload
 
       Karma.logger.debug("end systemd export for service #{service.name}")
     end
