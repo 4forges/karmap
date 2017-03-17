@@ -2,6 +2,7 @@ require 'logger'
 require 'active_support'
 require 'active_support/core_ext'
 require 'karmap/configuration'
+require "karma_messages"
 
 module Karma
 
