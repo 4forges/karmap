@@ -17,6 +17,7 @@ module Karma
   define_setting :aws_secret_access_key, ENV['KARMA_AWS_SECRET_ACCESS_KEY']
   define_setting :engine, 'systemd'
   define_setting :notifier, 'queue'
+  define_setting :watchdog_port, 32000
   define_setting :template_folder # custom engine templates folder
 
   class << self

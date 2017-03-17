@@ -63,8 +63,12 @@ module Karma::Engine
       `systemctl --user stop #{instance_name}`
     end
 
-    def restart_service(service, params = {})
-      `systemctl --user restart #{service.full_name}`
+    def restart_service(pid, params = {})
+      # get instance by pid and restart it
+      status = show_service_by_pid(pid)
+      instance_name = status.keys[0]
+      Karma.logger.debug("stopping instance #{instance_name}!")
+      `systemctl --user restart #{instance_name}`
     end
 
     def export_service(service, params = {})
@@ -103,7 +107,7 @@ module Karma::Engine
         (instances.size+1..max)
           .map{ |num| "#{service.full_name}@#{service.port+(num-1)}.service" }
           .each do |instance_name|
-          create_symlink("#{instances_dir}/#{instance_name}", "../#{service_fn}") # rescue Errno::EEXIST
+          create_symlink("#{instances_dir}/#{instance_name}", "../#{service_fn}") rescue Errno::EEXIST
         end
 
       end
