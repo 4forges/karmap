@@ -6,6 +6,7 @@ module Karma
     SHUTDOWN_SEC = 3
     START_COMMAND = 'start'
     STOP_COMMAND = 'stop'
+    DEFAULT_PORT = 32000
 
     attr_accessor :services, :engine
 
@@ -70,7 +71,7 @@ module Karma
     end
 
     def port
-      32000 # TODO
+      Karma::Watchdog::DEFAULT_PORT # TODO
     end
 
     def process_config
