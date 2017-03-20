@@ -3,7 +3,11 @@ require 'karmap'
 module Karma
 
   class Service
+    LOGGER_SHIFT_AGE = 2
+    LOGGER_SHIFT_SIZE = 52428800
+
     attr_accessor :notifier, :engine, :init_status, :process_config, :thread_config, :sleep_time
+    @@running_instance = nil
 
     def initialize
       @notifier = case Karma.notifier
@@ -15,6 +19,8 @@ module Karma
       @engine = case Karma.engine
                   when 'systemd'
                     Karma::Engine::Systemd.new
+                  when 'system_raw'
+                    Karma::Engine::StringOut.new
                 end
       @thread_config = {
         num_threads: self.num_threads,
@@ -30,11 +36,15 @@ module Karma
       }
       @init_status = {}
       @running = false
-      @thread_pool = Karma::Thread::ThreadPool.new(Proc.new { perform })
+      @thread_pool = Karma::Thread::ThreadPool.new(Proc.new { perform }, { log_prefix: self.log_prefix })
       @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(@thread_config)
       @sleep_time = 1
     end
-
+    
+    def log_prefix
+      "log/#{self.name}-#{self.port}"
+    end
+    
     def name
       self.class.name.demodulize.downcase
     end
@@ -44,7 +54,7 @@ module Karma
     end
 
     def command
-      "rails runner -e production \"o = #{self.class.name}.new; o.main_loop\"" # override if needed
+      "rails runner -e production \"#{self.class.name}.run\"" # override if needed
     end
 
     def port
@@ -128,7 +138,14 @@ module Karma
     end
     #################################################
 
-    def main_loop
+    def self.run
+      if @@running_instance.nil?
+        @@running_instance = self.new()
+        @@running_instance.run
+      end
+    end
+
+    def run
       Signal.trap('INT') do
         puts 'int trapped'
         thread_config[:running] = false

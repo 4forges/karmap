@@ -7,10 +7,11 @@ module Karma::Thread
     attr_accessor :thread
     cattr_accessor :list, :thread_index
 
-    def initialize(task_block)
+    def initialize(task_block, options = {})
       @task_block = task_block
       @list = []
       @thread_index = 0
+      @log_prefix = options[:log_prefix]
     end
 
     def manage(config = nil)
@@ -18,6 +19,7 @@ module Karma::Thread
       @current_config = config || @default_config
 
       max_workers = @current_config[:num_threads]
+      log_level = @current_config[:log_level]
       # Karma.logger.debug "manage workers max_workers: #{max_workers}"
       # Karma.logger.debug "kill freezed from more than older than #{FREEZED_THREADS_TIMEOUT.to_i} sec"
       num_killed = kill_freezed(FREEZED_THREADS_TIMEOUT.to_i)
@@ -27,7 +29,7 @@ module Karma::Thread
       # Karma.logger.debug "num_pruned: #{num_pruned}"
       while (running.size +  initing.size) < max_workers
         # Karma.logger.debug 'inited new thread'
-        add({running: @task_block}, { running_sleep_time: @current_config[:sleep_time] })
+        add({running: @task_block}, { running_sleep_time: @current_config[:sleep_time], log_prefix: @log_prefix })
       end
       while (running.size + initing.size) > max_workers
         stop
@@ -37,6 +39,9 @@ module Karma::Thread
       @list.collect do |thread_string|
         # Karma.logger.info thread_string
       end
+      
+      #
+      set_log_level(log_level)
     end
 
     #private
@@ -74,8 +79,8 @@ module Karma::Thread
       ret
     end
 
-    def set_logger_level(logger_level)
-      running.map{|managed_thread| managed_thread.set_logger_level(logger_level)}
+    def set_log_level(log_level)
+      running.map{|managed_thread| managed_thread.set_log_level(log_level)}
     end
 
     def add(blocks = {}, options = {})

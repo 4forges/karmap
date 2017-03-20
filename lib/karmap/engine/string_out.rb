@@ -28,6 +28,16 @@ module Karma::Engine
       Karma.logger.debug "remove_service"
     end
 
+    def get_process_status_message(pid)
+      return Karma::Messages::ProcessStatusUpdateMessage.new(
+        host: ::Socket.gethostname,
+        project: Karma.karma_project_id,
+        service: 'service',
+        pid: 'pid',
+        status: 'status'
+      )
+    end
+
   end
 
 end
