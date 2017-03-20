@@ -87,8 +87,8 @@ module Karma
       true
     end
 
-    def update_process_config(config)
-      process_config.merge!(config)
+    def update_process_config(msg)
+      process_config.merge!(msg.to_config)
     end
     #################################################
 

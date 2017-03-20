@@ -145,7 +145,6 @@ module Karma::Engine
           h[:full_name] = data[1] rescue nil
           h[:port] = data[2].to_i rescue nil
         end
-        byebug
         running_instances << ret
       end
       running_instances
