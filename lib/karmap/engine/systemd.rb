@@ -141,7 +141,7 @@ module Karma::Engine
       show_service(service).select{|k, v| v["Active"] == 'active'}.map do |k, v|
         data = /(.*)@(.*)\.(.*)/.match(k)
         ret = Hash.new.tap do |h|
-          h[:pid] = v["Main PID"] rescue nil
+          h[:pid] = v["Main PID"].to_i rescue nil
           h[:full_name] = data[1] rescue nil
           h[:port] = data[2].to_i rescue nil
         end
@@ -150,7 +150,7 @@ module Karma::Engine
       end
       running_instances
     end
-    
+
     private ####################
 
     def to_karma_status(process_status)
