@@ -5,19 +5,6 @@ module Karma
 
   class Service
     include Karma::ServiceConfig
-    #################################################
-    # process configuration
-    #################################################
-    base_min_running  1
-    base_max_running  1
-    base_port         5000
-    base_auto_restart true
-
-    #################################################
-    # thread configuration
-    #################################################
-    base_num_threads  1
-    base_log_level    :info
 
     LOGGER_SHIFT_AGE = 2
     LOGGER_SHIFT_SIZE = 52428800
@@ -29,20 +16,7 @@ module Karma
     def initialize
       @engine = Karma.engine_class.new
       @notifier = Karma.notifier_class.new
-      @thread_config = {
-        num_threads: self.class.num_threads,
-        log_level: self.class.log_level
-      }
 
-      @process_config = {
-        port: self.class.port,
-        min_running: self.class.min_running,
-        max_running: self.class.max_running,
-        memory_max: self.class.memory_max,
-        cpu_quota: self.class.cpu_quota,
-        auto_start: self.class.auto_start,
-        auto_restart: self.class.auto_restart
-      }
 
       @running = false
       @thread_pool = Karma::Thread::ThreadPool.new(Proc.new { perform }, { log_prefix: self.log_prefix })
@@ -51,7 +25,7 @@ module Karma
     end
 
     def log_prefix
-      "log/#{self.name}-#{self.process_config[:port]}"
+      "log/#{self.name}-#{self.class.config_port}"
     end
 
     def name
@@ -75,13 +49,6 @@ module Karma
       raise NotImplementedError
     end
 
-    def update_process_config(config)
-      process_config.merge!(config)
-    end
-
-    def update_thread_config(config)
-      thread_config.merge!(config)
-    end
     #################################################
 
     #################################################

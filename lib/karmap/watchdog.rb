@@ -6,12 +6,7 @@ module Karma
   class Watchdog
 
     include Karma::ServiceConfig
-    base_min_running  1
-    base_max_running  1
-    base_port         Karma.watchdog_port
-    base_auto_restart true
-    base_num_threads  1
-    base_log_level    :info
+    port         Karma.watchdog_port
 
     LOGGER_SHIFT_AGE = 2
     LOGGER_SHIFT_SIZE = 52428800
@@ -26,7 +21,6 @@ module Karma
     attr_accessor :services, :engine
 
     def initialize
-      @services = {}
       @engine = Karma.engine_class.new
       @notifier = Karma.notifier_class.new
     end
@@ -115,7 +109,6 @@ module Karma
           case body_hash[:type]
 
             when Karma::Messages::ProcessCommandMessage.name
-              Watchdog.logger.debug services.keys
               Karma::Messages::ProcessCommandMessage.services = services.keys
               msg = Karma::Messages::ProcessCommandMessage.new(body_hash)
               Karma.error(msg.errors) unless msg.valid?
@@ -143,12 +136,11 @@ module Karma
 
     # Notifies the Karma server about the current host and all Karma::Service subclasses
     def register
-      service_classes = discover_services
-      service_classes.each do |cls|
+      @@service_classes = discover_services
+      @@service_classes.each do |cls|
         Watchdog.logger.info("Watchdog: found service class #{cls.name}")
         s = cls.new
         engine.export_service(s)
-        services[s.full_name] = s
         s.register
       end
     end
@@ -161,7 +153,8 @@ module Karma
     def handle_process_command(msg)
       case msg.command
         when START_COMMAND
-          s = services[msg.service]
+          #s = services[msg.service]
+          s = msg.service.constantize.new
           engine.start_service(s)
         when STOP_COMMAND
           engine.stop_service(msg.pid)
@@ -171,13 +164,14 @@ module Karma
     end
 
     def discover_services
-      Karma.services.select{|c| c.is_a?(Class) rescue false}
+      Karma.services.select{|c| c.constantize.new().is_a?(Karma::Service) rescue false}.map{|c| c.constantize}
     end
 
     # keys: [:service, :type, :memory_max, :cpu_quota, :min_running, :max_running, :auto_restart, :auto_start]
     def handle_process_config_update(msg)
-      s = services[msg.service]
-      s.update_process_config(msg.to_config)
+      #s = services[msg.service]
+      s = msg.service.constantize.new
+      msg.service.constantize.update_process_config(msg.to_config)
       engine.export_service(s)
       maintain_worker_count(s)
     end
@@ -185,8 +179,8 @@ module Karma
     def maintain_worker_count(service)
       running_instances = engine.running_instances_for_service(service) #keys: [:pid, :full_name, :port]
       num_running = running_instances.size
-      all_ports_max = ( service.process_config[:port]..service.process_config[:port] + service.process_config[:max_running] - 1 ).to_a
-      all_ports_min = ( service.process_config[:port]..service.process_config[:port] + service.process_config[:min_running] - 1 ).to_a
+      all_ports_max = ( service.class.config_port..service.class.config_port + service.class.config_max_running - 1 ).to_a
+      all_ports_min = ( service.class.config_port..service.class.config_port + service.class.config_min_running - 1 ).to_a
       running_ports = running_instances.values.map{ |i| i.port }
       Watchdog.logger.debug("Running instances found: #{num_running}")
 
@@ -198,7 +192,7 @@ module Karma
       end
 
       # start instances
-      if service.process_config[:auto_start]
+      if service.class.config_auto_start
         to_be_started_ports = all_ports_min - running_ports
         Watchdog.logger.debug("Running instances to be started: #{to_be_started_ports.size}")
         to_be_started_ports.each do |port|
@@ -211,11 +205,12 @@ module Karma
 
     # keys: [:log_level, :num_threads]
     def handle_thread_config_update(msg)
-      service = services[msg.service]
-      service.update_thread_config(msg.to_config)
+      #s = services[msg.service]
+      service = msg.service.constantize.new
+      msg.service.constantize.update_thread_config(msg.to_config)
 
-      s = TCPSocket.new('127.0.0.1', service.process_config[:port])
-      s.puts({ log_level: service.thread_config[:log_level], num_threads: service.thread_config[:num_threads] }.to_json)
+      s = TCPSocket.new('127.0.0.1', service.class.config_port)
+      s.puts({ log_level: service.class.config_log_level, num_threads: service.class.config_num_threads }.to_json)
       s.close
     end
 
