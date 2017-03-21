@@ -22,7 +22,7 @@ module Karma
     LOGGER_SHIFT_AGE = 2
     LOGGER_SHIFT_SIZE = 52428800
 
-    attr_accessor :notifier, :engine, :process_config, :thread_config, :sleep_time
+    attr_accessor :notifier, :engine, :process_config, :thread_config
 
     @@running_instance = nil
 
@@ -137,7 +137,7 @@ module Karma
 
         thread_config.merge!(@thread_config_reader.config)
         @thread_pool.manage(thread_config)
-        sleep(sleep_time)
+        sleep(@sleep_time)
       end
 
       before_stop
