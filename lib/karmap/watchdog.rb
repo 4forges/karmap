@@ -1,8 +1,18 @@
 require 'karmap'
+require 'karmap/service_config'
 
 module Karma
 
   class Watchdog
+
+    include Karma::ServiceConfig
+    base_min_running  1
+    base_max_running  1
+    base_port         Karma.watchdog_port
+    base_auto_restart true
+    base_num_threads  1
+    base_log_level    :info
+
     LOGGER_SHIFT_AGE = 2
     LOGGER_SHIFT_SIZE = 52428800
     SHUTDOWN_SEC = 3
@@ -68,12 +78,9 @@ module Karma
       "bundle exec rails runner -e production \"Karma::Watchdog.run\""
     end
 
-    def port
-      Karma.watchdog_port
-    end
-
     def process_config
       return {
+        port: Karma.watchdog_port,
         min_running: 1,
         max_running: 1,
         memory_max: nil,

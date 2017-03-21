@@ -18,7 +18,7 @@ module Karma
     #################################################
     base_num_threads  1
     base_log_level    :info
-    
+
     LOGGER_SHIFT_AGE = 2
     LOGGER_SHIFT_SIZE = 52428800
 
@@ -35,6 +35,7 @@ module Karma
       }
 
       @process_config = {
+        port: self.class.port,
         min_running: self.class.min_running,
         max_running: self.class.max_running,
         memory_max: self.class.memory_max,

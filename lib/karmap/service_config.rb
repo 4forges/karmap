@@ -39,10 +39,11 @@ module Karma
       def base_num_threads(val)
         self.num_threads = val
       end
+
+      def base_log_level(val)
+        self.log_level = val
+      end
     end
-    def base_log_level(val)
-      self.log_level = val
-    end
-    
+
   end
 end
