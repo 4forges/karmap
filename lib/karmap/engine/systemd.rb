@@ -15,15 +15,15 @@ module Karma::Engine
     end
 
     def show_service(service)
-      SystemdParser.systemctl_status(service: "#{service.full_name}@*", user: true)
+      service_status(service: "#{service.full_name}@*")
     end
 
     def show_service_by_pid(pid)
-      SystemdParser.systemctl_status(service: pid, user: true)
+      service_status(service: pid)
     end
 
     def show_all_services
-      SystemdParser.systemctl_status(service: "#{project_name}-*@*", user: true)
+      service_status(service: "#{project_name}-*@*")
     end
 
     def get_process_status_message(pid)
@@ -31,9 +31,9 @@ module Karma::Engine
       return Karma::Messages::ProcessStatusUpdateMessage.new(
         host: ::Socket.gethostname,
         project: Karma.karma_project_id,
-        service: status.keys[0].split('@')[0],
-        pid: pid,
-        status: to_karma_status(status.values[0]['Active'])
+        service: status.values[0].name,
+        pid: status.values[0].pid,
+        status: status.values[0].status
       )
     end
 
@@ -137,20 +137,29 @@ module Karma::Engine
     end
 
     def running_instances_for_service(service, params = {})
-      running_instances = []
-      show_service(service).select{|k, v| v["Active"] == 'active'}.map do |k, v|
-        data = /(.*)@(.*)\.(.*)/.match(k)
-        ret = Hash.new.tap do |h|
-          h[:pid] = v["Main PID"].to_i rescue nil
-          h[:full_name] = data[1] rescue nil
-          h[:port] = data[2].to_i rescue nil
-        end
-        running_instances << ret
-      end
-      running_instances
+      show_service(service).select{|k, v| v.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}
     end
 
     private ####################
+
+    def service_status(service:)
+      status = SystemdParser.systemctl_status(service: service, user: true)
+      ret = {}
+      status.each do |k,v|
+        # :name, :port, :status, :pid, :threads, :memory, :cpu
+        data = /(.*)@(.*)\.(.*)/.match(k)
+        ret[k] = Karma::Engine::ServiceStatus.new(
+          data[1],
+          data[2].to_i,
+          to_karma_status(v['Active']),
+          v['Main PID'].to_i,
+          v['Tasks'].to_i,
+          v['Memory'],
+          v['CPU'],
+        )
+      end
+      return ret
+    end
 
     def to_karma_status(process_status)
       case process_status

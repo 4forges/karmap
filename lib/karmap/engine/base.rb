@@ -2,6 +2,8 @@ require 'karmap/engine'
 
 module Karma::Engine
 
+  ServiceStatus = Struct.new(:name, :port, :status, :pid, :threads, :memory, :cpu)
+
   class Base
 
     attr_accessor :service
@@ -72,7 +74,7 @@ module Karma::Engine
     def remove_service(service, params = {})
       # abstract
     end
-    
+
     def running_instances_for_service(service, params = {})
       # abstract
     end

@@ -10,18 +10,8 @@ module Karma
     @@running_instance = nil
 
     def initialize
-      @notifier = case Karma.notifier
-                    when 'queue'
-                      Karma::Queue::QueueNotifier.new
-                    when 'log'
-                      Karma::Queue::LoggerNotifier.new
-                  end
-      @engine = case Karma.engine
-                  when 'systemd'
-                    Karma::Engine::Systemd.new
-                  when 'system_raw'
-                    Karma::Engine::StringOut.new
-                end
+      @engine = Karma.engine_class.new
+      @notifier = Karma.notifier_class.new
       @thread_config = {
         num_threads: self.num_threads,
         log_level: self.log_level
@@ -40,11 +30,11 @@ module Karma
       @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(@thread_config)
       @sleep_time = 1
     end
-    
+
     def log_prefix
       "log/#{self.name}-#{self.port}"
     end
-    
+
     def name
       self.class.name.demodulize.downcase
     end
@@ -97,8 +87,8 @@ module Karma
       true
     end
 
-    def update_process_config(msg)
-      process_config.merge!(msg.to_config)
+    def update_process_config(config)
+      process_config.merge!(config)
     end
     #################################################
 

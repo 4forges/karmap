@@ -17,20 +17,8 @@ module Karma
 
     def initialize
       @services = {}
-      @engine = case Karma.engine
-                  when 'systemd'
-                    Karma::Engine::Systemd.new
-                  when 'string_out'
-                    Karma::Engine::StringOut.new
-                  when 'system_raw'
-                    Karma::Engine::SystemRaw.new
-                end
-      @notifier = case Karma.notifier
-                  when 'queue'
-                    Karma::Queue::QueueNotifier.new
-                  when 'log'
-                    Karma::Queue::LoggerNotifier.new
-                end
+      @engine = Karma.engine_class.new
+      @notifier = Karma.notifier_class.new
     end
 
     def self.run
@@ -99,12 +87,6 @@ module Karma
     def self.export
       s = self.new
       s.engine.export_service(s)
-    end
-
-    def self.kill
-      s = self.new
-      s.engine.stop_service(s)
-      # engine.remove_service(s)
     end
 
     private ##############################
@@ -188,7 +170,7 @@ module Karma
     # keys: [:service, :type, :memory_max, :cpu_quota, :min_running, :max_running, :auto_restart, :auto_start]
     def handle_process_config_update(msg)
       s = services[msg.service]
-      s.update_process_config(msg)
+      s.update_process_config(msg.to_config)
       engine.export_service(s)
       maintain_worker_count(s)
     end
@@ -198,32 +180,32 @@ module Karma
       num_running = running_instances.size
       all_ports_max = ( s.port..s.port + service.max_running - 1 ).to_a
       all_ports_min = ( s.port..s.port + service.min_running - 1 ).to_a
-      running_ports = running_instances.map{ |instance| instance[:port] }
+      running_ports = running_instances.values.map{ |i| i.port }
       Watchdog::logger.debug("Running instances found: #{num_running}")
 
       # stop instances
       to_be_stopped_ports = running_ports - all_ports_max
       Watchdog::logger.debug("Running instances to be stopped: #{to_be_stopped_ports.size}")
-      running_instances.each do |instance|
-        engine.stop_service(instance[:pid]) if to_be_stopped_ports.include?(instance[:port])
+      running_instances.values.each do |i|
+        engine.stop_service(i.pid) if to_be_stopped_ports.include?(i.port)
       end
 
       # start instances
-      if s.auto_start
+      if service.process_config[:auto_start]
         to_be_started_ports = all_ports_min - running_ports
         Watchdog::logger.debug("Running instances to be started: #{to_be_started_ports.size}")
         to_be_started_ports.each do |port|
           engine.start_service(service)
         end
       else
-        Watchdog::logger.debug("Autostart is false")
+        Watchdog::logger.debug('Autostart is false')
       end
     end
 
     # keys: [:log_level, :num_threads]
     def handle_thread_config_update(msg)
       s = services[msg.service]
-      s.update_thread_config(msg)
+      s.update_thread_config(msg.to_config)
 
       s = TCPSocket.new('127.0.0.1', s.port)
       s.puts({ log_level: s.log_level, num_threads: s.num_threads }.to_json)
