@@ -30,6 +30,26 @@ module Karma
         log.progname = self.name
       end
     end
+
+    def notifier_class
+      case Karma.notifier
+        when 'queue'
+          Karma::Queue::QueueNotifier
+        when 'log'
+          Karma::Queue::LoggerNotifier
+      end
+    end
+
+    def engine_class
+      case Karma.engine
+        when 'systemd'
+          Karma::Engine::Systemd
+        when 'string_out'
+          Karma::Engine::StringOut
+        when 'system_raw'
+          Karma::Engine::SystemRaw
+      end
+    end
   end
 
   class Exception < ::Exception; end
