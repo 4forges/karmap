@@ -129,10 +129,8 @@ module Karma
     #################################################
 
     def self.run
-      if @@running_instance.nil?
-        @@running_instance = self.new()
-        @@running_instance.run
-      end
+      @@running_instance ||= self.new
+      @@running_instance.run
     end
 
     def run
