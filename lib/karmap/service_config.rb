@@ -2,8 +2,10 @@ module Karma
   module ServiceConfig
 
     def self.included(base)
+
       base.cattr_accessor :config_min_running, :config_max_running, :config_memory_max, :config_cpu_quota, :config_auto_start, :config_auto_restart, :config_port, :config_num_threads, :config_log_level
       base.extend(ClassMethods)
+
       ################################################
       # process configuration
       ################################################
@@ -17,6 +19,7 @@ module Karma
       #################################################
       base.num_threads(1)
       base.log_level(:info)
+
     end
 
     module ClassMethods
@@ -68,8 +71,8 @@ module Karma
           self.send(k, config[k])
         end
       end
-    end
 
+    end
 
   end
 end

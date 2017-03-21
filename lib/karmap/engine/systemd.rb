@@ -50,9 +50,10 @@ module Karma::Engine
         if status[instance_name].nil?
           Karma.logger.debug("starting instance #{instance_name}!")
           `systemctl --user start #{instance_name}`
-          return
+          return instance_name
         end
       end
+      return false
     end
 
     def stop_service(pid, params = {})

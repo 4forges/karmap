@@ -6,7 +6,7 @@ module Karma
   class Watchdog
 
     include Karma::ServiceConfig
-    port         Karma.watchdog_port
+    port Karma.watchdog_port
 
     LOGGER_SHIFT_AGE = 2
     LOGGER_SHIFT_SIZE = 52428800
@@ -14,6 +14,7 @@ module Karma
     START_COMMAND = 'start'
     STOP_COMMAND = 'stop'
 
+    @@service_classes = nil
     @@running_instance = nil
     @@queue_client = nil
     @@logger = nil
@@ -31,6 +32,7 @@ module Karma
     end
 
     def run
+      Watchdog.logger.info('Watchdog: running')
       register
       @poller = ::Thread.new do
         perform
@@ -48,7 +50,7 @@ module Karma
         sleep 1
       end
       if @trapped_signal
-        Watchdog.logger.debug "#{@trapped_signal} trapped"
+        Watchdog.logger.debug "Watchdog: got signal #{@trapped_signal}"
       end
       @poller.kill
       (0..Karma::Watchdog::SHUTDOWN_SEC-1).each do |i|
@@ -88,6 +90,12 @@ module Karma
     def self.export
       s = self.new
       s.engine.export_service(s)
+      status = s.engine.show_service(s)
+      if status.empty?
+        s.engine.start_service(s)
+      else
+        s.engine.restart_service(status.values[0].pid)
+      end
     end
 
     private ##############################
@@ -101,6 +109,7 @@ module Karma
     end
 
     def perform
+      Watchdog.logger.info('Watchdog: started polling queue')
       queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
         Watchdog.logger.debug "Watchdog: got message from queue #{msg.body}"
         begin
@@ -109,7 +118,7 @@ module Karma
           case body_hash[:type]
 
             when Karma::Messages::ProcessCommandMessage.name
-              Karma::Messages::ProcessCommandMessage.services = services.keys
+              Karma::Messages::ProcessCommandMessage.services = @@service_classes.map(&:to_s)
               msg = Karma::Messages::ProcessCommandMessage.new(body_hash)
               Karma.error(msg.errors) unless msg.valid?
               handle_process_command(msg)
@@ -136,13 +145,15 @@ module Karma
 
     # Notifies the Karma server about the current host and all Karma::Service subclasses
     def register
+      Watchdog.logger.info('Watchdog: registering services...')
       @@service_classes = discover_services
       @@service_classes.each do |cls|
-        Watchdog.logger.info("Watchdog: found service class #{cls.name}")
-        s = cls.new
-        engine.export_service(s)
-        s.register
+        Watchdog.logger.info("Watchdog: found service class #{cls.name}. Exporting...")
+        service = cls.new
+        engine.export_service(service)
+        service.register
       end
+      Watchdog.logger.info('Watchdog: done registering services')
     end
 
     def queue_client
@@ -153,7 +164,6 @@ module Karma
     def handle_process_command(msg)
       case msg.command
         when START_COMMAND
-          #s = services[msg.service]
           s = msg.service.constantize.new
           engine.start_service(s)
         when STOP_COMMAND
@@ -164,16 +174,16 @@ module Karma
     end
 
     def discover_services
-      Karma.services.select{|c| c.constantize.new().is_a?(Karma::Service) rescue false}.map{|c| c.constantize}
+      Karma.services.select{|c| c.constantize.new.is_a?(Karma::Service) rescue false}.map{|c| c.constantize}
     end
 
     # keys: [:service, :type, :memory_max, :cpu_quota, :min_running, :max_running, :auto_restart, :auto_start]
     def handle_process_config_update(msg)
-      #s = services[msg.service]
-      s = msg.service.constantize.new
-      msg.service.constantize.update_process_config(msg.to_config)
-      engine.export_service(s)
-      maintain_worker_count(s)
+      cls = msg.service.constantize
+      cls.update_process_config(msg.to_config)
+      service = cls.new
+      engine.export_service(service)
+      maintain_worker_count(service)
     end
 
     def maintain_worker_count(service)
@@ -205,9 +215,9 @@ module Karma
 
     # keys: [:log_level, :num_threads]
     def handle_thread_config_update(msg)
-      #s = services[msg.service]
-      service = msg.service.constantize.new
-      msg.service.constantize.update_thread_config(msg.to_config)
+      cls = msg.service.constantize
+      service = cls.new
+      cls.update_thread_config(msg.to_config)
 
       s = TCPSocket.new('127.0.0.1', service.class.config_port)
       s.puts({ log_level: service.class.config_log_level, num_threads: service.class.config_num_threads }.to_json)
