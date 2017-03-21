@@ -46,7 +46,7 @@ module Karma::Engine
       Karma.logger.debug("starting #{service.full_name}")
       status = show_service(service)
       (1..service.process_config[:max_running]).each do |i|
-        instance_name = "#{service.full_name}@#{service.port+(i-1)}.service"
+        instance_name = "#{service.full_name}@#{service.process_config[:port]+(i-1)}.service"
         if status[instance_name].nil?
           Karma.logger.debug("starting instance #{instance_name}!")
           `systemctl --user start #{instance_name}`
@@ -105,7 +105,7 @@ module Karma::Engine
       # check if there are less instances than max, and create if needed
       elsif instances.size < max
         (instances.size+1..max)
-          .map{ |num| "#{service.full_name}@#{service.port+(num-1)}.service" }
+          .map{ |num| "#{service.full_name}@#{service.process_config[:port]+(num-1)}.service" }
           .each do |instance_name|
           create_symlink("#{instances_dir}/#{instance_name}", "../#{service_fn}") rescue Errno::EEXIST
         end

@@ -1,30 +1,48 @@
 require 'karmap'
+require 'karmap/service_config'
 
 module Karma
 
   class Service
+    include Karma::ServiceConfig
+    #################################################
+    # process configuration
+    #################################################
+    base_min_running  1
+    base_max_running  1
+    base_port         5000
+    base_auto_restart true
+
+    #################################################
+    # thread configuration
+    #################################################
+    base_num_threads  1
+    base_log_level    :info
+    
     LOGGER_SHIFT_AGE = 2
     LOGGER_SHIFT_SIZE = 52428800
 
-    attr_accessor :notifier, :engine, :init_status, :process_config, :thread_config, :sleep_time
+    attr_accessor :notifier, :engine, :process_config, :thread_config, :sleep_time
+
     @@running_instance = nil
 
     def initialize
       @engine = Karma.engine_class.new
       @notifier = Karma.notifier_class.new
       @thread_config = {
-        num_threads: self.num_threads,
-        log_level: self.log_level
+        num_threads: self.class.num_threads,
+        log_level: self.class.log_level
       }
+
       @process_config = {
-        min_running: self.min_running,
-        max_running: self.max_running,
-        memory_max: self.memory_max,
-        cpu_quota: self.cpu_quota,
-        auto_start: self.auto_start,
-        auto_restart: self.auto_restart,
+        min_running: self.class.min_running,
+        max_running: self.class.max_running,
+        memory_max: self.class.memory_max,
+        cpu_quota: self.class.cpu_quota,
+        auto_start: self.class.auto_start,
+        auto_restart: self.class.auto_restart
       }
-      @init_status = {}
+
       @running = false
       @thread_pool = Karma::Thread::ThreadPool.new(Proc.new { perform }, { log_prefix: self.log_prefix })
       @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(@thread_config)
@@ -32,7 +50,7 @@ module Karma
     end
 
     def log_prefix
-      "log/#{self.name}-#{self.port}"
+      "log/#{self.name}-#{self.process_config[:port]}"
     end
 
     def name
@@ -47,10 +65,6 @@ module Karma
       "rails runner -e production \"#{self.class.name}.run\"" # override if needed
     end
 
-    def port
-      5000 # override this
-    end
-
     def log_location
       nil # override this
     end
@@ -60,47 +74,8 @@ module Karma
       raise NotImplementedError
     end
 
-    #################################################
-    # default process configuration
-    #################################################
-    def min_running
-      1 # override this
-    end
-
-    def max_running
-      1 # override this
-    end
-
-    def memory_max
-      nil # override this
-    end
-
-    def cpu_quota
-      nil # override this
-    end
-
-    def auto_start
-      true
-    end
-
-    def auto_restart
-      true
-    end
-
     def update_process_config(config)
       process_config.merge!(config)
-    end
-    #################################################
-
-    #################################################
-    # thread configuration
-    #################################################
-    def num_threads
-      1 # override this
-    end
-
-    def log_level
-      :info # override this
     end
 
     def update_thread_config(config)

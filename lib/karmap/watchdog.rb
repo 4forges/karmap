@@ -178,8 +178,8 @@ module Karma
     def maintain_worker_count(service)
       running_instances = engine.running_instances_for_service(service) #keys: [:pid, :full_name, :port]
       num_running = running_instances.size
-      all_ports_max = ( s.port..s.port + service.max_running - 1 ).to_a
-      all_ports_min = ( s.port..s.port + service.min_running - 1 ).to_a
+      all_ports_max = ( service.process_config[:port]..service.process_config[:port] + service.process_config[:max_running] - 1 ).to_a
+      all_ports_min = ( service.process_config[:port]..service.process_config[:port] + service.process_config[:min_running] - 1 ).to_a
       running_ports = running_instances.values.map{ |i| i.port }
       Watchdog.logger.debug("Running instances found: #{num_running}")
 
@@ -204,11 +204,11 @@ module Karma
 
     # keys: [:log_level, :num_threads]
     def handle_thread_config_update(msg)
-      s = services[msg.service]
-      s.update_thread_config(msg.to_config)
+      service = services[msg.service]
+      service.update_thread_config(msg.to_config)
 
-      s = TCPSocket.new('127.0.0.1', s.port)
-      s.puts({ log_level: s.log_level, num_threads: s.num_threads }.to_json)
+      s = TCPSocket.new('127.0.0.1', service.process_config[:port])
+      s.puts({ log_level: service.thread_config[:log_level], num_threads: service.thread_config[:num_threads] }.to_json)
       s.close
     end
 
