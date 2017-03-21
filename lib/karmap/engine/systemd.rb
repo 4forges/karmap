@@ -125,13 +125,14 @@ module Karma::Engine
     end
 
     def remove_service(service, params = {})
-      Dir["#{location}/#{project_name}*.service"]
-          .concat(Dir["#{location}/#{project_name}*.target.wants/#{project_name}*.service"])
+      Dir["#{location}/#{service.full_name}*.service"]
+          .concat(Dir["#{location}/#{service.full_name}.target"])
+          .concat(Dir["#{location}/#{service.full_name}*.target.wants/*"])
           .each do |file|
         clean file
       end
 
-      Dir["#{location}/#{project_name}*.target.wants"].each do |file|
+      Dir["#{location}/#{service.full_name}*.target.wants"].each do |file|
         clean_dir file
       end
     end

@@ -44,11 +44,11 @@ module Karma
         sleep 1
       end
       if @trapped_signal
-        Watchdog::logger.debug "#{@trapped_signal} trapped"
+        Watchdog.logger.debug "#{@trapped_signal} trapped"
       end
       @poller.kill
       (0..Karma::Watchdog::SHUTDOWN_SEC-1).each do |i|
-        Watchdog::logger.info("Watchdog: gracefully shutdown... #{Karma::Watchdog::SHUTDOWN_SEC-i}")
+        Watchdog.logger.info("Watchdog: gracefully shutdown... #{Karma::Watchdog::SHUTDOWN_SEC-i}")
         sleep 1
       end
     end
@@ -101,14 +101,14 @@ module Karma
 
     def perform
       queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
-        Watchdog::logger.debug "Watchdog: got message from queue #{msg.body}"
+        Watchdog.logger.debug "Watchdog: got message from queue #{msg.body}"
         begin
           body_hash = JSON.parse(msg.body).deep_symbolize_keys
 
           case body_hash[:type]
 
             when Karma::Messages::ProcessCommandMessage.name
-              Watchdog::logger.debug services.keys
+              Watchdog.logger.debug services.keys
               Karma::Messages::ProcessCommandMessage.services = services.keys
               msg = Karma::Messages::ProcessCommandMessage.new(body_hash)
               Karma.error(msg.errors) unless msg.valid?
@@ -128,8 +128,8 @@ module Karma
               Karma.error("Invalid message: #{body_hash[:type]} - #{body_hash.inspect}")
           end
         rescue Exception => e
-          Watchdog::logger.error "Error during message processing... #{msg.inspect}"
-          Watchdog::logger.error e.message
+          Watchdog.logger.error "Error during message processing... #{msg.inspect}"
+          Watchdog.logger.error e.message
         end
       end
     end
@@ -138,7 +138,7 @@ module Karma
     def register
       service_classes = discover_services
       service_classes.each do |cls|
-        Watchdog::logger.info("Watchdog: found service class #{cls.name}")
+        Watchdog.logger.info("Watchdog: found service class #{cls.name}")
         s = cls.new
         engine.export_service(s)
         services[s.full_name] = s
@@ -159,7 +159,7 @@ module Karma
         when STOP_COMMAND
           engine.stop_service(msg.pid)
         else
-          Watchdog::logger.warn("Invalid process command: #{msg.command} - #{msg.inspect}")
+          Watchdog.logger.warn("Invalid process command: #{msg.command} - #{msg.inspect}")
       end
     end
 
@@ -181,11 +181,11 @@ module Karma
       all_ports_max = ( service.process_config[:port]..service.process_config[:port] + service.process_config[:max_running] - 1 ).to_a
       all_ports_min = ( service.process_config[:port]..service.process_config[:port] + service.process_config[:min_running] - 1 ).to_a
       running_ports = running_instances.values.map{ |i| i.port }
-      Watchdog::logger.debug("Running instances found: #{num_running}")
+      Watchdog.logger.debug("Running instances found: #{num_running}")
 
       # stop instances
       to_be_stopped_ports = running_ports - all_ports_max
-      Watchdog::logger.debug("Running instances to be stopped: #{to_be_stopped_ports.size}")
+      Watchdog.logger.debug("Running instances to be stopped: #{to_be_stopped_ports.size}")
       running_instances.values.each do |i|
         engine.stop_service(i.pid) if to_be_stopped_ports.include?(i.port)
       end
@@ -193,12 +193,12 @@ module Karma
       # start instances
       if service.process_config[:auto_start]
         to_be_started_ports = all_ports_min - running_ports
-        Watchdog::logger.debug("Running instances to be started: #{to_be_started_ports.size}")
+        Watchdog.logger.debug("Running instances to be started: #{to_be_started_ports.size}")
         to_be_started_ports.each do |port|
           engine.start_service(service)
         end
       else
-        Watchdog::logger.debug('Autostart is false')
+        Watchdog.logger.debug('Autostart is false')
       end
     end
 
