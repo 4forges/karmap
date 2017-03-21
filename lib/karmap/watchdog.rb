@@ -8,8 +8,9 @@ module Karma
     SHUTDOWN_SEC = 3
     START_COMMAND = 'start'
     STOP_COMMAND = 'stop'
-    
+
     @@running_instance = nil
+    @@queue_client = nil
     @@logger = nil
 
     attr_accessor :services, :engine
@@ -31,12 +32,10 @@ module Karma
                     Karma::Queue::LoggerNotifier.new
                 end
     end
-    
+
     def self.run
-      if @@running_instance.nil?
-        @@running_instance = self.new()
-        @@running_instance.run
-      end
+      @@running_instance ||= self.new
+      @@running_instance.run
     end
 
     def run
@@ -107,9 +106,9 @@ module Karma
       s.engine.stop_service(s)
       # engine.remove_service(s)
     end
-    
-    private
-    
+
+    private ##############################
+
     def self.logger
       if @@logger.nil?
         @@logger = Logger.new("log/karma-watchdog.log", shift_age = LOGGER_SHIFT_AGE, shift_size = LOGGER_SHIFT_SIZE)
@@ -166,8 +165,8 @@ module Karma
     end
 
     def queue_client
-      @@client ||= Karma::Queue::Client.new
-      return @@client
+      @@queue_client ||= Karma::Queue::Client.new
+      return @@queue_client
     end
 
     def handle_process_command(msg)
@@ -193,7 +192,7 @@ module Karma
       engine.export_service(s)
       maintain_worker_count(s)
     end
-    
+
     def maintain_worker_count(service)
       running_instances = engine.running_instances_for_service(service) #keys: [:pid, :full_name, :port]
       num_running = running_instances.size
@@ -208,7 +207,7 @@ module Karma
       running_instances.each do |instance|
         engine.stop_service(instance[:pid]) if to_be_stopped_ports.include?(instance[:port])
       end
-      
+
       # start instances
       if s.auto_start
         to_be_started_ports = all_ports_min - running_ports
@@ -220,7 +219,7 @@ module Karma
         Watchdog::logger.debug("Autostart is false")
       end
     end
-    
+
     # keys: [:log_level, :num_threads]
     def handle_thread_config_update(msg)
       s = services[msg.service]
