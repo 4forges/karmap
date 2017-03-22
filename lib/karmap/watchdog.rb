@@ -4,13 +4,13 @@ require 'karmap/service_config'
 module Karma
 
   class Watchdog
-
     include Karma::ServiceConfig
+
     port Karma.watchdog_port
 
     LOGGER_SHIFT_AGE = 2
     LOGGER_SHIFT_SIZE = 52428800
-    SHUTDOWN_SEC = 3
+    SHUTDOWN_SEC = 0
     START_COMMAND = 'start'
     STOP_COMMAND = 'stop'
 
@@ -21,18 +21,22 @@ module Karma
 
     attr_accessor :services, :engine
 
-    def initialize
-      @engine = Karma.engine_class.new
-      @notifier = Karma.notifier_class.new
-    end
-
     def self.run
       @@running_instance ||= self.new
       @@running_instance.run
     end
 
+    def initialize
+      @engine = Karma.engine_class.new
+      @notifier = Karma.notifier_class.new
+    end
+
     def run
-      Watchdog.logger.info('Watchdog: running')
+      Karma.logger.error self.class.logger
+      Watchdog.logger.info("\n\n\n")
+      Watchdog.logger.info('****************')
+      Watchdog.logger.info('Enter run method')
+      Watchdog.logger.info('****************')
       register
       @poller = ::Thread.new do
         perform
@@ -50,11 +54,12 @@ module Karma
         sleep 1
       end
       if @trapped_signal
-        Watchdog.logger.debug "Watchdog: got signal #{@trapped_signal}"
+        Watchdog.logger.info "Got signal #{@trapped_signal}"
+        sleep 0.5
       end
       @poller.kill
       (0..Karma::Watchdog::SHUTDOWN_SEC-1).each do |i|
-        Watchdog.logger.info("Watchdog: gracefully shutdown... #{Karma::Watchdog::SHUTDOWN_SEC-i}")
+        Watchdog.logger.info("Gracefully shutdown... #{Karma::Watchdog::SHUTDOWN_SEC-i}")
         sleep 1
       end
     end
@@ -72,18 +77,6 @@ module Karma
 
     def command
       "bundle exec rails runner -e production \"Karma::Watchdog.run\""
-    end
-
-    def process_config
-      return {
-        port: Karma.watchdog_port,
-        min_running: 1,
-        max_running: 1,
-        memory_max: nil,
-        cpu_quota: nil,
-        auto_start: true,
-        auto_restart: true,
-      }
     end
     #################################################
 
@@ -109,9 +102,9 @@ module Karma
     end
 
     def perform
-      Watchdog.logger.info('Watchdog: started polling queue')
+      Watchdog.logger.info('Started polling queue')
       queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
-        Watchdog.logger.debug "Watchdog: got message from queue #{msg.body}"
+        Watchdog.logger.debug "Got message from queue #{msg.body}"
         begin
           body_hash = JSON.parse(msg.body).deep_symbolize_keys
 
@@ -145,15 +138,16 @@ module Karma
 
     # Notifies the Karma server about the current host and all Karma::Service subclasses
     def register
-      Watchdog.logger.info('Watchdog: registering services...')
+      Watchdog.logger.info('Registering services...')
       @@service_classes = discover_services
+      Watchdog.logger.info("#{@@service_classes.count} services found")
       @@service_classes.each do |cls|
-        Watchdog.logger.info("Watchdog: found service class #{cls.name}. Exporting...")
+        Watchdog.logger.info("Found service class #{cls.name}. Exporting...")
         service = cls.new
         engine.export_service(service)
         service.register
       end
-      Watchdog.logger.info('Watchdog: done registering services')
+      Watchdog.logger.info('Done registering services')
     end
 
     def queue_client
@@ -174,7 +168,7 @@ module Karma
     end
 
     def discover_services
-      Karma.services.select{|c| c.constantize.new.is_a?(Karma::Service) rescue false}.map{|c| c.constantize}
+      Karma.services.select{|c| c.new.is_a?(Karma::Service) rescue false}
     end
 
     # keys: [:service, :type, :memory_max, :cpu_quota, :min_running, :max_running, :auto_restart, :auto_start]
