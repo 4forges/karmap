@@ -19,7 +19,7 @@ module Karma
     @@queue_client = nil
     @@logger = nil
 
-    attr_accessor :services, :engine
+    attr_accessor :engine
 
     def self.run
       @@running_instance ||= self.new
@@ -32,7 +32,6 @@ module Karma
     end
 
     def run
-      Karma.logger.error self.class.logger
       Watchdog.logger.info("\n\n\n")
       Watchdog.logger.info('****************')
       Watchdog.logger.info('Enter run method')
@@ -78,7 +77,6 @@ module Karma
     def command
       "bundle exec rails runner -e production \"Karma::Watchdog.run\""
     end
-    #################################################
 
     def self.export
       s = self.new
@@ -96,7 +94,7 @@ module Karma
     def self.logger
       if @@logger.nil?
         @@logger = Logger.new("log/karma-watchdog.log", shift_age = LOGGER_SHIFT_AGE, shift_size = LOGGER_SHIFT_SIZE)
-        @@logger.level = Logger::INFO #Logger::DEBUG #Logger::WARN
+        @@logger.level = Logger::DEBUG #Logger::DEBUG #Logger::WARN
       end
       @@logger
     end
@@ -105,34 +103,8 @@ module Karma
       Watchdog.logger.info("Started polling queue: #{Karma::Queue.incoming_queue_url}")
       queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
         Watchdog.logger.debug "Got message from queue #{msg.body}"
-        begin
-          body_hash = JSON.parse(msg.body).deep_symbolize_keys
-
-          case body_hash[:type]
-
-            when Karma::Messages::ProcessCommandMessage.name
-              Karma::Messages::ProcessCommandMessage.services = @@service_classes.map(&:to_s)
-              msg = Karma::Messages::ProcessCommandMessage.new(body_hash)
-              Karma.error(msg.errors) unless msg.valid?
-              handle_process_command(msg)
-
-            when Karma::Messages::ProcessConfigUpdateMessage.name
-              msg = Karma::Messages::ProcessConfigUpdateMessage.new(body_hash)
-              Karma.error(msg.errors) unless msg.valid?
-              handle_process_config_update(msg)
-
-            when Karma::Messages::ThreadConfigUpdateMessage.name
-              msg = Karma::Messages::ThreadConfigUpdateMessage.new(body_hash)
-              Karma.error(msg.errors) unless msg.valid?
-              handle_thread_config_update(msg)
-
-            else
-              Karma.error("Invalid message: #{body_hash[:type]} - #{body_hash.inspect}")
-          end
-        rescue Exception => e
-          Watchdog.logger.error "Error during message processing... #{msg.inspect}"
-          Watchdog.logger.error e.message
-        end
+        body = JSON.parse(msg.body).deep_symbolize_keys
+        handle_message(body)
       end
     end
 
@@ -153,6 +125,35 @@ module Karma
     def queue_client
       @@queue_client ||= Karma::Queue::Client.new
       return @@queue_client
+    end
+
+    def handle_message(message)
+      begin
+        case message[:type]
+
+          when Karma::Messages::ProcessCommandMessage.name
+            Karma::Messages::ProcessCommandMessage.services = @@service_classes.map(&:to_s)
+            msg = Karma::Messages::ProcessCommandMessage.new(message)
+            Karma.error(msg.errors) unless msg.valid?
+            handle_process_command(msg)
+
+          when Karma::Messages::ProcessConfigUpdateMessage.name
+            msg = Karma::Messages::ProcessConfigUpdateMessage.new(message)
+            Karma.error(msg.errors) unless msg.valid?
+            handle_process_config_update(msg)
+
+          when Karma::Messages::ThreadConfigUpdateMessage.name
+            msg = Karma::Messages::ThreadConfigUpdateMessage.new(message)
+            Karma.error(msg.errors) unless msg.valid?
+            handle_thread_config_update(msg)
+
+          else
+            Karma.error("Invalid message: #{message[:type]} - #{message.inspect}")
+        end
+      rescue Exception => e
+        Watchdog.logger.error "Error during message processing... #{message.inspect}"
+        Watchdog.logger.error e.message
+      end
     end
 
     def handle_process_command(msg)
