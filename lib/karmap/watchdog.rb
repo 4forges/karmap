@@ -213,9 +213,12 @@ module Karma
       service = cls.new
       cls.update_thread_config(msg.to_config)
 
-      s = TCPSocket.new('127.0.0.1', service.class.config_port)
-      s.puts({ log_level: service.class.config_log_level, num_threads: service.class.config_num_threads }.to_json)
-      s.close
+      running_instances = engine.running_instances_for_service(service) #keys: [:pid, :full_name, :port]
+      running_instances.each do |instance|
+        s = TCPSocket.new('127.0.0.1', i.port)
+        s.puts({ log_level: service.class.config_log_level, num_threads: service.class.config_num_threads }.to_json)
+        s.close
+      end
     end
 
   end
