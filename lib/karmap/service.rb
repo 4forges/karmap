@@ -20,12 +20,16 @@ module Karma
 
       @running = false
       @thread_pool = Karma::Thread::ThreadPool.new(Proc.new { perform }, { log_prefix: self.log_prefix })
-      @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(@thread_config)
+      @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(@thread_config, env_port)
       @sleep_time = 1
     end
 
+    def env_port
+      ENV['PORT'] || 8899 # port comes from systemd unit file environment, 8899 is for testing
+    end
+    
     def log_prefix
-      "log/#{self.name}-#{self.class.config_port}"
+      "log/#{self.name}-#{self.env_port}"
     end
 
     def name
