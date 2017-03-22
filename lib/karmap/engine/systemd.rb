@@ -28,13 +28,18 @@ module Karma::Engine
 
     def get_process_status_message(pid)
       status = show_service_by_pid(pid)
-      return Karma::Messages::ProcessStatusUpdateMessage.new(
-        host: ::Socket.gethostname,
-        project: Karma.karma_project_id,
-        service: status.values[0].name,
-        pid: status.values[0].pid,
-        status: status.values[0].status
-      )
+      Karma.logger.debug "pid: #{pid}, status: #{status}"
+      if status.present?
+        return Karma::Messages::ProcessStatusUpdateMessage.new(
+          host: ::Socket.gethostname,
+          project: Karma.karma_project_id,
+          service: status.values[0].name,
+          pid: status.values[0].pid,
+          status: status.values[0].status
+        )
+      else
+        return Karma::Messages::ProcessStatusUpdateMessage.new({})
+      end
     end
 
     def enable_service(service, params = {})

@@ -1,10 +1,12 @@
 require 'karmap'
 require 'karmap/service_config'
+require 'karmap/service_message'
 
 module Karma
 
   class Service
     include Karma::ServiceConfig
+    include Karma::ServiceMessage
 
     LOGGER_SHIFT_AGE = 2
     LOGGER_SHIFT_SIZE = 52428800
@@ -83,23 +85,23 @@ module Karma
     def run
       Signal.trap('INT') do
         puts 'int trapped'
-        thread_config[:running] = false
+        @running = false
       end
       Signal.trap('TERM') do
         puts 'term trapped'
-        thread_config[:running] = false
+        @running = false
       end
 
       before_start
       @thread_config_reader.start
-      thread_config[:running] = true
+      @running = true
       after_start
 
       # notify queue after start
       message = engine.get_process_status_message($$)
       notifier.notify(message)
 
-      while thread_config[:running] do
+      while @running do
 
         # notify queue each loop
         message = engine.get_process_status_message($$)
@@ -123,7 +125,7 @@ module Karma
       message = Karma::Messages::ProcessRegisterMessage.new(
         host: ::Socket.gethostname,
         project: Karma.karma_project_id,
-        service: full_name
+        service: self.name
       )
       notifier.notify(message)
     end

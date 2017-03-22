@@ -66,9 +66,25 @@ module Karma
         end
       end
 
+      def to_process_config
+        Hash.new.tap do |h|
+          [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart, :port].each do |k|
+            h[k] = self.send("config_#{k}")
+          end
+        end
+      end
+
       def update_thread_config(config)
         [:num_threads, :log_level].each do |k|
           self.send(k, config[k])
+        end
+      end
+
+      def to_thread_config
+        Hash.new.tap do |h|
+          [:num_threads, :log_level].each do |k|
+            h[k] = self.send("config_#{k}")
+          end
         end
       end
 

@@ -102,7 +102,7 @@ module Karma
     end
 
     def perform
-      Watchdog.logger.info('Started polling queue')
+      Watchdog.logger.info("Started polling queue: #{Karma::Queue.incoming_queue_url}")
       queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
         Watchdog.logger.debug "Got message from queue #{msg.body}"
         begin
