@@ -182,6 +182,7 @@ module Karma
     end
 
     def maintain_worker_count(service)
+      service.class.port(33000) if service.class.config_port.nil? #TODO!!!!!!!
       running_instances = engine.running_instances_for_service(service) #keys: [:pid, :full_name, :port]
       num_running = running_instances.size
       all_ports_max = ( service.class.config_port..service.class.config_port + service.class.config_max_running - 1 ).to_a
@@ -215,10 +216,17 @@ module Karma
       cls.update_thread_config(msg.to_config)
 
       running_instances = engine.running_instances_for_service(service) #keys: [:pid, :full_name, :port]
-      running_instances.each do |instance|
-        s = TCPSocket.new('127.0.0.1', i.port)
-        s.puts({ log_level: service.class.config_log_level, num_threads: service.class.config_num_threads }.to_json)
-        s.close
+      running_instances.each do |k, instance|
+        puts instance.inspect
+        begin
+          s = TCPSocket.new('127.0.0.1', instance.port)
+          s.puts({ log_level: service.class.config_log_level, num_threads: service.class.config_num_threads }.to_json)
+          s.close
+        rescue Exception => e
+          puts e.message
+          
+        end
+        
       end
     end
 
