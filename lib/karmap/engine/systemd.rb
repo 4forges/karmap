@@ -47,6 +47,7 @@ module Karma::Engine
     end
 
     def start_service(service, params = {})
+      service.class.port(33000) if service.class.config_port.nil? #TODO!!!!!!!
       # get first stopped instance name and start it
       Karma.logger.debug("starting #{service.full_name}")
       status = show_service(service)
@@ -110,6 +111,7 @@ module Karma::Engine
 
       # check if there are less instances than max, and create if needed
       elsif instances.size < max
+        service.class.port(33000) if service.class.config_port.nil? #TODO!!!!!!!
         (instances.size+1..max)
           .map{ |num| "#{service.full_name}@#{service.class.config_port+(num-1)}.service" }
           .each do |instance_name|

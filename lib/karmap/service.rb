@@ -11,7 +11,7 @@ module Karma
     LOGGER_SHIFT_AGE = 2
     LOGGER_SHIFT_SIZE = 52428800
 
-    attr_accessor :notifier, :engine, :process_config, :thread_config
+    attr_accessor :notifier, :engine, :thread_config
 
     @@running_instance = nil
 
@@ -24,6 +24,7 @@ module Karma
       @thread_pool = Karma::Thread::ThreadPool.new(Proc.new { perform }, { log_prefix: self.log_prefix })
       @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(@thread_config, env_port)
       @sleep_time = 1
+      @thread_config = {}
     end
 
     def env_port
@@ -105,10 +106,11 @@ module Karma
 
         # notify queue each loop
         message = engine.get_process_status_message($$)
-        notifier.notify(message)
+        notifier.notify(message) if message.present?
 
-        thread_config.merge!(@thread_config_reader.config)
-        @thread_pool.manage(thread_config)
+        thread_config = thread_config.merge(@thread_config_reader.config) if @thread_config_reader.config.present?
+        @thread_pool.manage(thread_config) if thread_config.present?
+        
         sleep(@sleep_time)
       end
 

@@ -52,7 +52,7 @@ module Karma
     end
   end
 
-  class Exception < ::Exception; end
+  #class Exception < ::Exception; end #TODO!!!!!!!
 
   def self.error(message)
     raise Karma::Exception.new(message)

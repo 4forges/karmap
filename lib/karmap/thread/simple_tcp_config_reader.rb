@@ -5,7 +5,7 @@ module Karma::Thread
     attr_reader :config
 
     def initialize(default_config, port)
-      @config = default_config
+      @config = default_config||{}
       @port = port
     end
 

@@ -19,13 +19,14 @@ module Karma
         send_to_queue(msg)
       end
 
-      def stop
-        msg = Karma::Messages::ProcessCommandMessage.new(service: self.new.class.name, command: 'stop')
+      def stop(pid)
+        msg = Karma::Messages::ProcessCommandMessage.new(service: self.new.class.name, command: 'stop', pid: pid)
         send_to_queue(msg)
       end
 
       def process_config_update(config)
-        h = self.to_process_config.merge!(config).merge!(service: self.new.class.name)
+        h = self.to_process_config.merge!(config).merge!(service: self.new.class.name).merge!({:memory_max=>1000, :cpu_quota=>50, :auto_start=>true})
+        Karma.logger.info(h)
         msg = Karma::Messages::ProcessConfigUpdateMessage.new(h)
         send_to_queue(msg)
       end
