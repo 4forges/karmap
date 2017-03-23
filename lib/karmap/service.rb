@@ -128,6 +128,9 @@ module Karma
       notifier.notify(message)
     end
 
+    def running_thread_count
+      @thread_pool.running.size
+    end
 
   end
 end
