@@ -150,7 +150,7 @@ module Karma
           else
             Karma.error("Invalid message: #{message[:type]} - #{message.inspect}")
         end
-      rescue Exception => e
+      rescue ::Exception => e
         Watchdog.logger.error "Error during message processing... #{message.inspect}"
         Watchdog.logger.error e.message
       end
@@ -222,7 +222,7 @@ module Karma
           s = TCPSocket.new('127.0.0.1', instance.port)
           s.puts({ log_level: service.class.config_log_level, num_threads: service.class.config_num_threads }.to_json)
           s.close
-        rescue Exception => e
+        rescue ::Exception => e
           puts e.message
           
         end

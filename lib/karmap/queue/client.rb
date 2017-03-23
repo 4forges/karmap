@@ -13,7 +13,7 @@ module Karma::Queue
         begin
           Karma.logger.debug "MSG: #{msg}"
           yield(msg)
-        rescue Exception => e
+        rescue ::Exception => e
           Karma.logger.error("ERROR")
         end
         Karma.logger.debug("delete_message")
