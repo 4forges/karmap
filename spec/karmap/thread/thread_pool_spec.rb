@@ -1,37 +1,28 @@
 require 'spec_helper'
 
-describe Karma::Engine::Systemd do
+describe Karma::Thread::ThreadPool do
 
-  let(:service) { TestService.new }
-
-  it 'spawns 2 threads' do
-    running = ::Thread.new do
-      service.run
-    end
-    wait_for(service.running_thread_count).to eq(2)
-    running.exit
+  def set_num_threads(service, num)
+    s = TCPSocket.new('127.0.0.1', service.env_port)
+    s.puts({ log_level: 0, num_threads: num }.to_json)
+    s.close
   end
 
-  it 'spawns more threads after config update' do
-    running = ::Thread.new do
+  it 'spawns 2 threads and change at runtime' do
+    service = TestService.new
+    ::Thread.new do
       service.run
     end
-    wait_for(service.running_thread_count).to eq(2)
-    service.update_thread_config(num_threads: 3)
-    sleep(1)
-    expect(service.running_thread_count).to eq(3)
-    running.exit
-  end
+    wait_for {service.running_thread_count}.to eq(2)
 
-  it 'kills threads after config update' do
-    running = ::Thread.new do
-      service.run
-    end
-    wait_for(service.running_thread_count).to eq(2)
-    service.update_thread_config(num_threads: 1)
-    sleep(1)
-    expect(service.running_thread_count).to eq(1)
-    running.exit
+    set_num_threads(service, 3)
+    wait_for {service.running_thread_count}.to eq(3)
+
+    set_num_threads(service, 1)
+    wait_for {service.running_thread_count}.to eq(1)
+
+    service.stop
+    wait_for {service.running_thread_count}.to eq(0)
   end
 
 end
