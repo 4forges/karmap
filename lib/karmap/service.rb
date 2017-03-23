@@ -9,16 +9,15 @@ module Karma
     LOGGER_SHIFT_AGE = 2
     LOGGER_SHIFT_SIZE = 52428800
 
-    attr_accessor :notifier, :engine, :thread_config
+    attr_accessor :notifier, :engine, :thread_config_reader
 
     @@running_instance = nil
 
     def initialize
       @engine = Karma.engine_class.new
       @notifier = Karma.notifier_class.new
-      @thread_config = self.class.to_thread_config
       @thread_pool = Karma::Thread::ThreadPool.new(Proc.new { perform }, { log_prefix: self.log_prefix })
-      @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(@thread_config, env_port)
+      @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(self.class.to_thread_config, env_port)
       @sleep_time = 1
       @running = false
     end
@@ -100,8 +99,8 @@ module Karma
         message = engine.get_process_status_message($$)
         notifier.notify(message) if message.present? && message.valid?
 
-        self.thread_config = self.thread_config.merge(@thread_config_reader.config) if @thread_config_reader.config.present?
-        @thread_pool.manage(self.thread_config) if self.thread_config.present?
+        self.class.update_thread_config(@thread_config_reader.config) if @thread_config_reader.config.present?
+        @thread_pool.manage(self.class.to_thread_config)
 
         sleep(@sleep_time)
       end
