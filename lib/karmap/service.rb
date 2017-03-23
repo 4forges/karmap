@@ -6,9 +6,6 @@ module Karma
   class Service
     include Karma::ServiceConfig
 
-    LOGGER_SHIFT_AGE = 2
-    LOGGER_SHIFT_SIZE = 52428800
-
     attr_accessor :notifier, :engine, :thread_config_reader
 
     @@running_instance = nil
@@ -27,7 +24,7 @@ module Karma
     end
 
     def log_prefix
-      "log/#{self.name}-#{self.env_port}"
+      "#{self.name}@#{self.env_port}"
     end
 
     def name

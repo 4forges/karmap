@@ -21,14 +21,14 @@ module Karma
   define_setting :engine, 'systemd'
   define_setting :notifier, 'queue'
   define_setting :watchdog_port, 32000
+  define_setting :log_folder, 'log' # custom log folder
   define_setting :template_folder # custom engine templates folder
 
   class << self
     attr_writer :logger
 
     def logger
-      # filename = $stdout
-      filename = 'karma.log'
+      filename = "#{Karma.log_folder}/karma.log"
       @logger ||= Logger.new(filename, Karma::LOGGER_SHIFT_AGE, Karma::LOGGER_SHIFT_SIZE, level: Logger::DEBUG, progname: self.name)
     end
 

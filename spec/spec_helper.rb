@@ -21,7 +21,6 @@ RSpec.configure do |config|
 
   config.before(:each) do
     Karma.logger = Logger.new(STDOUT)
-    Karma::Watchdog.logger = Logger.new(STDOUT)
     Karma.configuration do |config|
       config.user = 'extendi'
       config.project_name = 'karmat'
@@ -29,9 +28,8 @@ RSpec.configure do |config|
       config.karma_user_id = 'bc74ed7c0ec9aacf3513f3692d09a578'
       config.aws_access_key_id = 'AKIAIU4ZJVPJ6JGQEDQQ'
       config.aws_secret_access_key = '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'
-      # config.engine = 'system_raw'
       config.services = [TestService]
-      # config.notifier = 'queue'
+      config.log_folder = 'spec/log'
     end
   end
 

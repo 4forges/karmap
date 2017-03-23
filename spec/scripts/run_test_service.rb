@@ -1,5 +1,6 @@
 require './spec/karmap/models/test_service'
 
+Karma.logger = Logger.new($stdout)
 Karma.configuration do |config|
   config.user = 'extendi'
   config.project_name = 'karmat'
@@ -8,6 +9,7 @@ Karma.configuration do |config|
   config.aws_access_key_id = 'AKIAIU4ZJVPJ6JGQEDQQ'
   config.aws_secret_access_key = '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'
   config.services = [TestService]
+  config.log_folder = 'spec/log'
 end
 
 TestService.new.run

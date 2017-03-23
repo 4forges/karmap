@@ -3,24 +3,16 @@ module Karma::Thread
   class ManagedThread
 
     def self.internal_key_prefix
-      "Karma::Thread::ManagedThread_"
-    end
-
-    def thread_logger
-      if Thread.current[:logger].nil?
-        Thread.current[:logger] = Logger.new("#{@log_prefix}-#{Thread.current[:thread_index]}.log", shift_age = Karma::Service::LOGGER_SHIFT_AGE, shift_size = Karma::Service::LOGGER_SHIFT_SIZE)
-        Thread.current[:logger].level = Logger::DEBUG #Logger::DEBUG #Logger::WARN
-      end
-      Thread.current[:logger]
+      'Karma::Thread::ManagedThread_'
     end
 
     def initialize(blocks = {}, options = {})
       @thread = nil
       @log_prefix = options[:log_prefix]
       @running_sleep_time = options[:running_sleep_time]||1
-      blocks[:starting] ||= Proc.new { thread_logger.debug "#{$$}::#{Thread.current.to_s} Starting" }
-      blocks[:finishing] ||= Proc.new { thread_logger.debug "#{$$}::#{Thread.current.to_s} Finishing" }
-      blocks[:running] ||= Proc.new { thread_logger.debug "#{$$}::#{Thread.current.to_s} Running" }
+      blocks[:starting] ||= Proc.new { logger.debug "#{$$}::#{Thread.current.to_s} Starting" }
+      blocks[:finishing] ||= Proc.new { logger.debug "#{$$}::#{Thread.current.to_s} Finishing" }
+      blocks[:running] ||= Proc.new { logger.debug "#{$$}::#{Thread.current.to_s} Running" }
       @thread = ::Thread.new do
         Thread.current[:status] = :initing
         Thread.current[:initing_at] = Time.now
@@ -30,7 +22,7 @@ module Karma::Thread
         Thread.current[:is_managed_thread] = true
         Thread.current[:status] = :inited
         Thread.current[:thread_index] = options[:thread_index]
-        thread_logger.debug "#{$$}::#{Thread.current.to_s} inited"
+        logger.debug "#{$$}::#{Thread.current.to_s} inited"
         Thread.stop
         outer_block(blocks)
       end
@@ -42,7 +34,7 @@ module Karma::Thread
     end
 
     def set_log_level(level)
-      thread_logger.level = level
+      logger.level = level
     end
 
     def start
@@ -96,31 +88,45 @@ module Karma::Thread
           # logger.debug "#{$$}::#{Thread.current.to_s} loop start"
           case @thread[:status]
           when :running
-            # thread_logger.debug "#{$$}::#{Thread.current.to_s} pre running"
+            # logger.debug "#{$$}::#{Thread.current.to_s} pre running"
             blocks[:running].call
-            # thread_logger.debug "#{$$}::#{Thread.current.to_s} post running"
+            # logger.debug "#{$$}::#{Thread.current.to_s} post running"
           when :stopping
           when :error
-            # thread_logger.debug "#{$$}::#{Thread.current.to_s} thread in error. sleep 10 sec"
+            # logger.debug "#{$$}::#{Thread.current.to_s} thread in error. sleep 10 sec"
             sleep 10
           end
           sleep @running_sleep_time
-          # thread_logger.debug "#{$$}::#{Thread.current.to_s} loop end"
+          # logger.debug "#{$$}::#{Thread.current.to_s} loop end"
         rescue ::Exception => e
           # full_log_exception(logger: @@logger, message: "Thread #{$$} in error", e: e, send_notify_now: true)
           @thread[:status] == :error
         end
       end
-      # thread_logger.debug "#{$$}::#{Thread.current.to_s} pre finishing"
+      # logger.debug "#{$$}::#{Thread.current.to_s} pre finishing"
       blocks[:finishing].call
-      # thread_logger.debug "#{$$}::#{Thread.current.to_s} post finishing"
+      # logger.debug "#{$$}::#{Thread.current.to_s} post finishing"
       @thread[:status] = :stopped
       Thread.current[:stopped_at] = Time.now
     end
 
     def running_default_block
-      thread_logger.debug "#{$$}::#{Thread.current.to_s} #{Time.now}"
+      logger.debug("#{$$}::#{Thread.current.to_s} #{Time.now}")
     end
+
+    private ##############################
+
+    def logger
+      Thread.current[:logger] ||= Logger.new(
+          "#{Karma.log_folder}/#{@log_prefix}-#{Thread.current[:thread_index]}.log",
+          Karma::LOGGER_SHIFT_AGE,
+          Karma::LOGGER_SHIFT_SIZE,
+          level: Logger::INFO,
+          progname: "#{@log_prefix}-#{Thread.current[:thread_index]}"
+      )
+      return Thread.current[:logger]
+    end
+
   end
 
 end
