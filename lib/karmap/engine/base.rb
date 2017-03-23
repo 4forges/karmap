@@ -20,10 +20,6 @@ module Karma::Engine
       Karma.user
     end
 
-    def log_directory
-      "/home/#{Karma.user}/log/#{project_name}" # TODO usare nel template
-    end
-
     def work_directory
       Dir.pwd
     end
@@ -63,7 +59,6 @@ module Karma::Engine
     def export_service(service)
       Karma::Engine.error('Must specify a location') unless location
       FileUtils.mkdir_p(location) rescue Karma::Engine.error("Could not create: #{location}")
-      # chown(user, log_directory) TODO considerare se farlo quando la cartella dei log sara' configurabile
     end
 
     def remove_service(service)

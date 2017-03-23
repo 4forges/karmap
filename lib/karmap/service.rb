@@ -43,10 +43,6 @@ module Karma
       "rails runner -e production \"#{self.class.name}.run\"" # override if needed
     end
 
-    def log_location
-      nil # override this
-    end
-
     def perform
       # abstract, override this
       raise NotImplementedError

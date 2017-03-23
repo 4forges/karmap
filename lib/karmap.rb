@@ -1,12 +1,15 @@
 require 'logger'
 require 'active_support'
 require 'active_support/core_ext'
+require 'karma_messages'
 require 'karmap/configuration'
-require "karma_messages"
 
 module Karma
 
   extend Configuration
+
+  LOGGER_SHIFT_AGE = 2
+  LOGGER_SHIFT_SIZE = 52428800
 
   define_setting :user # deploy user (required)
   define_setting :project_name # project name as string (required)
@@ -24,11 +27,9 @@ module Karma
     attr_writer :logger
 
     def logger
-      # filename = 'karmap.log'
-      filename = $stdout
-      @logger ||= Logger.new(filename).tap do |log|
-        log.progname = self.name
-      end
+      # filename = $stdout
+      filename = 'karma.log'
+      @logger ||= Logger.new(filename, Karma::LOGGER_SHIFT_AGE, Karma::LOGGER_SHIFT_SIZE, level: Logger::DEBUG, progname: self.name)
     end
 
     def notifier_class
