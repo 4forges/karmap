@@ -120,7 +120,7 @@ describe Karma::Engine::Systemd do
 
     it 'engine starts service instance' do
       engine.start_service(service)
-      sleep(2)
+      wait_for {engine.show_service(service)}.to_not be_empty
       status = engine.show_service(service)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karmat-testservice@33000.service')
@@ -129,7 +129,7 @@ describe Karma::Engine::Systemd do
 
     it 'engine stops service instance' do
       engine.start_service(service)
-      sleep(2)
+      wait_for {engine.show_service(service)}.to_not be_empty
       status = engine.show_service(service)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karmat-testservice@33000.service')
@@ -137,14 +137,14 @@ describe Karma::Engine::Systemd do
       pid = status.values[0].pid
 
       engine.stop_service(pid)
-      sleep(2)
+      wait_for{engine.show_service(service)}.to be_empty
       status = engine.show_service(service)
       expect(status.size).to eq(0)
     end
 
     it 'engine restarts service instance' do
       engine.start_service(service)
-      sleep(2)
+      wait_for {engine.show_service(service)}.to_not be_empty
       status = engine.show_service(service)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karmat-testservice@33000.service')
@@ -152,7 +152,7 @@ describe Karma::Engine::Systemd do
       old_pid = status.values[0].pid
 
       engine.restart_service(old_pid)
-      sleep(2)
+      wait_for {engine.show_service(service)}.to_not be_empty
       status = engine.show_service(service)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karmat-testservice@33000.service')
