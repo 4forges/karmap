@@ -148,7 +148,7 @@ module Karma
             handle_thread_config_update(msg)
 
           else
-            Karma.error("Invalid message: #{message[:type]} - #{message.inspect}")
+            Karma.error("Invalid message type: #{message[:type]} - #{message.inspect}")
         end
       rescue ::Exception => e
         Watchdog.logger.error "Error during message processing... #{message.inspect}"
