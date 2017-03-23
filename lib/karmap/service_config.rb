@@ -71,6 +71,7 @@ module Karma
         [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart].each do |k|
           self.send(k, config[k])
         end
+        to_process_config
       end
 
       def to_process_config
@@ -85,6 +86,7 @@ module Karma
         [:num_threads, :log_level].each do |k|
           self.send(k, config[k])
         end
+        to_thread_config
       end
 
       def to_thread_config
