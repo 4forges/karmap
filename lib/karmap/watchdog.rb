@@ -132,6 +132,7 @@ module Karma
         case message[:type]
 
           when Karma::Messages::ProcessCommandMessage.name
+            # set the array of discovered services for validation
             Karma::Messages::ProcessCommandMessage.services = @@service_classes.map(&:to_s)
             msg = Karma::Messages::ProcessCommandMessage.new(message)
             Karma.error(msg.errors) unless msg.valid?
