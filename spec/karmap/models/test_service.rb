@@ -1,4 +1,5 @@
-require 'spec_helper'
+require_relative 'concerns/service_message'
+require 'karmap'
 
 class TestService < Karma::Service
 
@@ -10,6 +11,10 @@ class TestService < Karma::Service
   auto_restart false
 
   num_threads  2
+
+  def command
+    'bundle exec ruby spec/scripts/run_test_service.rb'
+  end
 
   def perform
     msg = "#{Time.now} :: process #{$$} :: thread #{Thread.current.object_id} :: method #{__method__}"
@@ -36,7 +41,7 @@ class TestService < Karma::Service
   private ##########
 
   def folder
-    'log/'
+    'spec/log'
   end
 
 end

@@ -32,7 +32,7 @@ class MockService < Karma::Service
   private ##########
 
   def folder
-    'log/'
+    'log'
   end
 
 end
