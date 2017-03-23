@@ -43,6 +43,10 @@ module Karma::Thread
 
     # private
 
+    def all
+      Thread.list.select{|t| (t[:internal_key]||"").starts_with?(Karma::Thread::ManagedThread.internal_key_prefix)}
+    end
+    
     def running
       @list.select{|thread| thread.running?}
     end
@@ -107,7 +111,7 @@ module Karma::Thread
     end
 
     def reload_list
-      @list = Thread.list.select{|t| (t[:internal_key]||"").starts_with?(Karma::Thread::ManagedThread.internal_key_prefix)}.map{|t| t[:parent_class]}
+      @list = all.map{|t| t[:parent_class]}
     end
 
   end

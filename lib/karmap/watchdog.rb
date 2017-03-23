@@ -8,8 +8,6 @@ module Karma
 
     port Karma.watchdog_port
 
-    LOGGER_SHIFT_AGE = 2
-    LOGGER_SHIFT_SIZE = 52428800
     SHUTDOWN_SEC = 0
     START_COMMAND = 'start'
     STOP_COMMAND = 'stop'
@@ -17,7 +15,6 @@ module Karma
     @@service_classes = nil
     @@running_instance = nil
     @@queue_client = nil
-    @@logger = nil
 
     attr_accessor :engine
 
@@ -63,6 +60,15 @@ module Karma
       end
     end
 
+    class << self
+      attr_writer :logger
+
+      def logger
+        filename = 'karma-watchdog.log'
+        @logger ||= Logger.new(filename, Karma::LOGGER_SHIFT_AGE, Karma::LOGGER_SHIFT_SIZE, level: Logger::DEBUG, progname: self.name)
+      end
+    end
+
     #################################################
     # watchdog config (for export)
     #################################################
@@ -90,14 +96,6 @@ module Karma
     end
 
     private ##############################
-
-    def self.logger
-      if @@logger.nil?
-        @@logger = Logger.new("log/karma-watchdog.log", shift_age = LOGGER_SHIFT_AGE, shift_size = LOGGER_SHIFT_SIZE)
-        @@logger.level = Logger::DEBUG #Logger::DEBUG #Logger::WARN
-      end
-      @@logger
-    end
 
     def perform
       Watchdog.logger.info("Started polling queue: #{Karma::Queue.incoming_queue_url}")
@@ -218,16 +216,14 @@ module Karma
 
       running_instances = engine.running_instances_for_service(service) #keys: [:pid, :full_name, :port]
       running_instances.each do |k, instance|
-        puts instance.inspect
         begin
           s = TCPSocket.new('127.0.0.1', instance.port)
           s.puts({ log_level: service.class.config_log_level, num_threads: service.class.config_num_threads }.to_json)
           s.close
         rescue ::Exception => e
-          puts e.message
-          
+          Watchdog.logger.error("Error during handle_thread_config_update: #{e.message}")
         end
-        
+
       end
     end
 
