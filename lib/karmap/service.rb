@@ -73,15 +73,19 @@ module Karma
       @@running_instance ||= self.new
       @@running_instance.run
     end
+    
+    def stop
+      @running = false
+    end
 
     def run
       Signal.trap('INT') do
         puts 'int trapped'
-        @running = false
+        stop
       end
       Signal.trap('TERM') do
         puts 'term trapped'
-        @running = false
+        stop
       end
 
       before_start
@@ -106,7 +110,7 @@ module Karma
       end
 
       before_stop
-      @thread_pool.stop_all
+      stop_all_threads
       after_stop
 
       # notify queue after stop
@@ -125,6 +129,10 @@ module Karma
 
     def running_thread_count
       @thread_pool.running.size
+    end
+    
+    def stop_all_threads
+      @thread_pool.stop_all
     end
 
   end
