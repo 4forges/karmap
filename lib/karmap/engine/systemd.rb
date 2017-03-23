@@ -69,6 +69,7 @@ module Karma::Engine
       # https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/System_Administrators_Guide/sect-Managing_Services_with_systemd-Unit_Files.html
       # https://wiki.archlinux.org/index.php/Systemd/User
       # https://fedoramagazine.org/systemd-template-unit-files/
+      # https://www.freedesktop.org/software/systemd/man/systemctl.html
 
       Karma.logger.debug("started systemd export for service #{service.name}")
 

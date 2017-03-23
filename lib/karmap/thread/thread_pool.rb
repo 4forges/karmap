@@ -27,7 +27,7 @@ module Karma::Thread
       # Karma.logger.debug '#prune freezed and stopped'
       num_pruned = prune_list
       # Karma.logger.debug "num_pruned: #{num_pruned}"
-      while (running.size +  initing.size) < max_workers
+      while (running.size + initing.size) < max_workers
         # Karma.logger.debug 'inited new thread'
         add({running: @task_block}, { running_sleep_time: @current_config[:sleep_time], log_prefix: @log_prefix })
       end
@@ -36,15 +36,12 @@ module Karma::Thread
       end
 
       # Karma.logger.info "#allocated threads:"
-      @list.collect do |thread_string|
-        # Karma.logger.info thread_string
-      end
-      
-      #
+      # @list.each{ |thread_string| Karma.logger.info(thread_string) }
+
       set_log_level(log_level)
     end
 
-    #private
+    # private
 
     def running
       @list.select{|thread| thread.running?}
