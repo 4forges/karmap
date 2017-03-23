@@ -35,7 +35,7 @@ module Karma
       case Karma.notifier
         when 'queue'
           Karma::Queue::QueueNotifier
-        when 'log'
+        when 'logger'
           Karma::Queue::LoggerNotifier
       end
     end
@@ -44,15 +44,15 @@ module Karma
       case Karma.engine
         when 'systemd'
           Karma::Engine::Systemd
-        when 'string_out'
-          Karma::Engine::StringOut
+        when 'logger'
+          Karma::Engine::Logger
         when 'system_raw'
           Karma::Engine::SystemRaw
       end
     end
   end
 
-  #class Exception < ::Exception; end #TODO!!!!!!!
+  class Exception < ::Exception; end
 
   def self.error(message)
     raise Karma::Exception.new(message)

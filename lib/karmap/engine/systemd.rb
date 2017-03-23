@@ -26,28 +26,11 @@ module Karma::Engine
       service_status(service: "#{project_name}-*@*")
     end
 
-    def get_process_status_message(pid)
-      status = show_service_by_pid(pid)
-      Karma.logger.debug "pid: #{pid}, status: #{status}"
-      if status.present?
-        return Karma::Messages::ProcessStatusUpdateMessage.new(
-          host: ::Socket.gethostname,
-          project: Karma.karma_project_id,
-          service: status.values[0].name,
-          pid: status.values[0].pid,
-          status: status.values[0].status
-        )
-      else
-        return Karma::Messages::ProcessStatusUpdateMessage.new({})
-      end
-    end
-
-    def enable_service(service, params = {})
+    def enable_service(service)
       `systemctl --user enable #{service.full_name}`
     end
 
-    def start_service(service, params = {})
-      service.class.port(33000) if service.class.config_port.nil? #TODO!!!!!!!
+    def start_service(service)
       # get first stopped instance name and start it
       Karma.logger.debug("starting #{service.full_name}")
       status = show_service(service)
@@ -62,7 +45,7 @@ module Karma::Engine
       return false
     end
 
-    def stop_service(pid, params = {})
+    def stop_service(pid)
       # get instance by pid and stop it
       status = show_service_by_pid(pid)
       instance_name = status.keys[0]
@@ -70,7 +53,7 @@ module Karma::Engine
       `systemctl --user stop #{instance_name}`
     end
 
-    def restart_service(pid, params = {})
+    def restart_service(pid)
       # get instance by pid and restart it
       status = show_service_by_pid(pid)
       instance_name = status.keys[0]
@@ -78,7 +61,7 @@ module Karma::Engine
       `systemctl --user restart #{instance_name}`
     end
 
-    def export_service(service, params = {})
+    def export_service(service)
 
       # REFERENCE
       # https://www.digitalocean.com/community/tutorials/how-to-use-systemctl-to-manage-systemd-services-and-units
@@ -111,7 +94,6 @@ module Karma::Engine
 
       # check if there are less instances than max, and create if needed
       elsif instances.size < max
-        service.class.port(33000) if service.class.config_port.nil? #TODO!!!!!!!
         (instances.size+1..max)
           .map{ |num| "#{service.full_name}@#{service.class.config_port+(num-1)}.service" }
           .each do |instance_name|
@@ -132,7 +114,7 @@ module Karma::Engine
       Karma.logger.debug("end systemd export for service #{service.name}")
     end
 
-    def remove_service(service, params = {})
+    def remove_service(service)
       Dir["#{location}/#{service.full_name}*.service"]
           .concat(Dir["#{location}/#{service.full_name}.target"])
           .concat(Dir["#{location}/#{service.full_name}*.target.wants/*"])
@@ -143,10 +125,6 @@ module Karma::Engine
       Dir["#{location}/#{service.full_name}*.target.wants"].each do |file|
         clean_dir file
       end
-    end
-
-    def running_instances_for_service(service, params = {})
-      show_service(service).select{|k, v| v.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}
     end
 
     private ####################

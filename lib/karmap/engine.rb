@@ -12,5 +12,5 @@ end
 
 require 'karmap/engine/base'
 require 'karmap/engine/systemd'
-require 'karmap/engine/string_out'
+require 'karmap/engine/logger'
 require 'karmap/engine/system_raw'

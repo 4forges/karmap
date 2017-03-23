@@ -44,11 +44,6 @@ module Karma::Engine
       # abstract
     end
 
-    def get_process_status_message(pid)
-      # abstract
-      # must return a Karma::Messages::ProcessStatusUpdateMessage
-    end
-
     def enable_service(service, params = {})
       # abstract
     end
@@ -65,18 +60,33 @@ module Karma::Engine
       # abstract
     end
 
-    def export_service(service, params = {})
+    def export_service(service)
       Karma::Engine.error('Must specify a location') unless location
       FileUtils.mkdir_p(location) rescue Karma::Engine.error("Could not create: #{location}")
       # chown(user, log_directory) TODO considerare se farlo quando la cartella dei log sara' configurabile
     end
 
-    def remove_service(service, params = {})
+    def remove_service(service)
       # abstract
     end
 
+    def get_process_status_message(pid)
+      status = show_service_by_pid(pid)
+      if status.present?
+        return Karma::Messages::ProcessStatusUpdateMessage.new(
+          host: ::Socket.gethostname,
+          project: Karma.karma_project_id,
+          service: status.values[0].name,
+          pid: status.values[0].pid,
+          status: status.values[0].status
+        )
+      else
+        return Karma::Messages::ProcessStatusUpdateMessage.new({})
+      end
+    end
+
     def running_instances_for_service(service, params = {})
-      # abstract
+      show_service(service).select{|k, v| v.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}
     end
 
     private ######################################################################

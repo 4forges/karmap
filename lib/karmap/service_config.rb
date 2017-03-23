@@ -7,7 +7,7 @@ module Karma
       base.extend(ClassMethods)
 
       ################################################
-      # process configuration
+      # service configuration
       ################################################
       base.min_running(1)
       base.max_running(1)
@@ -23,6 +23,13 @@ module Karma
     end
 
     module ClassMethods
+
+      ################################################
+      # service configuration
+      ################################################
+      def port(val)
+        self.config_port = val
+      end
 
       def min_running(val)
         self.config_min_running = val
@@ -48,10 +55,9 @@ module Karma
         self.config_auto_restart = val
       end
 
-      def port(val)
-        self.config_port = val
-      end
-
+      #################################################
+      # thread configuration
+      #################################################
       def num_threads(val)
         self.config_num_threads = val
       end
@@ -61,14 +67,15 @@ module Karma
       end
 
       def update_process_config(config)
-        [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart, :port].each do |k|
+        # note: port does not change
+        [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart].each do |k|
           self.send(k, config[k])
         end
       end
 
       def to_process_config
         Hash.new.tap do |h|
-          [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart, :port].each do |k|
+          [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart].each do |k|
             h[k] = self.send("config_#{k}")
           end
         end

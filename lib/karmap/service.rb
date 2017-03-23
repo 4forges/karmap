@@ -1,12 +1,10 @@
 require 'karmap'
 require 'karmap/service_config'
-require 'karmap/service_message'
 
 module Karma
 
   class Service
     include Karma::ServiceConfig
-    include Karma::ServiceMessage
 
     LOGGER_SHIFT_AGE = 2
     LOGGER_SHIFT_SIZE = 52428800
@@ -18,19 +16,17 @@ module Karma
     def initialize
       @engine = Karma.engine_class.new
       @notifier = Karma.notifier_class.new
-
-
-      @running = false
       @thread_pool = Karma::Thread::ThreadPool.new(Proc.new { perform }, { log_prefix: self.log_prefix })
       @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(@thread_config, env_port)
       @sleep_time = 1
+      @running = false
       @thread_config = {}
     end
 
     def env_port
       ENV['PORT'] || 8899 # port comes from systemd unit file environment, 8899 is for testing
     end
-    
+
     def log_prefix
       "log/#{self.name}-#{self.env_port}"
     end
@@ -110,7 +106,7 @@ module Karma
 
         thread_config = thread_config.merge(@thread_config_reader.config) if @thread_config_reader.config.present?
         @thread_pool.manage(thread_config) if thread_config.present?
-        
+
         sleep(@sleep_time)
       end
 

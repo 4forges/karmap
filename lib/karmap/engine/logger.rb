@@ -2,7 +2,7 @@ require 'karmap/engine'
 
 module Karma::Engine
 
-  class SystemRaw < Base
+  class Logger < Base
 
     def reload
       Karma.logger.debug("Karma::Engine received #{__method__}")
@@ -25,17 +25,11 @@ module Karma::Engine
     end
 
     def start_service(service, params = {})
-      ::Thread.new do
-        Karma.logger.debug "system #{self.service.command}"
-        system self.service.command
-      end
+      Karma.logger.debug("Karma::Engine received #{__method__} for #{service.full_name}")
     end
 
     def stop_service(service, params = {})
-      ::Thread.new do
-        Karma.logger.debug "system kill #{params[:pid]}"
-        system "kill #{params[:pid]}"
-      end
+      Karma.logger.debug("Karma::Engine received #{__method__} for #{service.full_name}")
     end
 
     def restart_service(service, params = {})
