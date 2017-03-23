@@ -106,7 +106,7 @@ module Karma::Thread
           end
           sleep @running_sleep_time
           # thread_logger.debug "#{$$}::#{Thread.current.to_s} loop end"
-        rescue Exception => e
+        rescue ::Exception => e
           # full_log_exception(logger: @@logger, message: "Thread #{$$} in error", e: e, send_notify_now: true)
           @thread[:status] == :error
         end
