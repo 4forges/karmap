@@ -15,4 +15,4 @@ TimeoutStopSec=5
 <% if service.class.config_cpu_quota.present? %>CPUAccounting=true<% end %>
 <% if service.class.config_cpu_quota.present? %>CPUQuota=<%= service.class.config_cpu_quota %>%<% end %>
 <% if service.class.config_memory_max.present? %>MemoryAccounting=true<% end %>
-<% if service.class.config_memory_max.present? %>MemoryMax=<%= service.class.config_memory_max %><% end %>
+<% if service.class.config_memory_max.present? %>MemoryLimit=<%= service.class.config_memory_max %><% end %>
