@@ -6,6 +6,9 @@ rvm:
 
 before_install:
   - gem install bundler -v 1.13.6
+  - add-apt-repository ppa:pitti/systemd
+  - apt-get update
+  - apt-get install systemd libpam-systemd systemd-ui
 
 
 before_script:
