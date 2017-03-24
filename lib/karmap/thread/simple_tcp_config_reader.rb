@@ -25,6 +25,7 @@ module Karma::Thread
 
     def stop
       @server.close
+      Karma.logger.info "#{$$} - closed TCP server on port #{@port}"
       @thread.kill
     end
 

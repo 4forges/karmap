@@ -108,6 +108,7 @@ module Karma
 
       before_stop
       stop_all_threads
+      @thread_config_reader.stop
       after_stop
 
       # notify queue after stop

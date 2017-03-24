@@ -13,6 +13,7 @@ module Karma
       base.max_running(1)
       base.port(5000)
       base.auto_restart(true)
+      base.auto_start(true)
 
       #################################################
       # thread configuration
@@ -23,7 +24,7 @@ module Karma
     end
 
     module ClassMethods
-
+      
       ################################################
       # service configuration
       ################################################
