@@ -1,5 +1,7 @@
-os:
-  - linux
+env:
+  - distribution: Ubuntu
+    distribution_version: trusty
+    init: /sbin/init
 
 sudo: required
 language: ruby
