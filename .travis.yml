@@ -1,4 +1,7 @@
 env:
+  - ANSIBLE_VERSION: "1.9.5"
+  - ANSIBLE_VERSION: "2.1.2"
+  - ANSIBLE_VERSION: "2.2.1"
   - distribution: Ubuntu
     distribution_version: trusty
     init: /sbin/init
