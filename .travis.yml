@@ -6,4 +6,8 @@ sudo: false
 language: ruby
 rvm:
   - 2.3.3
-before_install: gem install bundler -v 1.13.6
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get systemctl
+  - gem install bundler -v 1.13.6
