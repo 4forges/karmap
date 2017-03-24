@@ -121,7 +121,7 @@ module Karma
         Karma::LOGGER_SHIFT_AGE,
         Karma::LOGGER_SHIFT_SIZE,
         level: Logger::INFO,
-        progname: name
+        progname: "#{name}@#{Watchdog.config_port}"
       )
       return @logger
     end

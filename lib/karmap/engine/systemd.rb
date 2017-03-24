@@ -37,7 +37,7 @@ module Karma::Engine
       (1..service.class.config_max_running).each do |i|
         instance_name = "#{service.full_name}@#{service.class.config_port+(i-1)}.service"
         if status[instance_name].nil?
-          Karma.logger.debug("starting instance #{instance_name}!")
+          Karma.logger.info("starting instance #{instance_name}!")
           `systemctl --user start #{instance_name}`
           return instance_name
         end
@@ -49,7 +49,7 @@ module Karma::Engine
       # get instance by pid and stop it
       status = show_service_by_pid(pid)
       instance_name = status.keys[0]
-      Karma.logger.debug("stopping instance #{instance_name}!")
+      Karma.logger.info("stopping instance #{instance_name}!")
       `systemctl --user stop #{instance_name}`
     end
 
@@ -57,7 +57,7 @@ module Karma::Engine
       # get instance by pid and restart it
       status = show_service_by_pid(pid)
       instance_name = status.keys[0]
-      Karma.logger.debug("stopping instance #{instance_name}!")
+      Karma.logger.info("stopping instance #{instance_name}!")
       `systemctl --user restart #{instance_name}`
     end
 
@@ -71,7 +71,7 @@ module Karma::Engine
       # https://fedoramagazine.org/systemd-template-unit-files/
       # https://www.freedesktop.org/software/systemd/man/systemctl.html
 
-      Karma.logger.debug("started systemd export for service #{service.name}")
+      Karma.logger.info("started systemd export for service #{service.name}")
 
       super
 
@@ -112,7 +112,7 @@ module Karma::Engine
 
       reload
 
-      Karma.logger.debug("end systemd export for service #{service.name}")
+      Karma.logger.info("end systemd export for service #{service.name}")
     end
 
     def remove_service(service)
