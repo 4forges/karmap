@@ -124,7 +124,10 @@ describe Karma::Engine::Systemd do
       status = engine.show_service(service)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karmat-testservice@33000.service')
+      expect(status.values[0].name).to eq('karmat-testservice')
+      expect(status.values[0].port).to eq(33000)
       expect(status.values[0].status).to eq('running')
+      expect(status.values[0].pid).to be > 1
     end
 
     it 'engine stops service instance' do
@@ -162,7 +165,6 @@ describe Karma::Engine::Systemd do
       expect(new_pid).to_not eq(old_pid)
     end
 
-    # test startare piu istanze del max
   end
 
 

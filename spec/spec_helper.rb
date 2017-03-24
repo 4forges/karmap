@@ -44,4 +44,9 @@ RSpec.configure do |config|
     end
   end
 
+  config.before(:each) do
+    FileUtils.rm_r(Karma.log_folder) rescue false
+    FileUtils.mkdir_p(Karma.log_folder)
+  end
+
 end

@@ -95,13 +95,13 @@ module Karma
       after_start
 
       # notify queue after start
-      message = engine.get_process_status_message($$)
+      message = engine.get_process_status_message(self, $$)
       notifier.notify(message)
 
       while @running do
 
         # notify queue each loop
-        message = engine.get_process_status_message($$)
+        message = engine.get_process_status_message(self, $$)
         notifier.notify(message) if message.present? && message.valid?
 
         self.class.update_thread_config(@thread_config_reader.config) if @thread_config_reader.config.present?
@@ -116,7 +116,7 @@ module Karma
       after_stop
 
       # notify queue after stop
-      message = engine.get_process_status_message($$)
+      message = engine.get_process_status_message(self, $$)
       notifier.notify(message)
     end
 

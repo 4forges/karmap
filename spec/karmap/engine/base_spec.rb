@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Karma::Service do
+describe Karma::Engine::Base do
 
   let(:service) { TestService.new }
   let(:engine) { Karma.engine_class.new }
@@ -14,19 +14,20 @@ describe Karma::Service do
     end
   end
 
-  it 'service calls lifecycle callbacks' do
+  it 'build service status message' do
     engine.start_service(service)
-    wait_for{File.exists?('spec/log/testservice-before_start.log')}.to be_truthy
-    wait_for{File.exists?('spec/log/testservice-after_start.log')}.to be_truthy
-    wait_for{File.exists?('spec/log/testservice-perform.log')}.to be_truthy
-
+    wait_for {engine.show_service(service)}.to_not be_empty
     status = engine.show_service(service)
     pid = status.values[0].pid
+    message = engine.get_process_status_message(service, pid)
+    expect(message.service).to eq('karmat-testservice')
+    expect(message.pid).to eq(pid)
+    expect(message.status).to eq('running')
 
     engine.stop_service(pid)
-    wait_for{File.exists?('spec/log/testservice-before_stop.log')}.to be_truthy
-    wait_for{File.exists?('spec/log/testservice-after_stop.log')}.to be_truthy
     wait_for{engine.show_service(service)}.to be_empty
+    message = engine.get_process_status_message(service, pid)
+    expect(message.status).to eq('dead')
   end
 
 end
