@@ -1,8 +1,7 @@
 dist: trusty
 sudo: required
-
-init: /sbin/init
-run_opts: "--privileged"
+env:
+  - DBUS_SESSION_BUS_ADDRESS=
 
 language: ruby
 rvm:
@@ -13,4 +12,6 @@ before_install:
   - sudo apt-get update -y
   - sudo apt-get install -y systemd
   - gem install bundler -v 1.13.6
+
+
 
