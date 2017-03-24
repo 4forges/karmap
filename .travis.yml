@@ -1,8 +1,6 @@
 env:
-  matrix:
     # Defaults - Ubuntu 16.04.
-    - type: defaults
-      distro: ubuntu1604
+    - distribution: ubuntu1604
       init: /sbin/init
       run_opts: "--privileged"
 
