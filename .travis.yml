@@ -1,13 +1,10 @@
 os:
   - linux
-dist: trusty
 
-sudo: false
+sudo: required
 language: ruby
 rvm:
   - 2.3.3
 
 before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get systemctl
   - gem install bundler -v 1.13.6
