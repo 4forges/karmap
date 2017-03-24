@@ -5,15 +5,13 @@ language: ruby
 rvm:
   - 2.3.3
 
-before_script:
-  - 'echo $PATH'
-  - 'export PATH=/sbin:$PATH'
-
 before_install:
   - sudo add-apt-repository -y ppa:pitti/systemd
   - sudo apt-get update -y
   - sudo apt-get install -y systemd
   - gem install bundler -v 1.13.6
+  - 'echo $PATH'
+  - 'export PATH=/sbin:$PATH'
   - /sbin/init
 
 
