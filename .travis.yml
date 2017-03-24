@@ -1,9 +1,4 @@
-env:
-  - distribution: ubuntu
-    version: 14.04
-    init: /sbin/init
-    run_opts: ""
-
+dist: trusty
 sudo: required
 language: ruby
 rvm:
@@ -11,6 +6,7 @@ rvm:
 
 before_install:
   - gem install bundler -v 1.13.6
+
 
 before_script:
   - 'echo $PATH'
