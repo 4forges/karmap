@@ -9,7 +9,7 @@ module Karma::Queue
     end
 
     def notify(message)
-      queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, message: message.to_message)
+      queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, message: message.to_message) if message.present? && message.valid?
     end
 
     private #########################################

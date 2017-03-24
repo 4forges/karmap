@@ -66,18 +66,27 @@ module Karma::Engine
     end
 
     def get_process_status_message(pid)
-      status = show_service_by_pid(pid)
-      if status.present?
-        return Karma::Messages::ProcessStatusUpdateMessage.new(
-          host: ::Socket.gethostname,
-          project: Karma.karma_project_id,
-          service: status.values[0].name,
-          pid: status.values[0].pid,
-          status: status.values[0].status
-        )
-      else
-        return Karma::Messages::ProcessStatusUpdateMessage.new({})
+      begin
+        status = show_service_by_pid(pid)
+        if status.present?
+          return Karma::Messages::ProcessStatusUpdateMessage.new(
+            host: ::Socket.gethostname,
+            project: Karma.karma_project_id,
+            service: status.values[0].name,
+            pid: status.values[0].pid,
+            status: status.values[0].status
+          )
+        else
+          return nil
+        end
+
+      rescue ::Exception => e
+        Karma.logger.error "Error during get_process_status_message for pid #{pid}"
+        Karma.logger.error e.message
+        Karma.logger.error e.backtrace.join("\n")
+        return nil
       end
+      
     end
 
     def running_instances_for_service(service, params = {})
