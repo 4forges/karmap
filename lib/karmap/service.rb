@@ -6,7 +6,7 @@ module Karma
   class Service
     include Karma::ServiceConfig
 
-    attr_accessor :notifier, :engine, :thread_config_reader
+    attr_accessor :notifier, :engine
 
     @@running_instance = nil
 
@@ -70,7 +70,7 @@ module Karma
       @@running_instance ||= self.new
       @@running_instance.run
     end
-    
+
     def stop
       @running = false
     end
@@ -127,7 +127,7 @@ module Karma
     def running_thread_count
       @thread_pool.running.size
     end
-    
+
     def stop_all_threads
       @thread_pool.stop_all
     end

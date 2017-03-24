@@ -13,7 +13,7 @@ module Karma
 
   define_setting :user # deploy user (required)
   define_setting :project_name # project name as string (required)
-  define_setting :services, [] # managed services classes
+  define_setting :services, [] # managed services classes (required)
   define_setting :karma_user_id # (required)
   define_setting :karma_project_id # (required)
   define_setting :aws_access_key_id, ENV['KARMA_AWS_ACCESS_KEY_ID']
@@ -29,7 +29,7 @@ module Karma
 
     def logger
       filename = "#{Karma.log_folder}/karma.log"
-      @logger ||= Logger.new(filename, Karma::LOGGER_SHIFT_AGE, Karma::LOGGER_SHIFT_SIZE, level: Logger::DEBUG, progname: self.name)
+      @logger ||= Logger.new(filename, Karma::LOGGER_SHIFT_AGE, Karma::LOGGER_SHIFT_SIZE, level: Logger::INFO, progname: self.name)
     end
 
     def notifier_class
