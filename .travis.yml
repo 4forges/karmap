@@ -12,6 +12,6 @@ rvm:
 before_install:
   - gem install bundler -v 1.13.6
 
-script:
+before_script:
   - 'echo $PATH'
   - 'export PATH=/sbin:$PATH'
