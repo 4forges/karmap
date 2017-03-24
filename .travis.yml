@@ -1,17 +1,14 @@
-dist: trusty
-sudo: required
+env:
+  matrix:
+    # Defaults - Ubuntu 16.04.
+    - type: defaults
+      distro: ubuntu1604
+      init: /sbin/init
+      run_opts: "--privileged"
+
 language: ruby
 rvm:
   - 2.3.3
 
 before_install:
   - gem install bundler -v 1.13.6
-  - sudo add-apt-repository -y ppa:pitti/systemd
-  - sudo apt-get update -y
-  - sudo apt-get install -y systemd
-
-
-before_script:
-  - 'echo $PATH'
-  - 'export PATH=/sbin:$PATH'
-  - 'export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$USER/bus'
