@@ -28,7 +28,7 @@ module Karma
     end
 
     def log_prefix
-      "#{self.name}@#{self.env_port}"
+      env_identifier
     end
 
     def name
@@ -37,6 +37,10 @@ module Karma
 
     def full_name
       "#{Karma.project_name}-#{name}"
+    end
+    
+    def env_identifier
+      ENV['KARMA_IDENTIFIER'] #"#{self.name}@#{self.env_port}"
     end
 
     def command
@@ -71,8 +75,10 @@ module Karma
     #################################################
 
     def self.run
-      @@running_instance ||= self.new
-      @@running_instance.run
+      if @@running_instance.nil?
+        @@running_instance = true
+        self.new.run
+      end
     end
 
     def stop

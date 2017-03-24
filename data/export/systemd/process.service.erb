@@ -4,6 +4,7 @@ PartOf=<%= project_name %>-<%= service.name %>.target
 [Service]
 WorkingDirectory=<%= work_directory %>
 Environment=PORT=%i
+Environment=KARMA_IDENTIFIER=<%= service.full_name %>@%i
 ExecStart=/bin/bash -lc '<%= service.command %>'
 Restart=always
 StandardInput=null

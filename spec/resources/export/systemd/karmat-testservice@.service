@@ -4,6 +4,7 @@ PartOf=karmat-testservice.target
 [Service]
 WorkingDirectory=/tmp/app
 Environment=PORT=%i
+Environment=KARMA_IDENTIFIER=karmat-testservice@%i
 ExecStart=/bin/bash -lc 'bundle exec ruby spec/scripts/run_test_service.rb'
 Restart=always
 StandardInput=null
