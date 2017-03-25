@@ -10,8 +10,9 @@ before_install:
   - sudo apt-get update -y
   - sudo apt-get install -y systemd
   - gem install bundler -v 1.13.6
-  - 'echo $PATH'
-  - 'export PATH=/sbin:$PATH'
+  - echo $PATH
+  - export PATH=/sbin:$PATH
+  - dbus-launch --sh-syntax
 
 
 
