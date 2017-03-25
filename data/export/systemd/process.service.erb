@@ -5,6 +5,7 @@ PartOf=<%= project_name %>-<%= service.name %>.target
 WorkingDirectory=<%= work_directory %>
 Environment=PORT=%i
 Environment=KARMA_IDENTIFIER=<%= service.full_name %>@%i
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%I/bus
 ExecStart=/bin/bash -lc '<%= service.command %>'
 Restart=always
 StandardInput=null
