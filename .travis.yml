@@ -12,8 +12,3 @@ before_install:
   - gem install bundler -v 1.13.6
   - echo $PATH
   - export PATH=/sbin:$PATH
-  - dbus-launch --sh-syntax
-  - export DBUS_SESSION_BUS_ADDRESS=/run/user/$(id -u)/dbus/user_bus_socke
-
-
-
