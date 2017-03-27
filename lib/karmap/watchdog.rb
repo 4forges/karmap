@@ -28,10 +28,7 @@ module Karma
     end
 
     def run
-      logger.info("\n\n\n")
-      logger.info('****************')
-      logger.info('Enter run method')
-      logger.info('****************')
+      logger.info('Watchdog entered run method')
       register
       @poller = ::Thread.new do
         perform
