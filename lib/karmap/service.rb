@@ -24,7 +24,7 @@ module Karma
     end
 
     def env_port
-      ENV['PORT'] || 8899 # port comes from systemd unit file environment, 8899 is for testing
+      ENV['PORT'] || 8899 # port comes from service environment, 8899 is for testing
     end
 
     def log_prefix
