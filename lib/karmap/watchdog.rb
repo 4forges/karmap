@@ -71,6 +71,10 @@ module Karma
       "bundle exec rails runner -e production \"Karma::Watchdog.run\""
     end
 
+    def timeout_stop
+      30
+    end
+
     def self.export
       s = self.new
       s.engine.export_service(s)

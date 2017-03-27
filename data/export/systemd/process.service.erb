@@ -3,7 +3,6 @@ PartOf=<%= service.full_name %>.target
 
 [Service]
 WorkingDirectory=<%= work_directory %>
-Environment=XDG_RUNTIME_DIR=/run/user/%I
 Environment=PORT=%i
 Environment=KARMA_IDENTIFIER=%n
 ExecStart=/bin/bash -lc '<%= service.command %>'
