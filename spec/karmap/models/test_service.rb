@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 require_relative 'concerns/service_message'
 require 'karmap'
 
