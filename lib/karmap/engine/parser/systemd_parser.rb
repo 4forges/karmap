@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 class SystemdParser
 
   SHOW_PROPERTIES = ['LoadState', 'ActiveState', 'SubState', 'MainPID', 'ExecMainStartTimestamp']
