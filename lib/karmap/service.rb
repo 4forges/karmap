@@ -27,6 +27,10 @@ module Karma
       ENV['PORT'] || 8899 # port comes from service environment, 8899 is for testing
     end
 
+    def env_identifier
+      ENV['KARMA_IDENTIFIER']
+    end
+
     def log_prefix
       env_identifier
     end
@@ -38,9 +42,9 @@ module Karma
     def full_name
       "#{Karma.project_name}-#{name}"
     end
-
-    def env_identifier
-      ENV['KARMA_IDENTIFIER']
+    
+    def identifier
+      "#{full_name}@#{env_port}"
     end
 
     def command

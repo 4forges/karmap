@@ -43,7 +43,7 @@ module Karma::Engine
       ::Thread.abort_on_exception = true
       ::Thread.new do
         Karma.logger.debug "system #{service.command}"
-        system({"PORT" => service.config_port.to_s, "KARMA_IDENTIFIER" => 'pippo@40000'}, service.command)
+        system({"PORT" => service.config_port.to_s, "KARMA_IDENTIFIER" => service.identifier}, service.command)
       end
     end
 
