@@ -70,6 +70,7 @@ module Karma::Engine
       # https://wiki.archlinux.org/index.php/Systemd/User
       # https://fedoramagazine.org/systemd-template-unit-files/
       # https://www.freedesktop.org/software/systemd/man/systemctl.html
+      # https://www.freedesktop.org/software/systemd/man/systemd.unit.html#Specifiers
 
       Karma.logger.info("started systemd export for service #{service.name}")
 
