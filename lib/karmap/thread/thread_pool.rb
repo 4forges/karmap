@@ -46,7 +46,7 @@ module Karma::Thread
     def all
       Thread.list.select{|t| (t[:internal_key]||"").starts_with?(Karma::Thread::ManagedThread.internal_key_prefix)}
     end
-    
+
     def running
       @list.select{|thread| thread.running?}
     end
@@ -92,7 +92,7 @@ module Karma::Thread
       end
       new_thread = Karma::Thread::ManagedThread.new(blocks, options)
       @list << new_thread
-      while !new_thread.inited?
+      until new_thread.inited?
         sleep 0.1
       end
       new_thread.start
@@ -103,9 +103,7 @@ module Karma::Thread
     end
 
     def stop_all
-      running.each do |managed_thread|
-        managed_thread.stop
-      end
+      running.each(&:stop)
       prune_list
       running.count
     end

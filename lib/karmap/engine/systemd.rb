@@ -17,6 +17,7 @@ module Karma::Engine
     end
 
     def show_service(service)
+      # note: does not show dead units
       service_status(service: "#{service.full_name}@*")
     end
 
@@ -59,7 +60,7 @@ module Karma::Engine
       # get instance by pid and restart it
       status = show_service_by_pid(pid)
       instance_name = status.keys[0]
-      Karma.logger.info("stopping instance #{instance_name}!")
+      Karma.logger.info("restarting instance #{instance_name}!")
       `systemctl --user restart #{instance_name}`
     end
 

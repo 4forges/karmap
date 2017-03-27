@@ -38,13 +38,17 @@ module Karma
     def full_name
       "#{Karma.project_name}-#{name}"
     end
-    
+
     def env_identifier
-      ENV['KARMA_IDENTIFIER'] #"#{self.name}@#{self.env_port}"
+      ENV['KARMA_IDENTIFIER']
     end
 
     def command
       "rails runner -e production \"#{self.class.name}.run\"" # override if needed
+    end
+
+    def timeout_stop
+      5 # override if needed
     end
 
     def perform
@@ -83,6 +87,7 @@ module Karma
 
     def stop
       @running = false
+      before_stop
     end
 
     def run
@@ -116,9 +121,10 @@ module Karma
         sleep(@sleep_time)
       end
 
-      before_stop
       stop_all_threads
       @thread_config_reader.stop
+
+      # note: after_stop callback will not be called if service has been killed (not stopped correctly)
       after_stop
 
       # notify queue after stop
