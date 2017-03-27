@@ -13,7 +13,6 @@ module Karma::Engine
 
     def reload
       `systemctl --user daemon-reload`
-      # `systemctl --user reset-failed`
     end
 
     def show_service(service)
@@ -54,6 +53,7 @@ module Karma::Engine
       instance_name = status.keys[0]
       Karma.logger.info("stopping instance #{instance_name}!")
       `systemctl --user stop #{instance_name}`
+      `systemctl --user reset-failed`
     end
 
     def restart_service(pid)
@@ -62,6 +62,7 @@ module Karma::Engine
       instance_name = status.keys[0]
       Karma.logger.info("restarting instance #{instance_name}!")
       `systemctl --user restart #{instance_name}`
+      `systemctl --user reset-failed`
     end
 
     def export_service(service)
