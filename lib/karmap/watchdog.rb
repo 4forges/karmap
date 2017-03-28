@@ -82,7 +82,7 @@ module Karma
       if status.empty?
         s.engine.start_service(s)
       else
-        s.engine.restart_service(status.values[0].pid)
+        s.engine.restart_service(status.values[0].pid, { service: s })
       end
     end
 

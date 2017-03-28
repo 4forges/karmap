@@ -47,7 +47,7 @@ module Karma::Engine
       return false
     end
 
-    def stop_service(pid)
+    def stop_service(pid, params = {})
       # get instance by pid and stop it
       status = show_service_by_pid(pid)
       instance_name = status.keys[0]
@@ -56,7 +56,7 @@ module Karma::Engine
       `systemctl --user reset-failed`
     end
 
-    def restart_service(pid)
+    def restart_service(pid, params = {})
       # get instance by pid and restart it
       status = show_service_by_pid(pid)
       instance_name = status.keys[0]

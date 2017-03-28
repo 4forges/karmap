@@ -15,24 +15,15 @@ module Karma::Engine
     end
 
     def show_service(service)
-      service_status(service_key: "#{service.full_name}@")
+      service_status(service_key_or_pid: "#{service.full_name}@")
     end
 
     def show_service_by_pid(pid)
-      t = ProcTable.ps(pid)
-      Karma::Engine::ServiceStatus.new(
-        t.environ["KARMA_IDENTIFIER"],
-        t.environ["PORT"],
-        [0, 1, :running][t.status],
-        t.pid,
-        -1,
-        -1,
-        -1
-      )
+      service_status(service_key_or_pid: pid.to_i).values[0]
     end
 
     def show_all_services
-      service_status(service_key: "#{project_name}-")
+      service_status(service_key_or_pid: "#{project_name}-")
     end
 
     def enable_service(service, params = {})
@@ -52,16 +43,17 @@ module Karma::Engine
       end
     end
 
-    def stop_service(service, params = {})
+    def stop_service(pid, params = {})
       ::Thread.new do
-        Karma.logger.debug "system kill #{params[:pid]}"
-        res = `kill #{params[:pid]}`
+        Karma.logger.debug "system kill #{pid}"
+        res = `kill #{pid}`
         Karma.logger.debug "res: #{res}"
       end
     end
 
-    def restart_service(service, params = {})
-      Karma.logger.debug("Karma::Engine received #{__method__} for #{service.full_name}")
+    def restart_service(pid, params = {})
+      stop_service(pid)
+      start_service(params[:service])
     end
 
     def export_service(service)
@@ -100,16 +92,20 @@ module Karma::Engine
 
     private ####################
 
-    def service_status(service_key:)
-      status = ProcTable.ps.select{|p| identifier = p.environ["KARMA_IDENTIFIER"]; identifier.present? && identifier.start_with?(service_key)}
+    def service_status(service_key_or_pid:)
+      if service_key_or_pid.is_a?(String)
+        status = ProcTable.ps.select{ |p| identifier = p.environ["KARMA_IDENTIFIER"]; identifier.present? && identifier.start_with?(service_key_or_pid) }
+      else
+        status = ProcTable.ps.select{ |p| p.pid == service_key_or_pid.to_i }
+      end
       ret = {}
       status.each do |p|
         # :name, :port, :status, :pid, :threads, :memory, :cpu
         k = p.environ["KARMA_IDENTIFIER"]
         ret[k] = Karma::Engine::ServiceStatus.new(
-          p.environ["KARMA_IDENTIFIER"],
-          p.environ["PORT"],
-          to_karma_status(p.status),
+          p.environ["KARMA_IDENTIFIER"].split("@")[0],
+          p.environ["PORT"].to_i,
+          to_karma_status(p.state),
           p.pid,
           -1,
           -1,
@@ -121,12 +117,13 @@ module Karma::Engine
 
     def to_karma_status(process_status)
       case process_status
-        when 2
+        when 2, "R", "D"
           Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]
-        when 'inactive', 'activating'
-          Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]
+        # when 'inactive', 'activating'
+        #   Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]
         else
-          Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]
+          #Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]
+          process_status
       end
     end
   end

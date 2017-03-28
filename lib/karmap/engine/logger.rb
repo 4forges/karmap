@@ -28,11 +28,11 @@ module Karma::Engine
       Karma.logger.debug("Karma::Engine received #{__method__} for #{service.full_name}")
     end
 
-    def stop_service(service, params = {})
+    def stop_service(pid, params = {})
       Karma.logger.debug("Karma::Engine received #{__method__} for #{service.full_name}")
     end
 
-    def restart_service(service, params = {})
+    def restart_service(pid, params = {})
       Karma.logger.debug("Karma::Engine received #{__method__} for #{service.full_name}")
     end
 

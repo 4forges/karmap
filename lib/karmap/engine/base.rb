@@ -48,11 +48,11 @@ module Karma::Engine
       # abstract
     end
 
-    def stop_service(service, params = {})
+    def stop_service(pid, params = {})
       # abstract
     end
 
-    def restart_service(service, params = {})
+    def restart_service(pid, params = {})
       # abstract
     end
 

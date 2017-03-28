@@ -4,6 +4,8 @@ require 'spec_helper'
 
 describe Karma::Engine::Systemd do
 
+  before(:all) { Karma.engine = "systemd" }
+
   let(:engine) { Karma::Engine::Systemd.new }
   let(:service) { TestService.new }
   let(:service2) { MockService.new }
