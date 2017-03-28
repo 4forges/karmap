@@ -7,7 +7,7 @@ module Karma::Engine
   class SystemRaw < Base
 
     def location
-      ""
+      ''
     end
 
     def reload
@@ -29,7 +29,7 @@ module Karma::Engine
         t.pid,
         -1,
         -1,
-        -1,
+        -1
       )
     end
 
