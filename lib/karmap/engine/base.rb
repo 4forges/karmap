@@ -93,14 +93,35 @@ module Karma::Engine
 
     def to_be_stopped_instanced(service)
       running_instances = running_instances_for_service(service) #keys: [:pid, :full_name, :port]
-      num_running = running_instances.size
-      all_ports_max = ( service.class.config_port..service.class.config_port + service.class.config_max_running - 1 ).to_a
-      all_ports_min = ( service.class.config_port..service.class.config_port + service.class.config_min_running - 1 ).to_a
-      running_ports = running_instances.values.map{ |i| i.port }
-      logger.debug("Running instances found: #{num_running}")
+      running_ports = running_instances.values.map{ |i| i.port.to_i }
+      Karma.logger.debug("Running instances found: #{running_ports.size}")
 
-      # stop instances
-      to_be_stopped_ports = running_ports - all_ports_max
+      # to_be_stopped instances
+      to_be_stopped_ports = running_ports - service.max_ports
+      Karma.logger.debug("Running instances to be stopped: #{to_be_stopped_ports.size}")
+      running_instances.values.select do |i|
+        to_be_stopped_ports.include?(i.port)
+      end
+    end
+    
+    def to_be_started_ports(service)
+      running_instances = running_instances_for_service(service) #keys: [:pid, :full_name, :port]
+      running_ports = running_instances.values.map{ |i| i.port.to_i }
+      Karma.logger.debug("Running instances found: #{running_ports.size}")
+
+      to_be_started_ports = service.min_ports - running_ports
+      Karma.logger.debug("Running instances to be started: #{to_be_started_ports.size}")
+      to_be_started_ports
+    end
+
+    def free_ports(service)
+      running_instances = running_instances_for_service(service) #keys: [:pid, :full_name, :port]
+      running_ports = running_instances.values.map{ |i| i.port.to_i }
+      Karma.logger.debug("Running instances found: #{running_ports.size}")
+
+      free_ports = service.max_ports - running_ports
+      Karma.logger.debug("Free ports: #{free_ports.size}")
+      free_ports
     end
 
     private ######################################################################

@@ -183,18 +183,10 @@ module Karma
     end
 
     def maintain_worker_count(service)
-      running_instances = engine.running_instances_for_service(service) #keys: [:pid, :full_name, :port]
-      num_running = running_instances.size
-      all_ports_max = ( service.class.config_port..service.class.config_port + service.class.config_max_running - 1 ).to_a
-      all_ports_min = ( service.class.config_port..service.class.config_port + service.class.config_min_running - 1 ).to_a
-      running_ports = running_instances.values.map{ |i| i.port }
-      logger.debug("Running instances found: #{num_running}")
-
       # stop instances
-      to_be_stopped_ports = running_ports - all_ports_max
-      logger.debug("Running instances to be stopped: #{to_be_stopped_ports.size}")
-      running_instances.values.each do |i|
-        engine.stop_service(i.pid) if to_be_stopped_ports.include?(i.port)
+      engine.to_be_stopped_instanced.each do |instance|
+        logger.debug("Stop instnce #{instances.name}")
+        engine.stop_service(instance.pid)
       end
 
       # start instances
