@@ -15,6 +15,8 @@ module Karma::Engine
     end
 
     def show_service(service)
+      ProcTable.ps.select{|p| identifier = p.environ["KARMA_IDENTIFIER"]; identifier.present? && identifier.start_with?('karmat-testservice')}
+      service_status(service: "#{service.full_name}@*")
       Karma.logger.debug("Karma::Engine received #{__method__} for #{service.full_name}")
     end
 
@@ -93,6 +95,37 @@ module Karma::Engine
       show_service(service).select{|k, v| v.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}
     end
 
+    private ####################
+
+    def service_status(service:)
+      status = ProcTable.ps.select{|p| identifier = p.environ["KARMA_IDENTIFIER"]; identifier.present? && identifier.start_with?(service.full_name)}
+      ret = {}
+      status.each do |p|
+        # :name, :port, :status, :pid, :threads, :memory, :cpu
+        k = p.environ["KARMA_IDENTIFIER"]
+        ret[k] = Karma::Engine::ServiceStatus.new(
+          p.environ["KARMA_IDENTIFIER"],
+          p.environ["PORT"],
+          [0, 1, :running][p.status],
+          p.pid,
+          -1,
+          -1,
+          -1
+        )
+      end
+      return ret
+    end
+
+    def to_karma_status(process_status)
+      case process_status
+        when 'active', 'deactivating'
+          Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]
+        when 'inactive', 'activating'
+          Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]
+        else
+          Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]
+      end
+    end
   end
 
 end

@@ -91,6 +91,18 @@ module Karma::Engine
       show_service(service).select{|k, v| v.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}
     end
 
+    def to_be_stopped_instanced(service)
+      running_instances = running_instances_for_service(service) #keys: [:pid, :full_name, :port]
+      num_running = running_instances.size
+      all_ports_max = ( service.class.config_port..service.class.config_port + service.class.config_max_running - 1 ).to_a
+      all_ports_min = ( service.class.config_port..service.class.config_port + service.class.config_min_running - 1 ).to_a
+      running_ports = running_instances.values.map{ |i| i.port }
+      logger.debug("Running instances found: #{num_running}")
+
+      # stop instances
+      to_be_stopped_ports = running_ports - all_ports_max
+    end
+
     private ######################################################################
 
     def clean(filename)
