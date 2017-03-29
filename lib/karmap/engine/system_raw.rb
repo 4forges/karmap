@@ -11,7 +11,7 @@ module Karma::Engine
     end
 
     def reload
-      Karma.logger.debug("Karma::Engine received #{__method__}")
+      Karma.logger.debug("#{self.class.name} received #{__method__}")
     end
 
     def show_service(service)
@@ -19,7 +19,7 @@ module Karma::Engine
     end
 
     def show_service_by_pid(pid)
-      service_status(service_key_or_pid: pid.to_i).values[0]
+      service_status(service_key_or_pid: pid.to_i)
     end
 
     def show_all_services
@@ -27,7 +27,7 @@ module Karma::Engine
     end
 
     def enable_service(service, params = {})
-      Karma.logger.debug("Karma::Engine received #{__method__} for #{service.full_name}")
+      Karma.logger.debug("#{self.class.name} received #{__method__} for #{service.full_name}")
     end
 
     def start_service(service, params = {})
@@ -57,37 +57,11 @@ module Karma::Engine
     end
 
     def export_service(service)
-      Karma.logger.debug("Karma::Engine received #{__method__} for #{service.full_name}")
+      Karma.logger.debug("#{self.class.name} received #{__method__} for #{service.full_name}")
     end
 
     def remove_service(service)
-      Karma.logger.debug("Karma::Engine received #{__method__} for #{service.full_name}")
-    end
-
-    def get_process_status_message(service, pid)
-      status = show_service_by_pid(pid)
-      if status.present?
-        return Karma::Messages::ProcessStatusUpdateMessage.new(
-          host: ::Socket.gethostname,
-          project: Karma.karma_project_id,
-          service: status.name,
-          pid: status.pid,
-          status: status.status
-        )
-      else
-        Karma.logger.warn "Cannot find status for service #{service.full_name}@#{service.env_port} (#{pid})"
-        return Karma::Messages::ProcessStatusUpdateMessage.new(
-          host: ::Socket.gethostname,
-          project: Karma.karma_project_id,
-          service: service.full_name,
-          pid: pid,
-          status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]
-        )
-      end
-    end
-
-    def running_instances_for_service(service, params = {})
-      show_service(service).select{|k, v| v.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}
+      Karma.logger.debug("#{self.class.name} received #{__method__} for #{service.full_name}")
     end
 
     private ####################

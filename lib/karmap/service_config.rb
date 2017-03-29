@@ -24,7 +24,7 @@ module Karma
     end
 
     module ClassMethods
-      
+
       ################################################
       # service configuration
       ################################################
@@ -67,6 +67,9 @@ module Karma
         self.config_log_level = val
       end
 
+      #################################################
+      # update config methods
+      #################################################
       def update_process_config(config)
         # note: port does not change
         [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart].each do |k|
@@ -96,6 +99,21 @@ module Karma
             h[k] = self.send("config_#{k}")
           end
         end
+      end
+
+      #################################################
+      # convenience methods
+      #################################################
+      def max_ports
+        start_port = self.config_port
+        end_port = start_port + self.config_max_running - 1
+        (start_port..end_port).to_a
+      end
+
+      def min_ports
+        start_port = self.config_port
+        end_port = start_port + self.config_min_running - 1
+        (start_port..end_port).to_a
       end
 
     end

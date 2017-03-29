@@ -26,18 +26,6 @@ module Karma
     def env_port
       ENV['PORT'] || 8899 # port comes from service environment, 8899 is for testing
     end
-    
-    def max_ports
-      start_port = self.class.config_port
-      end_port = start_port + self.class.config_max_running - 1
-      (start_port..end_port).to_a
-    end
-
-    def min_ports
-      start_port = self.class.config_port
-      end_port = start_port + self.class.config_min_running - 1
-      (start_port..end_port).to_a
-    end
 
     def env_identifier
       ENV['KARMA_IDENTIFIER']
@@ -54,7 +42,7 @@ module Karma
     def full_name
       "#{Karma.project_name}-#{name}"
     end
-    
+
     def identifier(port = nil)
       "#{full_name}@#{port||env_port}"
     end
@@ -71,8 +59,6 @@ module Karma
       # abstract, override this
       raise NotImplementedError
     end
-
-    #################################################
 
     #################################################
     # abstract callbacks
