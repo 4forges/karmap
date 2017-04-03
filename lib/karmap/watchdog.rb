@@ -1,4 +1,4 @@
-require File.expand_path('../../config/environment',  __FILE__)
+require "#{Rails.root}/config/environment"
 require 'karmap'
 require 'karmap/service_config'
 
