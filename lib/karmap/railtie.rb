@@ -9,3 +9,5 @@ module Karma
     end
   end
 end
+
+require 'karmap/railtie' if defined?(Rails)
