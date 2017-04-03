@@ -1,4 +1,4 @@
-require 'config/environment'
+require File.expand_path('../../config/environment',  __FILE__)
 require 'karmap'
 require 'karmap/service_config'
 
