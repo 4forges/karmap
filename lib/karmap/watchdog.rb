@@ -1,3 +1,4 @@
+require 'config/environment'
 require 'karmap'
 require 'karmap/service_config'
 
