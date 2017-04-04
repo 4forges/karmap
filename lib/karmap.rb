@@ -16,8 +16,8 @@ module Karma
   define_setting :services, [] # managed services classes (required)
   define_setting :karma_user_id # (required)
   define_setting :karma_project_id # (required)
-  define_setting :aws_access_key_id, ENV['KARMA_AWS_ACCESS_KEY_ID']
-  define_setting :aws_secret_access_key, ENV['KARMA_AWS_SECRET_ACCESS_KEY']
+  define_setting :aws_access_key_id
+  define_setting :aws_secret_access_key
   define_setting :engine, 'systemd'
   define_setting :notifier, 'queue'
   define_setting :watchdog_port, 32000
