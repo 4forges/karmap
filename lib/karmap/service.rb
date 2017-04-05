@@ -36,11 +36,11 @@ module Karma
     end
 
     def name
-      self.class.name.demodulize.downcase
+      self.class.name.demodulize
     end
 
     def full_name
-      "#{Karma.project_name}-#{name}"
+      "#{Karma.project_name}-#{name}".downcase
     end
 
     def identifier(port = nil)

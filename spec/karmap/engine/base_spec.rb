@@ -23,7 +23,7 @@ describe Karma::Engine::Base do
       status = engine.show_service(service)
       pid = status.values[0].pid
       message = engine.get_process_status_message(service, pid)
-      expect(message.service).to eq('karma-spec-testservice')
+      expect(message.service).to eq('TestService')
       expect(message.pid).to eq(pid)
       expect(message.status).to eq('running')
 
