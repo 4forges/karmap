@@ -55,3 +55,8 @@ cd /media/sf_shared
 
 The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
 
+
+## Systemd
+
+enabled services 
+systemctl --user list-unit-files | grep enabled
