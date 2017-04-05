@@ -1,6 +1,6 @@
 namespace :watchdog do
-  desc 'Start watchdog service after deploy'
-  task start:  :environment do
+  desc 'Initialize and start watchdog service after deploy'
+  task init:  :environment do
     Karma::Watchdog.export
   end
 end
