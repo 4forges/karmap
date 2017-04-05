@@ -1,5 +1,5 @@
 [Unit]
-PartOf=karmat-testservice.target
+PartOf=karma-spec-testservice.target
 
 [Service]
 WorkingDirectory=/tmp/app
