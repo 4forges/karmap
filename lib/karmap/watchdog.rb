@@ -25,7 +25,7 @@ module Karma
 
     def initialize
       @engine = Karma.engine_class.new
-      logger.info "Engine initialized"
+      logger.info 'Engine initialized'
     end
 
     def run
@@ -34,7 +34,7 @@ module Karma
       @poller = ::Thread.new do
         perform
       end
-      logger.info "Poller started"
+      logger.info 'Poller started'
       Signal.trap('INT') do
         @trapped_signal = 'INT'
         @running = false
@@ -46,7 +46,7 @@ module Karma
       @running = true
       i = 0
       while @running do
-        logger.info "watchdog is running" if i == 0
+        logger.info 'watchdog is running' if i == 0
         sleep 1
         i = i + 1
         i = 0 if i == 60
@@ -65,12 +65,28 @@ module Karma
     #################################################
     # watchdog config (for export)
     #################################################
+    def env_port
+      ENV['PORT']
+    end
+
+    def env_identifier
+      ENV['KARMA_IDENTIFIER']
+    end
+
+    def log_prefix
+      env_identifier
+    end
+
+    def name
+      self.class.name.demodulize
+    end
+
     def full_name
       "#{Karma.project_name}-#{name}".downcase
     end
 
-    def name
-      'Watchdog'
+    def identifier
+      "#{full_name}@#{env_port}"
     end
 
     def command
@@ -124,7 +140,7 @@ module Karma
 
     def logger
       @logger ||= Logger.new(
-        "#{Karma.log_folder}/#{name}@#{Watchdog.config_port}.log",
+        "#{Karma.log_folder}/#{@log_prefix}.log",
         Karma::LOGGER_SHIFT_AGE,
         Karma::LOGGER_SHIFT_SIZE,
         level: Logger::INFO,
@@ -194,7 +210,7 @@ module Karma
     def maintain_worker_count(service)
       # stop instances
       engine.to_be_stopped_instances.each do |instance|
-        logger.debug("Stop instnce #{instances.name}")
+        logger.debug("Stop instance #{instances.name}")
         engine.stop_service(instance.pid)
       end
 
