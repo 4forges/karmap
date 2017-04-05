@@ -22,14 +22,14 @@ RSpec.configure do |config|
   config.before(:each) do
     Karma.logger = Logger.new(STDOUT)
     Karma.configuration do |config|
-      config.user = 'extendi'
-      config.project_name = 'karma'
-      config.karma_project_id = 'karma_project_id'
-      config.karma_user_id = 'karma_user_id'
-      config.aws_access_key_id = 'aws_access_key_id'
-      config.aws_secret_access_key = 'aws_secret_access_key'
-      config.services = [TestService]
-      config.log_folder = 'spec/log'
+      config.user =                   'extendi'
+      config.project_name =           'karma-spec'
+      config.karma_project_id =       'fake'
+      config.karma_user_id =          'fake'
+      config.aws_access_key_id =      'fake'
+      config.aws_secret_access_key =  'fake'
+      config.services =               [TestService]
+      config.log_folder =             'spec/log'
     end
   end
 

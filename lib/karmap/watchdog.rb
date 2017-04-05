@@ -182,9 +182,10 @@ module Karma
       maintain_worker_count(service)
     end
 
+    # TODO review if this still makes sense
     def maintain_worker_count(service)
       # stop instances
-      engine.to_be_stopped_instanced.each do |instance|
+      engine.to_be_stopped_instances.each do |instance|
         logger.debug("Stop instnce #{instances.name}")
         engine.stop_service(instance.pid)
       end

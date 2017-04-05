@@ -10,7 +10,7 @@ describe Karma::Engine::SystemRaw do
   let(:service) { TestService.new }
   let(:service2) { MockService.new }
   let(:watchdog) { Karma::Watchdog.new }
-  
+
   before(:each) { engine.remove_service(service) }
   before(:each) { engine.remove_service(service2) }
 
@@ -41,8 +41,8 @@ describe Karma::Engine::SystemRaw do
       wait_for {engine.show_service(service)}.to_not be_empty
       status = engine.show_service(service)
       expect(status.size).to eq(1)
-      expect(status.keys[0]).to eq('karmat-testservice@33000')
-      expect(status.values[0].name).to eq('karmat-testservice')
+      expect(status.keys[0]).to eq('karma-spec-testservice@33000')
+      expect(status.values[0].name).to eq('karma-spec-testservice')
       expect(status.values[0].port).to eq(33000)
       puts status.values[0].inspect
       expect(status.values[0].status).to eq('running')
@@ -54,7 +54,7 @@ describe Karma::Engine::SystemRaw do
       wait_for {engine.show_service(service)}.to_not be_empty
       status = engine.show_service(service)
       expect(status.size).to eq(1)
-      expect(status.keys[0]).to eq('karmat-testservice@33000')
+      expect(status.keys[0]).to eq('karma-spec-testservice@33000')
       expect(status.values[0].status).to eq('running')
       pid = status.values[0].pid
 
@@ -69,7 +69,7 @@ describe Karma::Engine::SystemRaw do
       wait_for {engine.show_service(service)}.to_not be_empty
       status = engine.show_service(service)
       expect(status.size).to eq(1)
-      expect(status.keys[0]).to eq('karmat-testservice@33000')
+      expect(status.keys[0]).to eq('karma-spec-testservice@33000')
       expect(status.values[0].status).to eq('running')
       old_pid = status.values[0].pid
 
@@ -77,7 +77,7 @@ describe Karma::Engine::SystemRaw do
       wait_for {engine.show_service(service)}.to_not be_empty
       status = engine.show_service(service)
       expect(status.size).to eq(1)
-      expect(status.keys[0]).to eq('karmat-testservice@33000')
+      expect(status.keys[0]).to eq('karma-spec-testservice@33000')
       expect(status.values[0].status).to eq('running')
       new_pid = status.values[0].pid
 

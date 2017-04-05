@@ -19,7 +19,6 @@ module Karma::Queue
         Karma.logger.debug("delete_message")
         ret = poller.delete_message(msg)
         Karma.logger.debug(ret)
-        # sleep(1)
       end
     end
 

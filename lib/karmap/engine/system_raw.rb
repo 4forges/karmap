@@ -93,10 +93,7 @@ module Karma::Engine
       case process_status
         when 2, "R", "D"
           Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]
-        # when 'inactive', 'activating'
-        #   Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]
         else
-          #Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]
           process_status
       end
     end

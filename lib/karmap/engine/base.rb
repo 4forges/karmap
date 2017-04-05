@@ -91,12 +91,11 @@ module Karma::Engine
       show_service(service).select{|k, v| v.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}
     end
 
-    def to_be_stopped_instanced(service)
+    def to_be_stopped_instances(service)
       running_instances = running_instances_for_service(service) #keys: [:pid, :full_name, :port]
       running_ports = running_instances.values.map{ |i| i.port.to_i }
       Karma.logger.debug("Running instances found: #{running_ports.size}")
 
-      # to_be_stopped instances
       to_be_stopped_ports = running_ports - service.class.max_ports
       Karma.logger.debug("Running instances to be stopped: #{to_be_stopped_ports.size}")
       running_instances.values.select do |i|

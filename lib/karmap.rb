@@ -16,8 +16,8 @@ module Karma
   define_setting :services, [] # managed services classes (required)
   define_setting :karma_user_id # (required)
   define_setting :karma_project_id # (required)
-  define_setting :aws_access_key_id
-  define_setting :aws_secret_access_key
+  define_setting :aws_access_key_id # (required)
+  define_setting :aws_secret_access_key # (required)
   define_setting :engine, 'systemd'
   define_setting :notifier, 'queue'
   define_setting :watchdog_port, 32000
@@ -29,7 +29,13 @@ module Karma
 
     def logger
       filename = "#{Karma.log_folder}/karma.log"
-      @logger ||= Logger.new(filename, Karma::LOGGER_SHIFT_AGE, Karma::LOGGER_SHIFT_SIZE, level: Logger::INFO, progname: self.name)
+      @logger ||= Logger.new(
+        filename,
+        Karma::LOGGER_SHIFT_AGE,
+        Karma::LOGGER_SHIFT_SIZE,
+        level: Logger::INFO,
+        progname: self.name
+      )
     end
 
     def notifier_class
