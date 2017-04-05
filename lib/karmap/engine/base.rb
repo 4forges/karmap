@@ -71,7 +71,7 @@ module Karma::Engine
         return Karma::Messages::ProcessStatusUpdateMessage.new(
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
-          service: status.values[0].name,
+          service: service.name,
           pid: status.values[0].pid,
           status: status.values[0].status
         )
@@ -80,7 +80,7 @@ module Karma::Engine
         return Karma::Messages::ProcessStatusUpdateMessage.new(
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
-          service: service.full_name,
+          service: service.name,
           pid: pid,
           status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]
         )
