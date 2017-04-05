@@ -25,6 +25,7 @@ module Karma
 
     def initialize
       @engine = Karma.engine_class.new
+      logger.info "Engine initialized"
     end
 
     def run
@@ -33,6 +34,7 @@ module Karma
       @poller = ::Thread.new do
         perform
       end
+      logger.info "Poller started"
       Signal.trap('INT') do
         @trapped_signal = 'INT'
         @running = false
@@ -42,8 +44,12 @@ module Karma
         @running = false
       end
       @running = true
+      i = 0
       while @running do
+        logger.info "watchdog is running" if i == 0
         sleep 1
+        i = i + 1
+        i = 0 if i == 60
       end
       if @trapped_signal
         logger.info "Got signal #{@trapped_signal}"
@@ -60,11 +66,11 @@ module Karma
     # watchdog config (for export)
     #################################################
     def full_name
-      "#{Karma.project_name}-#{name}"
+      "#{Karma.project_name}-#{name}".downcase
     end
 
     def name
-      'watchdog'
+      'Watchdog'
     end
 
     def command
@@ -129,6 +135,7 @@ module Karma
 
     def handle_message(message)
       begin
+        logger.debug "New message arrived: #{message}"
         case message[:type]
 
           when Karma::Messages::ProcessCommandMessage.name

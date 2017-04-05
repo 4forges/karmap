@@ -103,7 +103,6 @@ module Karma
       end
 
       before_start
-      puts $$
       @thread_config_reader.start
       @running = true
       after_start
