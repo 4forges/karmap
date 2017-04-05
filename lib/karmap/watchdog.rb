@@ -32,7 +32,11 @@ module Karma
       logger.info('Watchdog entered run method')
       register
       @poller = ::Thread.new do
-        perform
+        while true
+          perform
+          logger.error 'Error during polling'
+          sleep 10
+        end
       end
       logger.info "Poller started"
       Signal.trap('INT') do
@@ -48,8 +52,7 @@ module Karma
       while @running do
         logger.info "watchdog is running" if i == 0
         sleep 1
-        i = i + 1
-        i = 0 if i == 60
+        i = i>=59 ? 0 : i + 1
       end
       if @trapped_signal
         logger.info "Got signal #{@trapped_signal}"
