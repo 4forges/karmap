@@ -169,6 +169,7 @@ module Karma
       end
     end
 
+    # return an array of classes
     def discover_services
       Karma.services.select{|c| c.new.is_a?(Karma::Service) rescue false}
     end
