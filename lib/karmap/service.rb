@@ -12,12 +12,12 @@ module Karma
 
     def initialize
       @engine = Karma.engine_class.new
+      Karma.logger.info 'Engine initialized'
       @notifier = Karma.notifier_class.new
       @thread_pool = Karma::Thread::ThreadPool.new(Proc.new { perform }, { log_prefix: self.log_prefix })
       @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(
         default_config: self.class.to_thread_config,
-        port: env_port,
-        logger: logger
+        port: env_port
       )
       @sleep_time = 1
       @running = false
@@ -149,19 +149,6 @@ module Karma
 
     def stop_all_threads
       @thread_pool.stop_all
-    end
-
-    private ##############################
-
-    def logger
-      @logger ||= Logger.new(
-        "#{Karma.log_folder}/#{log_prefix}.log",
-        Karma::LOGGER_SHIFT_AGE,
-        Karma::LOGGER_SHIFT_SIZE,
-        level: Logger::INFO,
-        progname: log_prefix
-      )
-      return @logger
     end
 
   end

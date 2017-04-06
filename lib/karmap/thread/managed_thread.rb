@@ -10,9 +10,9 @@ module Karma::Thread
       @thread = nil
       @log_prefix = options[:log_prefix]
       @running_sleep_time = options[:running_sleep_time]||1
-      blocks[:starting] ||= Proc.new { logger.debug "#{$$}::#{Thread.current.to_s} Starting" }
-      blocks[:finishing] ||= Proc.new { logger.debug "#{$$}::#{Thread.current.to_s} Finishing" }
-      blocks[:running] ||= Proc.new { logger.debug "#{$$}::#{Thread.current.to_s} Running" }
+      blocks[:starting] ||= Proc.new { Karma.logger.debug "#{$$}::#{Thread.current.to_s} Starting" }
+      blocks[:finishing] ||= Proc.new { Karma.logger.debug "#{$$}::#{Thread.current.to_s} Finishing" }
+      blocks[:running] ||= Proc.new { Karma.logger.debug "#{$$}::#{Thread.current.to_s} Running" }
       @thread = ::Thread.new do
         Thread.current[:status] = :initing
         Thread.current[:initing_at] = Time.now
@@ -22,7 +22,7 @@ module Karma::Thread
         Thread.current[:is_managed_thread] = true
         Thread.current[:status] = :inited
         Thread.current[:thread_index] = options[:thread_index]
-        logger.debug "#{$$}::#{Thread.current.to_s} inited"
+        Karma.logger.debug "#{$$}::#{Thread.current.to_s} inited"
         Thread.stop
         outer_block(blocks)
       end
@@ -34,7 +34,7 @@ module Karma::Thread
     end
 
     def set_log_level(level)
-      logger.level = level
+      Karma.logger.level = level
     end
 
     def start
@@ -100,20 +100,7 @@ module Karma::Thread
     end
 
     def running_default_block
-      logger.debug("#{$$}::#{Thread.current.to_s} #{Time.now}")
-    end
-
-    private ##############################
-
-    def logger
-      Thread.current[:logger] ||= Logger.new(
-          "#{Karma.log_folder}/#{@log_prefix}-#{Thread.current[:thread_index]}.log",
-          Karma::LOGGER_SHIFT_AGE,
-          Karma::LOGGER_SHIFT_SIZE,
-          level: Logger::INFO,
-          progname: "#{@log_prefix}-#{Thread.current[:thread_index]}"
-      )
-      return Thread.current[:logger]
+      Karma.logger.debug("#{$$}::#{Thread.current.to_s} #{Time.now}")
     end
 
   end

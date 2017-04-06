@@ -25,17 +25,61 @@ module Karma
   define_setting :template_folder # custom engine templates folder
 
   class << self
+
     attr_writer :logger
 
     def logger
-      filename = "#{Karma.log_folder}/karma.log"
-      @logger ||= Logger.new(
-        filename,
-        Karma::LOGGER_SHIFT_AGE,
-        Karma::LOGGER_SHIFT_SIZE,
-        level: Logger::INFO,
-        progname: self.name
-      )
+      if ::Thread.current[:thread_index].present?
+        ::Thread.current[:logger] ||= init_thread_logger
+      else
+        @logger ||= init_logger
+      end
+    end
+        
+    def init_logger
+      ret_logger = nil
+      if env_identifier
+        filename = "#{Karma.log_folder}/#{log_prefix}.log"
+        ret_logger = Logger.new(
+          filename,
+          Karma::LOGGER_SHIFT_AGE,
+          Karma::LOGGER_SHIFT_SIZE,
+          level: Logger::INFO,
+          progname: self.name
+        )
+      else
+        ret_logger = Logger.new($stdout).tap do |log|
+          log.progname = self.name
+        end
+      end
+      ret_logger.info { "Logger initialized (#{ret_logger.object_id})" }
+      ret_logger.debug { "env_identifier is defined: #{env_identifier.present?}" }
+      ret_logger
+    end
+
+    def init_thread_logger
+      ret_logger = nil
+      if env_identifier
+        filename = "#{Karma.log_folder}/#{log_prefix}-#{Thread.current[:thread_index]}.log"
+        ret_logger = Logger.new(
+          filename,
+          Karma::LOGGER_SHIFT_AGE,
+          Karma::LOGGER_SHIFT_SIZE,
+          level: Logger::INFO,
+          progname: self.name
+        )
+      else
+        ret_logger = Logger.new($stdout).tap do |log|
+          log.progname = self.name
+        end
+      end
+      ret_logger.info { "Logger initialized (#{ret_logger.object_id})" }
+      ret_logger.debug { "env_identifier is defined: #{env_identifier.present?}" }
+      ret_logger
+    end
+
+    def env_identifier
+      ENV['KARMA_IDENTIFIER']
     end
 
     def notifier_class

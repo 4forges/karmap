@@ -22,23 +22,23 @@ module Karma
       @@running_instance ||= self.new
       @@running_instance.run
     end
-
+    
     def initialize
       @engine = Karma.engine_class.new
-      logger.info 'Engine initialized'
+      Karma.logger.info 'Engine initialized'
     end
 
     def run
-      logger.info('Watchdog entered run method')
+      Karma.logger.info('Watchdog entered run method')
       register
       @poller = ::Thread.new do
         while true
           perform
-          logger.error 'Error during polling'
+          Karma.logger.error 'Error during polling'
           sleep 10
         end
       end
-      logger.info 'Poller started'
+      Karma.logger.info 'Poller started'
       Signal.trap('INT') do
         @trapped_signal = 'INT'
         @running = false
@@ -50,17 +50,17 @@ module Karma
       @running = true
       i = 0
       while @running do
-        logger.info 'watchdog is running' if i == 0
+        Karma.logger.info 'watchdog is running' if i == 0
         sleep 1
         i = i>=59 ? 0 : i + 1
       end
       if @trapped_signal
-        logger.info "Got signal #{@trapped_signal}"
+        Karma.logger.info "Got signal #{@trapped_signal}"
         sleep 0.5
       end
       @poller.kill
       (0..Karma::Watchdog::SHUTDOWN_SEC-1).each do |i|
-        logger.info("Gracefully shutdown... #{Karma::Watchdog::SHUTDOWN_SEC-i}")
+        Karma.logger.info("Gracefully shutdown... #{Karma::Watchdog::SHUTDOWN_SEC-i}")
         sleep 1
       end
     end
@@ -114,9 +114,9 @@ module Karma
     private ##############################
 
     def perform
-      logger.info("Started polling queue: #{Karma::Queue.incoming_queue_url}")
+      Karma.logger.info("Started polling queue: #{Karma::Queue.incoming_queue_url}")
       queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
-        logger.debug "Got message from queue #{msg.body}"
+        Karma.logger.debug "Got message from queue #{msg.body}"
         body = JSON.parse(msg.body).deep_symbolize_keys
         handle_message(body)
       end
@@ -124,16 +124,16 @@ module Karma
 
     # Notifies the Karma server about the current host and all Karma::Service subclasses
     def register
-      logger.info('Registering services...')
+      Karma.logger.info('Registering services...')
       @@service_classes = discover_services
-      logger.info("#{@@service_classes.count} services found")
+      Karma.logger.info("#{@@service_classes.count} services found")
       @@service_classes.each do |cls|
-        logger.info("Found service class #{cls.name}. Exporting...")
+        Karma.logger.info("Found service class #{cls.name}. Exporting...")
         service = cls.new
         engine.export_service(service)
         service.register
       end
-      logger.info('Done registering services')
+      Karma.logger.info('Done registering services')
     end
 
     def queue_client
@@ -141,20 +141,9 @@ module Karma
       return @@queue_client
     end
 
-    def logger
-      @logger ||= Logger.new(
-        "#{Karma.log_folder}/#{@log_prefix}.log",
-        Karma::LOGGER_SHIFT_AGE,
-        Karma::LOGGER_SHIFT_SIZE,
-        level: Logger::INFO,
-        progname: "#{name}@#{Watchdog.config_port}"
-      )
-      return @logger
-    end
-
     def handle_message(message)
       begin
-        logger.debug "New message arrived: #{message}"
+        Karma.logger.debug "New message arrived: #{message}"
         case message[:type]
 
           when Karma::Messages::ProcessCommandMessage.name
@@ -178,8 +167,8 @@ module Karma
             Karma.error("Invalid message type: #{message[:type]} - #{message.inspect}")
         end
       rescue ::Exception => e
-        logger.error "Error during message processing... #{message.inspect}"
-        logger.error e.message
+        Karma.logger.error "Error during message processing... #{message.inspect}"
+        Karma.logger.error e.message
       end
     end
 
@@ -191,7 +180,7 @@ module Karma
         when STOP_COMMAND
           engine.stop_service(msg.pid)
         else
-          logger.warn("Invalid process command: #{msg.command} - #{msg.inspect}")
+          Karma.logger.warn("Invalid process command: #{msg.command} - #{msg.inspect}")
       end
     end
 
@@ -213,19 +202,19 @@ module Karma
     def maintain_worker_count(service)
       # stop instances
       engine.to_be_stopped_instances.each do |instance|
-        logger.debug("Stop instance #{instances.name}")
+        Karma.logger.debug("Stop instance #{instances.name}")
         engine.stop_service(instance.pid)
       end
 
       # start instances
       if service.class.config_auto_start
         to_be_started_ports = all_ports_min - running_ports
-        logger.debug("Running instances to be started: #{to_be_started_ports.size}")
+        Karma.logger.debug("Running instances to be started: #{to_be_started_ports.size}")
         to_be_started_ports.each do |port|
           engine.start_service(service)
         end
       else
-        logger.debug('Autostart is false')
+        Karma.logger.debug('Autostart is false')
       end
     end
 
@@ -242,7 +231,7 @@ module Karma
           s.puts({ log_level: service.class.config_log_level, num_threads: service.class.config_num_threads }.to_json)
           s.close
         rescue ::Exception => e
-          logger.error("Error during handle_thread_config_update: #{e.message}")
+          Karma.logger.error("Error during handle_thread_config_update: #{e.message}")
         end
 
       end

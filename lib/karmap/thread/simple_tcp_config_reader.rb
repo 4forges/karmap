@@ -4,21 +4,20 @@ module Karma::Thread
 
     attr_reader :config
 
-    def initialize(default_config:, port:, logger:)
+    def initialize(default_config:, port:)
       @config = default_config || {}
       @port = port
-      @logger = logger
     end
 
     def start
       @server = TCPServer.new('127.0.0.1', @port)
-      @logger.debug "#{$$} - started TCP server on port #{@port}"
+      Karma.logger.debug "#{$$} - started TCP server on port #{@port}"
       @thread = ::Thread.new do
         loop do
           client = @server.accept
           data = client.gets
           @config = JSON.parse(data).symbolize_keys
-          @logger.info "#{$$} - received new thread config #{@config}"
+          Karma.logger.info "#{$$} - received new thread config #{@config}"
           client.close
         end
       end
@@ -26,7 +25,7 @@ module Karma::Thread
 
     def stop
       @server.close
-      @logger.debug "#{$$} - closed TCP server on port #{@port}"
+      Karma.logger.debug "#{$$} - closed TCP server on port #{@port}"
       @thread.kill
     end
 
