@@ -52,4 +52,11 @@ class SystemdParser
     return status
   end
 
+  def self.journalctl(service:, user: false, lines: 25)
+    service_param = "#{user ? '--user-unit=' : '-u '}'#{service}'"
+    output = `journalctl -n #{lines} #{service_param}`
+    output = output.split("\n")
+    return output
+  end
+
 end
