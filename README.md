@@ -60,3 +60,5 @@ The gem is available as open source under the terms of the [MIT License](http://
 
 enabled services 
 systemctl --user list-unit-files | grep enabled
+journalctl -f #logs
+systemctl --user start managed-sources-facebookfetcher@33000.service
