@@ -35,7 +35,11 @@ module Karma
         @logger ||= init_logger
       end
     end
-        
+    
+    def log_prefix
+      env_identifier
+    end
+    
     def init_logger
       ret_logger = nil
       if env_identifier
