@@ -6,6 +6,7 @@ module Karma
 
   class Watchdog
     include Karma::ServiceConfig
+    include Karma::Helpers
 
     port Karma.watchdog_port
 
@@ -23,7 +24,7 @@ module Karma
       @@running_instance ||= self.new
       @@running_instance.run
     end
-    
+
     def initialize
       @engine = Karma.engine_class.new
       Karma.logger.info 'Engine initialized'
@@ -136,7 +137,7 @@ module Karma
           service.register
         rescue ::Exception => e
           Karma.logger.error e
-          
+
         end
       end
       Karma.logger.info('Done registering services')
