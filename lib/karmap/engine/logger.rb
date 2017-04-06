@@ -4,10 +4,6 @@ module Karma::Engine
 
   class Logger < Base
 
-    def reload
-      Karma.logger.debug("Karma::Engine received #{__method__}")
-    end
-
     def show_service(service)
       Karma.logger.debug("Karma::Engine received #{__method__} for #{service.full_name}")
     end
@@ -18,6 +14,10 @@ module Karma::Engine
 
     def show_all_services
       Karma.logger.debug("Karma::Engine received #{__method__}")
+    end
+
+    def show_service_log(service)
+      Karma.logger.debug("Karma::Engine received #{__method__} for #{service.full_name}")
     end
 
     def enable_service(service, params = {})

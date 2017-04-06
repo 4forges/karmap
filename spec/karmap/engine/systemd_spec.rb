@@ -169,6 +169,13 @@ describe Karma::Engine::Systemd do
       expect(new_pid).to_not eq(old_pid)
     end
 
+    it 'engine shows service log' do
+      engine.start_service(service)
+      wait_for {engine.show_service(service)}.to_not be_empty
+      log = engine.show_service_log(service)
+      expect(log.size).to be > 1
+    end
+
   end
 
 

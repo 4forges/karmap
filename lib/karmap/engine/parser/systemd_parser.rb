@@ -52,6 +52,10 @@ class SystemdParser
     return status
   end
 
+  # Calls journalctl and returns an array of entries (strings).
+  # @param service: service instance name.
+  # @param user: set to true if the service is a user unit.
+  # @param lines: max number of entries to return.
   def self.journalctl(service:, user: false, lines: 25)
     service_param = "#{user ? '--user-unit=' : '-u '}'#{service}'"
     output = `journalctl -n #{lines} #{service_param}`

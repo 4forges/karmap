@@ -11,10 +11,6 @@ module Karma::Engine
       "/home/#{Karma.user}/.config/systemd/user"
     end
 
-    def reload
-      `systemctl --user daemon-reload`
-    end
-
     def show_service(service)
       # note: does not show dead units
       service_status(service: "#{service.full_name}@*")
@@ -26,6 +22,10 @@ module Karma::Engine
 
     def show_all_services
       service_status(service: "#{project_name}-*@*")
+    end
+
+    def show_service_log(service)
+      service_log(service: "#{service.full_name}@*")
     end
 
     def enable_service(service)
@@ -135,6 +135,10 @@ module Karma::Engine
 
     private ####################
 
+    def reload
+      `systemctl --user daemon-reload`
+    end
+
     def service_status(service:)
       status = SystemdParser.systemctl_status(service: service, user: true)
       ret = {}
@@ -152,6 +156,10 @@ module Karma::Engine
         )
       end
       return ret
+    end
+
+    def service_log(service:)
+      return SystemdParser.journalctl(service: service, user: true, lines: 100)
     end
 
     def to_karma_status(process_status)
