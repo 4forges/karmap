@@ -32,10 +32,14 @@ module Karma
       if ::Thread.current[:thread_index].present?
         ::Thread.current[:logger] ||= init_thread_logger
       else
-        @logger ||= init_logger
+        @instance_logger ||= init_logger
       end
     end
-    
+
+    def instance_logger
+      @instance_logger ||= init_logger
+    end
+
     def log_prefix
       env_identifier
     end
@@ -64,7 +68,7 @@ module Karma
     def init_thread_logger
       ret_logger = nil
       if env_identifier
-        filename = "#{Karma.log_folder}/#{log_prefix}-#{Thread.current[:thread_index]}.log"
+        filename = "#{Karma.log_folder}/#{log_prefix}-#{::Thread.current[:thread_index]}.log"
         ret_logger = Logger.new(
           filename,
           Karma::LOGGER_SHIFT_AGE,

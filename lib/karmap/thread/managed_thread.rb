@@ -90,8 +90,9 @@ module Karma::Thread
               sleep 10
             end
           sleep @running_sleep_time
-        rescue ::Exception
+        rescue ::Exception => e
           @thread[:status] == :error
+          Karma.logger.error e
         end
       end
       blocks[:finishing].call

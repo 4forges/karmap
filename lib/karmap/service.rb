@@ -101,7 +101,7 @@ module Karma
         puts 'term trapped'
         stop
       end
-
+      
       before_start
       @thread_config_reader.start
       @running = true
@@ -120,6 +120,7 @@ module Karma
         self.class.update_thread_config(@thread_config_reader.config) if @thread_config_reader.config.present?
         @thread_pool.manage(self.class.to_thread_config)
 
+        Karma.logger.debug 'Service is running'
         sleep(@sleep_time)
       end
 
