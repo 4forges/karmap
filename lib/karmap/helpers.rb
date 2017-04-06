@@ -1,4 +1,5 @@
 module Karma::Helpers
+
   # Copied whole sale from, https://github.com/defunkt/resque/
 
   # Given a word with dashes, returns a camel cased version of it.

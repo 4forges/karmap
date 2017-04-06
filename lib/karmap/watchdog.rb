@@ -6,7 +6,6 @@ module Karma
 
   class Watchdog
     include Karma::ServiceConfig
-    include Karma::Helpers
 
     port Karma.watchdog_port
 
@@ -114,6 +113,8 @@ module Karma
     end
 
     private ##############################
+
+    include Karma::Helpers
 
     def perform
       Karma.logger.info("Started polling queue: #{Karma::Queue.incoming_queue_url}")
