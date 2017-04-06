@@ -23,7 +23,7 @@ module Karma
       @@running_instance ||= self.new
       @@running_instance.run
     end
-    
+
     def initialize
       @engine = Karma.engine_class.new
       Karma.logger.info 'Engine initialized'
@@ -114,6 +114,8 @@ module Karma
 
     private ##############################
 
+    include Karma::Helpers
+
     def perform
       Karma.logger.info("Started polling queue: #{Karma::Queue.incoming_queue_url}")
       queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
@@ -136,7 +138,7 @@ module Karma
           service.register
         rescue ::Exception => e
           Karma.logger.error e
-          
+
         end
       end
       Karma.logger.info('Done registering services')
