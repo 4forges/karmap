@@ -1,4 +1,5 @@
 require 'karmap'
+require 'karmap/helpers'
 require 'karmap/service_config'
 
 module Karma
@@ -175,8 +176,9 @@ module Karma
     def handle_process_command(msg)
       case msg.command
         when START_COMMAND
-          s = msg.service.constantize.new
-          engine.start_service(s)
+          cls = constantize(msg.service)
+          service = cls.new
+          engine.start_service(service)
         when STOP_COMMAND
           engine.stop_service(msg.pid)
         else
@@ -191,9 +193,9 @@ module Karma
 
     # keys: [:service, :type, :memory_max, :cpu_quota, :min_running, :max_running, :auto_restart, :auto_start]
     def handle_process_config_update(msg)
-      cls = msg.service.constantize
-      cls.update_process_config(msg.to_config)
+      cls = constantize(msg.service)
       service = cls.new
+      cls.update_process_config(msg.to_config)
       engine.export_service(service)
       maintain_worker_count(service)
     end
@@ -220,7 +222,7 @@ module Karma
 
     # keys: [:log_level, :num_threads]
     def handle_thread_config_update(msg)
-      cls = msg.service.constantize
+      cls = constantize(msg.service)
       service = cls.new
       cls.update_thread_config(msg.to_config)
 

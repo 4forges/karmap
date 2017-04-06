@@ -6,14 +6,6 @@ module Karma::Engine
 
   class SystemRaw < Base
 
-    def location
-      ''
-    end
-
-    def reload
-      Karma.logger.debug("#{self.class.name} received #{__method__}")
-    end
-
     def show_service(service)
       service_status(service_key_or_pid: "#{service.full_name}@")
     end
@@ -24,10 +16,6 @@ module Karma::Engine
 
     def show_all_services
       service_status(service_key_or_pid: "#{project_name}-")
-    end
-
-    def enable_service(service, params = {})
-      Karma.logger.debug("#{self.class.name} received #{__method__} for #{service.full_name}")
     end
 
     def start_service(service, params = {})
@@ -54,14 +42,6 @@ module Karma::Engine
     def restart_service(pid, params = {})
       stop_service(pid)
       start_service(params[:service])
-    end
-
-    def export_service(service)
-      Karma.logger.debug("#{self.class.name} received #{__method__} for #{service.full_name}")
-    end
-
-    def remove_service(service)
-      Karma.logger.debug("#{self.class.name} received #{__method__} for #{service.full_name}")
     end
 
     private ####################

@@ -24,10 +24,6 @@ module Karma::Engine
       Dir.pwd
     end
 
-    def reload
-      # abstract
-    end
-
     def show_service(service)
       # abstract
     end
@@ -37,6 +33,10 @@ module Karma::Engine
     end
 
     def show_all_services
+      # abstract
+    end
+
+    def show_service_log(service)
       # abstract
     end
 
@@ -57,8 +57,7 @@ module Karma::Engine
     end
 
     def export_service(service)
-      Karma::Engine.error('Must specify a location') unless location
-      FileUtils.mkdir_p(location) rescue Karma::Engine.error("Could not create: #{location}")
+      FileUtils.mkdir_p(location) if location
     end
 
     def remove_service(service)
@@ -87,7 +86,7 @@ module Karma::Engine
       end
     end
 
-    def running_instances_for_service(service, params = {})
+    def running_instances_for_service(service)
       show_service(service).select{|k, v| v.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}
     end
 
