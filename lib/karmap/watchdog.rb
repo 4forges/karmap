@@ -26,7 +26,7 @@ module Karma
 
     def initialize
       Karma.logger.info { "Watchdog initialized with env: #{Karma.env}" }
-      Karma.logger.debug 
+      Karma.logger.debug
       @engine = Karma.engine_class.new
       Karma.logger.info 'Engine initialized'
     end
@@ -116,7 +116,7 @@ module Karma
     #################################################
 
     def service_classes
-      @@service_classes ||= Karma.services.select{|c| c.new.is_a?(Karma::Service) rescue false}
+      @@service_classes ||= Karma.services.select{|c| c.constantize.new.is_a?(Karma::Service) rescue false}
       return @@service_classes
     end
 
