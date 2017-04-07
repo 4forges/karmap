@@ -101,7 +101,7 @@ module Karma
         puts 'term trapped'
         stop
       end
-      
+
       before_start
       @thread_config_reader.start
       @running = true
@@ -136,12 +136,17 @@ module Karma
     end
 
     def register
-      message = Karma::Messages::ProcessRegisterMessage.new(
-        host: ::Socket.gethostname,
-        project: Karma.karma_project_id,
-        service: self.name
-      )
-      notifier.notify(message)
+      begin
+        message = Karma::Messages::ProcessRegisterMessage.new(
+          host: ::Socket.gethostname,
+          project: Karma.karma_project_id,
+          service: self.name
+        )
+        notifier.notify(message)
+      rescue ::Exception => e
+        # TODO HANDLE THIS
+        Karma.logger.error e
+      end
     end
 
     def running_thread_count

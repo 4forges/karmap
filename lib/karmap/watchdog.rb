@@ -134,12 +134,7 @@ module Karma
         Karma.logger.info("Found service class #{cls.name}. Exporting...")
         service = cls.new
         engine.export_service(service)
-        begin
-          service.register
-        rescue ::Exception => e
-          Karma.logger.error e
-
-        end
+        service.register
       end
       Karma.logger.info('Done registering services')
     end
