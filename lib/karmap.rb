@@ -128,6 +128,8 @@ module Karma
 
 end
 
+Karma::Messages.logger = Karma.logger
+
 require 'karmap/engine'
 require 'karmap/service'
 require 'karmap/watchdog'
