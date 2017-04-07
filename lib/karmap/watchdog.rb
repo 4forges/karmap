@@ -116,7 +116,7 @@ module Karma
     #################################################
 
     def service_classes
-      @@service_classes ||= Karma.services.select{|c| c.constantize.new.is_a?(Karma::Service) rescue false}
+      @@service_classes ||= Karma.services.select{|c| c.constantize.new.is_a?(Karma::Service) rescue false}.map{|c| c.constantize}
       return @@service_classes
     end
 
