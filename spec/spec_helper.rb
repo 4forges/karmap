@@ -6,6 +6,13 @@ require 'karmap/models/mock_service'
 require 'rspec'
 require 'rspec/wait'
 
+module Rails
+  # simulate rails environment
+  def self.env
+    'test'
+  end
+end
+
 def resource_path(filename)
   File.expand_path("../resources/#{filename}", __FILE__)
 end
@@ -32,9 +39,7 @@ RSpec.configure do |config|
       config.services =               [TestService]
       config.log_folder =             'spec/log'
     end
-  end
 
-  config.before(:each) do
     allow_any_instance_of(Karma::Queue::Client).to receive(:_client) do
       Aws::SQS::Client.new(
         access_key_id: Karma.aws_access_key_id,
