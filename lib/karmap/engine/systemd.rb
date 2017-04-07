@@ -8,7 +8,7 @@ module Karma::Engine
   class Systemd < Base
 
     def location
-      "/home/#{Karma.user}/.config/systemd/user"
+      "#{Karma.home_path}/.config/systemd/user"
     end
 
     def show_service(service)

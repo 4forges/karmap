@@ -2,7 +2,7 @@ require './spec/karmap/models/test_service'
 
 Karma.logger = Logger.new(STDOUT)
 Karma.configuration do |config|
-  config.user =                   'extendi'
+  config.home_path =              '/home/extendi'
   config.project_name =           'karma-spec'
   config.karma_project_id =       'fake'
   config.karma_user_id =          'fake'

@@ -16,10 +16,6 @@ module Karma::Engine
       Karma.project_name
     end
 
-    def user
-      Karma.user
-    end
-
     def work_directory
       Dir.pwd
     end

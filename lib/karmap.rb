@@ -15,7 +15,7 @@ module Karma
   LOGGER_SHIFT_AGE = 2
   LOGGER_SHIFT_SIZE = 52428800
 
-  define_setting :user # deploy user (required)
+  define_setting :home_path # deploy user (required)
   define_setting :project_name # project name as string (required)
   define_setting :services, [] # managed services classes (required)
   define_setting :karma_user_id # (required)
