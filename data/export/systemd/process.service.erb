@@ -5,7 +5,6 @@ PartOf=<%= service.full_name %>.target
 WorkingDirectory=<%= work_directory %>
 Environment=PORT=%i
 Environment=KARMA_IDENTIFIER=%n
-Environment=RAILS_ENV=<%= Rails.env %>
 ExecStart=/bin/bash -lc '<%= service.command %>'
 Restart=always
 StandardInput=null
