@@ -5,11 +5,11 @@ PartOf=karma-spec-testservice.target
 WorkingDirectory=/tmp/app
 Environment=PORT=%i
 Environment=KARMA_IDENTIFIER=%n
-Environment=KARMA_ENV =test
-Environment=KARMA_PROJECT_ID =fake
-Environment=KARMA_USER_ID =fake
-Environment=KARMA_AWS_USER_ACCESS_KEY =fake
-Environment=KARMA_AWS_USER_SECRET_ACCESS_KEY =fake
+Environment=KARMA_ENV=test
+Environment=KARMA_PROJECT_ID=fake
+Environment=KARMA_USER_ID=fake
+Environment=KARMA_AWS_USER_ACCESS_KEY=fake
+Environment=KARMA_AWS_USER_SECRET_ACCESS_KEY=fake
 ExecStart=/bin/bash -lc 'bundle exec ruby spec/scripts/run_test_service.rb'
 Restart=always
 StandardInput=null
