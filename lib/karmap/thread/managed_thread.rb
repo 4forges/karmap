@@ -22,7 +22,7 @@ module Karma::Thread
         Thread.current[:is_managed_thread] = true
         Thread.current[:status] = :inited
         Thread.current[:thread_index] = options[:thread_index]
-        Karma.logger.debug "#{$$}::#{Thread.current.to_s} inited"
+        Karma.logger.info "#{$$}::#{Thread.current.to_s} inited"
         Thread.stop
         outer_block(blocks)
       end
