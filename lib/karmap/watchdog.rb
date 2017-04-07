@@ -111,6 +111,46 @@ module Karma
         s.engine.restart_service(status.values[0].pid, { service: s })
       end
     end
+    #################################################
+
+    def service_classes
+      @@service_classes ||= Karma.services.select{|c| c.new.is_a?(Karma::Service) rescue false}
+      return @@service_classes
+    end
+
+    def self.start_all_services
+      s = self.new
+      Karma.logger.info('Starting all services...')
+      s.service_classes.each do |cls|
+        Karma.logger.info("Starting #{cls.name}...")
+        service = cls.new
+        s.engine.start_service(service)
+        service.register
+      end
+      Karma.logger.info('Done starting services')
+    end
+
+    def self.stop_all_services
+      s = self.new
+      Karma.logger.info('Stopping all services...')
+      status = s.engine.show_all_services
+      status.values.map(&:pid).each do |pid|
+        Karma.logger.info("Stopping pid #{pid}...")
+        s.engine.stop_service(pid)
+      end
+      Karma.logger.info('Done stopping services')
+    end
+
+    def self.restart_all_services
+      s = self.new
+      Karma.logger.info('Restarting all services...')
+      status = s.engine.show_all_services
+      status.values.map(&:pid).each do |pid|
+        Karma.logger.info("Restarting pid #{pid}...")
+        s.engine.restart_service(pid)
+      end
+      Karma.logger.info('Done restarting services')
+    end
 
     private ##############################
 
@@ -128,10 +168,9 @@ module Karma
     # Notifies the Karma server about the current host and all Karma::Service subclasses
     def register
       Karma.logger.info('Registering services...')
-      @@service_classes = discover_services
-      Karma.logger.info("#{@@service_classes.count} services found")
-      @@service_classes.each do |cls|
-        Karma.logger.info("Found service class #{cls.name}. Exporting...")
+      Karma.logger.info("#{service_classes.count} services found")
+      service_classes.each do |cls|
+        Karma.logger.info("Exporting #{cls.name}...")
         service = cls.new
         engine.export_service(service)
         service.register
@@ -151,7 +190,7 @@ module Karma
 
           when Karma::Messages::ProcessCommandMessage.name
             # set the array of discovered services for validation
-            Karma::Messages::ProcessCommandMessage.services = @@service_classes.map(&:to_s)
+            Karma::Messages::ProcessCommandMessage.services = service_classes.map(&:to_s)
             msg = Karma::Messages::ProcessCommandMessage.new(message)
             Karma.error(msg.errors) unless msg.valid?
             handle_process_command(msg)
@@ -186,11 +225,6 @@ module Karma
         else
           Karma.logger.warn("Invalid process command: #{msg.command} - #{msg.inspect}")
       end
-    end
-
-    # return an array of classes
-    def discover_services
-      Karma.services.select{|c| c.new.is_a?(Karma::Service) rescue false}
     end
 
     # keys: [:service, :type, :memory_max, :cpu_quota, :min_running, :max_running, :auto_restart, :auto_start]
