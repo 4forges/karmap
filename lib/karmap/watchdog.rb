@@ -94,7 +94,7 @@ module Karma
     end
 
     def command
-      "bundle exec rails runner -e production \"Karma::Watchdog.run\""
+      "bundle exec rails runner -e #{Rails.env} \"Karma::Watchdog.run\""
     end
 
     def timeout_stop
