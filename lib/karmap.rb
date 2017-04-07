@@ -22,6 +22,11 @@ module Karma
   define_setting :karma_project_id # (required)
   define_setting :aws_access_key_id # (required)
   define_setting :aws_secret_access_key # (required)
+  if defined?(::Rails)
+    define_setting :env, Rails.env
+  else
+    define_setting :env # (required)
+  end
   define_setting :engine, 'systemd'
   define_setting :notifier, 'queue'
   define_setting :watchdog_port, 32000

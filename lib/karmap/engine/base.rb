@@ -63,22 +63,25 @@ module Karma::Engine
     def get_process_status_message(service, pid)
       status = show_service_by_pid(pid)
       if status.present?
-        return Karma::Messages::ProcessStatusUpdateMessage.new(
+        m = Karma::Messages::ProcessStatusUpdateMessage.new(
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
           service: service.name,
           pid: status.values[0].pid,
           status: status.values[0].status
         )
+        Karma.logger.warn { "message: #{m.to_message}, project: #{Karma.karma_project_id}" }
+        return m
       else
         Karma.logger.warn "Cannot find status for service #{service.full_name}@#{service.env_port} (#{pid})"
-        return Karma::Messages::ProcessStatusUpdateMessage.new(
+        m = Karma::Messages::ProcessStatusUpdateMessage.new(
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
           service: service.name,
           pid: pid,
           status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]
         )
+        return m
       end
     end
 

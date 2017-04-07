@@ -25,6 +25,8 @@ module Karma
     end
 
     def initialize
+      Karma.logger.info { "Watchdog initialized with env: #{Karma.env}" }
+      Karma.logger.debug 
       @engine = Karma.engine_class.new
       Karma.logger.info 'Engine initialized'
     end
@@ -94,7 +96,7 @@ module Karma
     end
 
     def command
-      "bundle exec rails runner -e #{Rails.env} \"Karma::Watchdog.run\""
+      "bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\""
     end
 
     def timeout_stop
