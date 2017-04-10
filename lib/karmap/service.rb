@@ -107,16 +107,14 @@ module Karma
       after_start
 
       # notify queue after start
-      message = engine.get_process_status_message(self, $$)
-      notifier.notify(message)
+      notify_status
 
       last_notified_at = nil
       while @running do
 
         # notify queue each 5 sec
         if last_notified_at.nil? || (Time.now - last_notified_at) > 5
-          message = engine.get_process_status_message(self, $$)
-          notifier.notify(message) if message.present? && message.valid?
+          notify_status
           last_notified_at = Time.now
         end
 
@@ -134,8 +132,7 @@ module Karma
       after_stop
 
       # notify queue after stop
-      message = engine.get_process_status_message(self, $$, {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]})
-      notifier.notify(message)
+      notify_status(Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped])
     end
 
     def register
@@ -158,6 +155,17 @@ module Karma
 
     def stop_all_threads
       @thread_pool.stop_all
+    end
+
+    def notify_status(status = nil)
+      if status.present?
+        message = engine.get_process_status_message(self, $$, status: status)
+      else
+        message = engine.get_process_status_message(self, $$)
+      end
+      if message.present? && message.valid?
+        notifier.notify(message)
+      end
     end
 
   end
