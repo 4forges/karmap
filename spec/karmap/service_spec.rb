@@ -24,6 +24,7 @@ describe Karma::Service do
 
     status = engine.show_service(service)
     pid = status.values[0].pid
+    expect(service.notifier).to receive(:notify).with(an_instance_of(Karma::Messages::ProcessStatusUpdateMessage))
 
     engine.stop_service(pid)
     wait_for{File.exists?('spec/log/testservice-before_stop.log')}.to be_truthy

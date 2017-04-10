@@ -94,11 +94,9 @@ module Karma
 
     def run
       Signal.trap('INT') do
-        puts 'int trapped'
         stop
       end
       Signal.trap('TERM') do
-        puts 'term trapped'
         stop
       end
 
@@ -131,7 +129,7 @@ module Karma
       after_stop
 
       # notify queue after stop
-      message = engine.get_process_status_message(self, $$)
+      message = engine.get_process_status_message(self, $$, {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]})
       notifier.notify(message)
     end
 

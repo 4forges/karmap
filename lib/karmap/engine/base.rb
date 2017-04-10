@@ -60,7 +60,7 @@ module Karma::Engine
       # abstract
     end
 
-    def get_process_status_message(service, pid)
+    def get_process_status_message(service, pid, params = {})
       status = show_service_by_pid(pid)
       if status.present?
         m = Karma::Messages::ProcessStatusUpdateMessage.new(
@@ -70,6 +70,9 @@ module Karma::Engine
           pid: status.values[0].pid,
           status: status.values[0].status
         )
+        if params[:status].present?
+          m.status = params[:status]
+        end
         Karma.logger.warn { "message: #{m.to_message}, project: #{Karma.karma_project_id}" }
         return m
       else
