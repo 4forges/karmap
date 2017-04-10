@@ -61,7 +61,7 @@ module Karma
           filename,
           Karma::LOGGER_SHIFT_AGE,
           Karma::LOGGER_SHIFT_SIZE,
-          level: Logger::INFO,
+          level: Logger::DEBUG,
           progname: self.name
         )
       else
@@ -82,7 +82,7 @@ module Karma
           filename,
           Karma::LOGGER_SHIFT_AGE,
           Karma::LOGGER_SHIFT_SIZE,
-          level: Logger::INFO,
+          level: Logger::DEBUG,
           progname: self.name
         )
       else
