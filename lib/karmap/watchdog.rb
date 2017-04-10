@@ -13,21 +13,22 @@ module Karma
     START_COMMAND = 'start'
     STOP_COMMAND = 'stop'
 
+    @@instance = nil
     @@service_classes = nil
-    @@running_instance = nil
     @@queue_client = nil
 
-    attr_accessor :engine
+    attr_accessor :engine, :service_statuses
 
     def self.run
-      @@running_instance ||= self.new
-      @@running_instance.run
+      @@instance ||= self.new
+      @@instance.run
     end
 
     def initialize
       Karma.logger.info { "Watchdog initialized with env: #{Karma.env}" }
       Karma.logger.debug
       @engine = Karma.engine_class.new
+      @service_statuses = {}
       Karma.logger.info 'Engine initialized'
     end
 
@@ -56,7 +57,7 @@ module Karma
         sleep 1
         i += 1
         if (i%5).zero?
-          check_processes
+          check_service_statuses
         end
         if (i%60).zero?
           Karma.logger.info 'watchdog is running'
@@ -123,7 +124,7 @@ module Karma
 
     def service_classes
       @@service_classes ||= Karma.services.select{|c| constantize(c).new.is_a?(Karma::Service) rescue false}.map{|c| constantize(c)}
-      return @@service_classes
+      @@service_classes
     end
 
     def self.start_all_services
@@ -188,7 +189,7 @@ module Karma
 
     def queue_client
       @@queue_client ||= Karma::Queue::Client.new
-      return @@queue_client
+      @@queue_client
     end
 
     def handle_message(message)
@@ -247,7 +248,7 @@ module Karma
     # TODO review if this still makes sense
     def maintain_worker_count(service)
       # stop instances
-      engine.to_be_stopped_instances.each do |instance|
+      engine.to_be_stopped_instances(service).each do |instance|
         Karma.logger.debug("Stop instance #{instances.name}")
         engine.stop_service(instance.pid)
       end
@@ -283,9 +284,17 @@ module Karma
       end
     end
 
-    def check_processes
-      # TODO confrontare pid per vedere se sono cambiati
-
+    def check_service_statuses
+      new_service_statuses = engine.show_all_services
+      service_statuses.each do |instance, status|
+        if new_service_statuses[instance].present?
+          # check pid changed
+          if new_service_statuses[instance].pid != status.pid
+            # TODO
+          end
+        end
+      end
+      @service_statuses = new_service_statuses
     end
 
   end
