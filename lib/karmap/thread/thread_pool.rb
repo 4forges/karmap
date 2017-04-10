@@ -38,8 +38,8 @@ module Karma::Thread
         stop
       end
 
-      # Karma.logger.debug { "Set log level to #{log_level}"}
-      # set_log_level(log_level)
+      Karma.logger.debug { "Set log level to #{log_level}"}
+      set_log_level(log_level)
     end
 
     def all
