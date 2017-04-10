@@ -5,6 +5,7 @@ module Karma
 
   class Service
     include Karma::ServiceConfig
+    include Karma::Helpers
 
     attr_accessor :notifier, :engine
 
@@ -40,7 +41,7 @@ module Karma
     end
 
     def full_name
-      "#{Karma.project_name}-#{name}".downcase
+      "#{Karma.project_name}-#{dashify(name)}".downcase
     end
 
     def identifier(port = nil)
@@ -108,7 +109,7 @@ module Karma
       # notify queue after start
       message = engine.get_process_status_message(self, $$)
       notifier.notify(message)
-      
+
       last_notified_at = nil
       while @running do
 

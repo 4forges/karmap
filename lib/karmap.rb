@@ -7,6 +7,7 @@ require 'active_support'
 require 'active_support/core_ext'
 require 'karma_messages'
 require 'karmap/configuration'
+require 'karmap/helpers'
 
 module Karma
 

@@ -1,5 +1,4 @@
 require 'karmap'
-require 'karmap/helpers'
 require 'karmap/service_config'
 
 module Karma
@@ -56,7 +55,7 @@ module Karma
       while @running do
         sleep 1
         i += 1
-        if (i%5).zero?
+        if (i%10).zero?
           check_service_statuses
         end
         if (i%60).zero?
@@ -280,7 +279,6 @@ module Karma
         rescue ::Exception => e
           Karma.logger.error("Error during handle_thread_config_update: #{e.message}")
         end
-
       end
     end
 
@@ -290,7 +288,9 @@ module Karma
         if new_service_statuses[instance].present?
           # check pid changed
           if new_service_statuses[instance].pid != status.pid
-            # TODO
+            message = engine.get_process_status_message(status.name, status.pid, {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]})
+            # TODO notifier + client
+            # notifier.notify(message)
           end
         end
       end

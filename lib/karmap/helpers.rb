@@ -7,8 +7,16 @@ module Karma::Helpers
   # classify('job-name') # => 'JobName'
   def classify(dashed_word)
     dashed_word.split('-').each { |part| part[0] = part[0].chr.upcase }.join
-  end  # Tries to find a constant with the name specified in the argument string:
+  end
 
+  # Given a camel cased word, returns a dashed version of it.
+  #
+  # dashify('JobName') # => 'job-name'
+  def dashify(camel_case_word)
+    camel_case_word.split(/(?=[A-Z])/).join('-').downcase
+  end
+
+  # Tries to find a constant with the name specified in the argument string:
   #
   # constantize("Module") # => Module
   # constantize("Test::Unit") # => Test::Unit
