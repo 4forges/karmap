@@ -53,9 +53,15 @@ module Karma
       @running = true
       i = 0
       while @running do
-        Karma.logger.info 'watchdog is running' if i == 0
         sleep 1
-        i = i>=59 ? 0 : i + 1
+        i += 1
+        if i%5.zero?
+          check_processes
+        end
+        if i%60.zero?
+          Karma.logger.info 'watchdog is running'
+          i = 0
+        end
       end
       if @trapped_signal
         Karma.logger.info "Got signal #{@trapped_signal}"
@@ -275,6 +281,11 @@ module Karma
         end
 
       end
+    end
+
+    def check_processes
+      # TODO confrontare pid per vedere se sono cambiati
+
     end
 
   end
