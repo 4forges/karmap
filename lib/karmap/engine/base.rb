@@ -95,10 +95,10 @@ module Karma::Engine
     def to_be_stopped_instances(service)
       running_instances = running_instances_for_service(service) #keys: [:pid, :full_name, :port]
       running_ports = running_instances.values.map{ |i| i.port.to_i }
-      Karma.logger.debug("Running instances found: #{running_ports.size}")
+      Karma.logger.debug { "Running instances found: #{running_ports.size}" }
 
       to_be_stopped_ports = running_ports - service.class.max_ports
-      Karma.logger.debug("Running instances to be stopped: #{to_be_stopped_ports.size}")
+      Karma.logger.debug { "Running instances to be stopped: #{to_be_stopped_ports.size}" }
       running_instances.values.select do |i|
         to_be_stopped_ports.include?(i.port)
       end
@@ -107,20 +107,20 @@ module Karma::Engine
     def to_be_started_ports(service)
       running_instances = running_instances_for_service(service) #keys: [:pid, :full_name, :port]
       running_ports = running_instances.values.map{ |i| i.port.to_i }
-      Karma.logger.debug("Running instances found: #{running_ports.size}")
+      Karma.logger.debug { "Running instances found: #{running_ports.size}" }
 
       to_be_started_ports = service.class.min_ports - running_ports
-      Karma.logger.debug("Running instances to be started: #{to_be_started_ports.size}")
+      Karma.logger.debug { "Running instances to be started: #{to_be_started_ports.size}" }
       to_be_started_ports
     end
 
     def free_ports(service)
       running_instances = running_instances_for_service(service) #keys: [:pid, :full_name, :port]
       running_ports = running_instances.values.map{ |i| i.port.to_i }
-      Karma.logger.debug("Running instances found: #{running_ports.size}")
+      Karma.logger.debug { "Running instances found: #{running_ports.size}" }
 
       free_ports = service.class.max_ports - running_ports
-      Karma.logger.debug("Free ports: #{free_ports.size}")
+      Karma.logger.debug { "Free ports: #{free_ports.size}" }
       free_ports
     end
 

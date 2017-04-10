@@ -32,7 +32,7 @@ module Karma
     end
 
     def run
-      Karma.logger.info('Watchdog entered run method')
+      Karma.logger.info { 'Watchdog entered run method' }
       register
       @poller = ::Thread.new do
         while true
@@ -63,7 +63,7 @@ module Karma
       end
       @poller.kill
       (0..Karma::Watchdog::SHUTDOWN_SEC-1).each do |i|
-        Karma.logger.info("Gracefully shutdown... #{Karma::Watchdog::SHUTDOWN_SEC-i}")
+        Karma.logger.info { "Gracefully shutdown... #{Karma::Watchdog::SHUTDOWN_SEC-i}" }
         sleep 1
       end
     end
@@ -122,36 +122,36 @@ module Karma
 
     def self.start_all_services
       s = self.new
-      Karma.logger.info('Starting all services...')
+      Karma.logger.info { 'Starting all services...' }
       s.service_classes.each do |cls|
-        Karma.logger.info("Starting #{cls.name}...")
+        Karma.logger.info { "Starting #{cls.name}..." }
         service = cls.new
         s.engine.start_service(service)
         service.register
       end
-      Karma.logger.info('Done starting services')
+      Karma.logger.info { 'Done starting services' }
     end
 
     def self.stop_all_services
       s = self.new
-      Karma.logger.info('Stopping all services...')
+      Karma.logger.info { 'Stopping all services...' }
       status = s.engine.show_all_services
       status.values.map(&:pid).each do |pid|
-        Karma.logger.info("Stopping pid #{pid}...")
+        Karma.logger.info { "Stopping pid #{pid}..." }
         s.engine.stop_service(pid)
       end
-      Karma.logger.info('Done stopping services')
+      Karma.logger.info { 'Done stopping services' }
     end
 
     def self.restart_all_services
       s = self.new
-      Karma.logger.info('Restarting all services...')
+      Karma.logger.info { 'Restarting all services...' }
       status = s.engine.show_all_services
       status.values.map(&:pid).each do |pid|
-        Karma.logger.info("Restarting pid #{pid}...")
+        Karma.logger.info { "Restarting pid #{pid}..." }
         s.engine.restart_service(pid)
       end
-      Karma.logger.info('Done restarting services')
+      Karma.logger.info { 'Done restarting services' }
     end
 
     private ##############################
@@ -159,7 +159,7 @@ module Karma
     include Karma::Helpers
 
     def perform
-      Karma.logger.info("Started polling queue: #{Karma::Queue.incoming_queue_url}")
+      Karma.logger.info { "Started polling queue: #{Karma::Queue.incoming_queue_url}" }
       queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
         Karma.logger.debug "Got message from queue #{msg.body}"
         body = JSON.parse(msg.body).deep_symbolize_keys
@@ -169,15 +169,15 @@ module Karma
 
     # Notifies the Karma server about the current host and all Karma::Service subclasses
     def register
-      Karma.logger.info('Registering services...')
-      Karma.logger.info("#{service_classes.count} services found")
+      Karma.logger.info { 'Registering services...' }
+      Karma.logger.info { "#{service_classes.count} services found" }
       service_classes.each do |cls|
-        Karma.logger.info("Exporting #{cls.name}...")
+        Karma.logger.info { "Exporting #{cls.name}..." }
         service = cls.new
         engine.export_service(service)
         service.register
       end
-      Karma.logger.info('Done registering services')
+      Karma.logger.info { 'Done registering services' }
     end
 
     def queue_client
@@ -241,20 +241,19 @@ module Karma
     # TODO review if this still makes sense
     def maintain_worker_count(service)
       # stop instances
-      engine.to_be_stopped_instances.each do |instance|
-        Karma.logger.debug("Stop instance #{instances.name}")
+      engine.to_be_stopped_instances(service).each do |instance|
+        Karma.logger.debug { "Stop instance #{instances.name}" }
         engine.stop_service(instance.pid)
       end
 
       # start instances
       if service.class.config_auto_start
-        to_be_started_ports = all_ports_min - running_ports
-        Karma.logger.debug("Running instances to be started: #{to_be_started_ports.size}")
-        to_be_started_ports.each do |port|
+        engine.to_be_started_ports(service).each do |port|
+          Karma.logger.debug { "Start new instance of #{service.name} on port #{port}" }
           engine.start_service(service)
         end
       else
-        Karma.logger.debug('Autostart is false')
+        Karma.logger.debug { 'Autostart is false' }
       end
     end
 

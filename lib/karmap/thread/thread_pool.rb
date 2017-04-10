@@ -28,12 +28,12 @@ module Karma::Thread
       
       Karma.logger.debug { "Active size: #{active.size} "}
       while (active.size) < max_workers
-        Karma.logger.debug { "Add new thread"}
+        Karma.logger.debug { "Adding new thread..."}
         add({running: @task_block}, { running_sleep_time: @current_config[:sleep_time] })
       end
 
       while (active.size) > max_workers
-        Karma.logger.debug { "Stop thread"}
+        Karma.logger.debug { "Stopping thread..."}
         stop
       end
 
@@ -67,7 +67,7 @@ module Karma::Thread
 
     def kill_frozen(threshold)
       ret = 0
-      frozen(threshold).map{|t| ret+=1; t.thread.kill}
+      frozen(threshold).map{|t| ret+=1; t.kill_inner_thread}
       ret
     end
 

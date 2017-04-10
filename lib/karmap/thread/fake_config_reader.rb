@@ -11,7 +11,7 @@ module Karma::Thread
     def start
       @check_config_task = Concurrent::TimerTask.new(execution_interval: 5, timeout_interval: 5) do
         refresh_config
-        Karma.logger.debug("new config: #{@config.inspect}")
+        Karma.logger.debug { "new config: #{@config.inspect}" }
       end
       @check_config_task.execute
     end

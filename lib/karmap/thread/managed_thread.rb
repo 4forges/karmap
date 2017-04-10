@@ -85,6 +85,10 @@ module Karma::Thread
       end
       ret
     end
+    
+    def kill_inner_thread
+      @thread.kill
+    end
 
     def outer_block(blocks = {})
       begin
@@ -115,7 +119,7 @@ module Karma::Thread
     end
 
     def running_default_block
-      Karma.logger.debug("#{$$}::#{Thread.current.to_s} #{Time.now}")
+      Karma.logger.debug { "#{$$}::#{Thread.current.to_s} #{Time.now}" }
     end
 
   end
