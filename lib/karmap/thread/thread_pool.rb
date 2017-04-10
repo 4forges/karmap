@@ -19,21 +19,22 @@ module Karma::Thread
 
       max_workers = @current_config[:num_threads]
       log_level = @current_config[:log_level]
+
       Karma.logger.debug { 'Killing frozen threads...' }
       num_killed = kill_frozen(FROZEN_THREADS_TIMEOUT)
-      Karma.logger.debug { "#{num_killed} killed" }
+      Karma.logger.debug { num_killed > 0 ? "#{num_killed} killed" : "Nothing to kill" }
+
       Karma.logger.debug { 'Pruning stopped threads...' }
       num_pruned = prune_list
-      Karma.logger.debug { "#{num_pruned} pruned" }
+      Karma.logger.debug { num_pruned > 0 ? "#{num_pruned} pruned" : "Nothing to prune" }
       
-      Karma.logger.debug { "Active size: #{active.size} "}
+      Karma.logger.debug { "Active size: #{active.size} - max_workers: #{max_workers}"}
       while (active.size) < max_workers
-        Karma.logger.debug { "Add new thread"}
+        Karma.logger.debug { "Adding new thread..."}
         add({running: @task_block}, { running_sleep_time: @current_config[:sleep_time] })
       end
-
       while (active.size) > max_workers
-        Karma.logger.debug { "Stop thread"}
+        Karma.logger.debug { "Stopping thread..."}
         stop
       end
 
@@ -67,7 +68,7 @@ module Karma::Thread
 
     def kill_frozen(threshold)
       ret = 0
-      frozen(threshold).map{|t| ret+=1; t.thread.kill}
+      frozen(threshold).map{|t| ret+=1; t.kill_inner_thread}
       ret
     end
 

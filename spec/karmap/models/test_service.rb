@@ -21,7 +21,7 @@ class TestService < Karma::Service
   def perform
     msg = "#{Time.now} :: process #{$$} :: thread #{Thread.current.object_id} :: method #{__method__}"
     File.open("#{folder}/#{name}-#{__method__}.log", 'w') { |file| file.puts(msg) }
-    Thread.current[:logger].info(msg) rescue false
+    Thread.current[:logger].info { msg } rescue false
   end
 
   def before_start
