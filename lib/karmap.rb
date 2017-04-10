@@ -69,6 +69,7 @@ module Karma
           log.progname = self.name
         end
       end
+      Karma::Messages.logger = ret_logger
       ret_logger.info { "Logger initialized (#{ret_logger.object_id})" }
       ret_logger.debug { "env_identifier is defined: #{env_identifier.present?}" }
       ret_logger
@@ -127,8 +128,6 @@ module Karma
   end
 
 end
-
-Karma::Messages.logger = Karma.logger
 
 require 'karmap/engine'
 require 'karmap/service'
