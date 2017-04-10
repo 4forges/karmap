@@ -63,14 +63,11 @@ module Karma::Engine
 
     def get_process_status_message(service, pid, params = {})
       status = show_service_by_pid(pid)
-      service_name = '-'
-      service_name = service.name if service.is_a?(Karma::Service)
-      service_name = classify(service.sub("#{Karma.project_name}-", '')) if service.is_a?(String)
       if status.present?
         attrs = {
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
-          service: service_name,
+          service: service.name,
           pid: status.values[0].pid,
           status: status.values[0].status
         }
@@ -78,11 +75,11 @@ module Karma::Engine
           attrs[:status] = params[:status]
         end
       else
-        Karma.logger.warn "Cannot find status for service #{service_name} (#{pid})"
+        Karma.logger.warn "Cannot find status for service #{service.name} (#{pid})"
         attrs = {
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
-          service: service_name,
+          service: service.name,
           pid: pid,
           status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]
         }

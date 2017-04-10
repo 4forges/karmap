@@ -285,11 +285,11 @@ module Karma
       new_service_statuses = engine.show_all_services
       service_statuses.each do |instance, status|
         if new_service_statuses[instance].present?
-          # check pid changed
+          # notify server if pid has changed
           if new_service_statuses[instance].pid != status.pid
-            message = engine.get_process_status_message(status.name, status.pid, {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]})
-            # TODO notifier + client
-            # notifier.notify(message)
+            service_name = classify(status.name.sub("#{Karma.project_name}-", ''))
+            service = constantize(service_name)
+            service.notify_status(pid: status.pid, status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead])
           end
         end
       end

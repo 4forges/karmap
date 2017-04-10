@@ -132,7 +132,7 @@ module Karma
       after_stop
 
       # notify queue after stop
-      notify_status(Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped])
+      notify_status(status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped])
     end
 
     def register
@@ -157,11 +157,11 @@ module Karma
       @thread_pool.stop_all
     end
 
-    def notify_status(status = nil)
+    def notify_status(pid: $$, status: nil)
       if status.present?
-        message = engine.get_process_status_message(self, $$, status: status)
+        message = engine.get_process_status_message(self, pid, status: status)
       else
-        message = engine.get_process_status_message(self, $$)
+        message = engine.get_process_status_message(self, pid)
       end
       if message.present? && message.valid?
         notifier.notify(message)
