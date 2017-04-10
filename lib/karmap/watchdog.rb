@@ -68,9 +68,6 @@ module Karma
       end
     end
 
-    #################################################
-    # watchdog config (for export)
-    #################################################
     def env_port
       ENV['PORT']
     end
@@ -79,6 +76,9 @@ module Karma
       ENV['KARMA_IDENTIFIER']
     end
 
+    #################################################
+    # watchdog config (for export)
+    #################################################
     def log_prefix
       env_identifier
     end
@@ -116,7 +116,7 @@ module Karma
     #################################################
 
     def service_classes
-      @@service_classes ||= Karma.services.select{|c| c.constantize.new.is_a?(Karma::Service) rescue false}.map{|c| c.constantize}
+      @@service_classes ||= Karma.services.select{|c| constantize(c).new.is_a?(Karma::Service) rescue false}.map{|c| constantize(c)}
       return @@service_classes
     end
 

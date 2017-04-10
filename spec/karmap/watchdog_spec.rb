@@ -8,6 +8,10 @@ describe Karma::Watchdog do
 
   before(:each) { allow_any_instance_of(Karma::Engine::Systemd).to receive(:start_service).and_return(true) }
 
+  it 'services to register' do
+    expect(watchdog.service_classes).to eq([TestService])
+  end
+
   it 'handles process command message' do
     watchdog.send(:register)
 
@@ -45,6 +49,18 @@ describe Karma::Watchdog do
     )
     expect(watchdog).to receive(:handle_thread_config_update).with(an_instance_of(Karma::Messages::ThreadConfigUpdateMessage))
     watchdog.send(:handle_message, msg.to_message)
+  end
+
+  it 'starts all services' do
+    # TODO
+  end
+
+  it 'stops all services' do
+    # TODO
+  end
+
+  it 'restarts all services' do
+    # TODO
   end
 
 end
