@@ -14,7 +14,7 @@ module Karma
       @engine = Karma.engine_class.new
       Karma.logger.info 'Engine initialized'
       @notifier = Karma.notifier_class.new
-      @thread_pool = Karma::Thread::ThreadPool.new(Proc.new { perform }, { log_prefix: self.log_prefix })
+      @thread_pool = Karma::Thread::ThreadPool.new(Proc.new { perform })
       @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(
         default_config: self.class.to_thread_config,
         port: env_port
@@ -110,12 +110,16 @@ module Karma
       # notify queue after start
       message = engine.get_process_status_message(self, $$)
       notifier.notify(message)
-
+      
+      last_notified_at = nil
       while @running do
 
-        # notify queue each loop
-        message = engine.get_process_status_message(self, $$)
-        notifier.notify(message) if message.present? && message.valid?
+        # notify queue each 5 sec
+        if last_notified_at.nil? || (Time.now - last_notified_at) > 5
+          message = engine.get_process_status_message(self, $$)
+          notifier.notify(message) if message.present? && message.valid?
+          last_notified_at = Time.now
+        end
 
         self.class.update_thread_config(@thread_config_reader.config) if @thread_config_reader.config.present?
         @thread_pool.manage(self.class.to_thread_config)

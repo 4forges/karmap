@@ -8,7 +8,6 @@ module Karma::Thread
 
     def initialize(blocks = {}, options = {})
       @thread = nil
-      @log_prefix = options[:log_prefix]
       @running_sleep_time = options[:running_sleep_time]||1
       blocks[:starting] ||= Proc.new { Karma.logger.debug "#{$$}::#{Thread.current.to_s} Starting" }
       blocks[:finishing] ||= Proc.new { Karma.logger.debug "#{$$}::#{Thread.current.to_s} Finishing" }
@@ -37,6 +36,10 @@ module Karma::Thread
       Karma.logger.level = level
     end
 
+    def thread_index
+      @thread[:thread_index]
+    end
+    
     def start
       @thread[:status] = :running
       @thread.run
@@ -66,38 +69,49 @@ module Karma::Thread
       @thread[:status] == :stopped
     end
 
+    def failed?
+      @thread[:status] == :error
+    end
+
     def status
       @thread[:status]
     end
 
-    def freezed?(threshold)
+    def frozen?(threshold)
       ret = (initing? && Time.now - (@thread[:last_running_at]||0) > 10) || (Time.now - (@thread[:last_running_at]||0) > threshold)
       if ret
-        @thread[:status] = :freezed
-        @thread[:freezed_at] = Time.now
+        @thread[:status] = :frozen
+        @thread[:frozen_at] = Time.now
       end
       ret
     end
 
     def outer_block(blocks = {})
-      blocks[:starting].call
-      while @thread[:status] != :stopping
-        begin
-          case @thread[:status]
-            when :running
-              blocks[:running].call
-            when :error
-              sleep 10
-            end
-          sleep @running_sleep_time
-        rescue ::Exception => e
-          @thread[:status] == :error
-          Karma.logger.error e
+      begin
+        blocks[:starting].call
+        while !stopping? && !failed?
+          begin
+            case @thread[:status]
+              when :running
+                blocks[:running].call
+              else
+                Karma.debug.debug { "Thread status: #{@thread[:status]}" }
+              end
+            sleep @running_sleep_time
+          rescue ::Exception => e
+            @thread[:status] = :error
+            Karma.logger.error e
+          end
         end
+        if stopping?
+          blocks[:finishing].call
+          @thread[:status] = :stopped
+          Thread.current[:stopped_at] = Time.now
+        end
+      rescue ::Exception => e
+        @thread[:status] = :error
+        Karma.logger.error e
       end
-      blocks[:finishing].call
-      @thread[:status] = :stopped
-      Thread.current[:stopped_at] = Time.now
     end
 
     def running_default_block
