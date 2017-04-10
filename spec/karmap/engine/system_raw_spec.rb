@@ -44,7 +44,6 @@ describe Karma::Engine::SystemRaw do
       expect(status.keys[0]).to eq('karma-spec-test-service@33000')
       expect(status.values[0].name).to eq('karma-spec-test-service')
       expect(status.values[0].port).to eq(33000)
-      puts status.values[0].inspect
       expect(status.values[0].status).to eq('running')
       expect(status.values[0].pid).to be > 1
     end
