@@ -55,10 +55,10 @@ module Karma
       while @running do
         sleep 1
         i += 1
-        if i%5.zero?
+        if (i%5).zero?
           check_processes
         end
-        if i%60.zero?
+        if (i%60).zero?
           Karma.logger.info 'watchdog is running'
           i = 0
         end
