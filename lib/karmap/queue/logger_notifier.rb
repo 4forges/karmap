@@ -9,7 +9,7 @@ module Karma::Queue
     end
 
     def notify(message)
-      Karma.logger.debug { "Outgoing message: #{message}" }
+      Karma.logger.debug{ "#{__method__}: outgoing message - #{message}" }
     end
 
   end

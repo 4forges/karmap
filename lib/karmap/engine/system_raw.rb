@@ -23,19 +23,19 @@ module Karma::Engine
       ::Thread.new do
         if !params[:port].nil? || free_ports(service).count > 0
           params[:port] ||= free_ports(service)[0]
-          Karma.logger.debug "system #{service.command}, port: #{params[:port]}"
-          system({"PORT" => params[:port].to_s, "KARMA_IDENTIFIER" => service.identifier(params[:port])}, service.command)
-        else
-          Karma.logger.debug "No free port available for service #{service.full_name}"
+          Karma.logger.debug{ "#{__method__}: running '#{service.command}', port: #{params[:port]}" }
+          system({'PORT' => params[:port].to_s, 'KARMA_IDENTIFIER' => service.identifier(params[:port])}, service.command)
+          return "#{service.full_name}@#{params[:port]}"
         end
+        return false
       end
     end
 
     def stop_service(pid, params = {})
       ::Thread.new do
-        Karma.logger.debug "system kill #{pid}"
+        Karma.logger.debug{ "#{__method__}: killing #{pid}" }
         res = `kill #{pid}`
-        Karma.logger.debug "res: #{res}"
+        Karma.logger.debug{ "#{__method__}: kill result #{res}" }
       end
     end
 

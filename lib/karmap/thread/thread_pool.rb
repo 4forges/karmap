@@ -20,25 +20,25 @@ module Karma::Thread
       max_workers = @current_config[:num_threads]
       log_level = @current_config[:log_level]
 
-      Karma.logger.debug { 'Killing frozen threads...' }
+      Karma.logger.debug{ 'Killing frozen threads...' }
       num_killed = kill_frozen(FROZEN_THREADS_TIMEOUT)
-      Karma.logger.debug { num_killed > 0 ? "#{num_killed} killed" : "Nothing to kill" }
+      Karma.logger.debug{ num_killed > 0 ? "#{num_killed} killed" : "Nothing to kill" }
 
-      Karma.logger.debug { 'Pruning stopped threads...' }
+      Karma.logger.debug{ 'Pruning stopped threads...' }
       num_pruned = prune_list
-      Karma.logger.debug { num_pruned > 0 ? "#{num_pruned} pruned" : "Nothing to prune" }
-      
-      Karma.logger.debug { "Active size: #{active.size} - max_workers: #{max_workers}"}
+      Karma.logger.debug{ num_pruned > 0 ? "#{num_pruned} pruned" : "Nothing to prune" }
+
+      Karma.logger.debug{ "Active size: #{active.size} - max_workers: #{max_workers}" }
       while (active.size) < max_workers
-        Karma.logger.debug { "Adding new thread..."}
+        Karma.logger.debug{ "Adding new thread..." }
         add({running: @task_block}, { running_sleep_time: @current_config[:sleep_time] })
       end
       while (active.size) > max_workers
-        Karma.logger.debug { "Stopping thread..."}
+        Karma.logger.debug{ "Stopping thread..." }
         stop
       end
 
-      Karma.logger.debug { "Set log level to #{log_level}"}
+      Karma.logger.debug{ "Set log level to #{log_level}"}
       set_log_level(log_level)
     end
 
@@ -53,7 +53,7 @@ module Karma::Thread
     def initing
       @list.select{|thread| thread.initing?}
     end
-    
+
     def active
       @list.select{|managed_thread| managed_thread.initing? || managed_thread.running? }
     end
@@ -87,10 +87,10 @@ module Karma::Thread
     def set_log_level(log_level)
       running.map{|managed_thread| managed_thread.set_log_level(log_level)}
     end
-    
+
     def get_first_thread_index
       running_indexes = active.map{|managed_thread| managed_thread.thread_index}
-      Karma.logger.info { "Running indexes: #{running_indexes} " }
+      Karma.logger.info{ "Running indexes: #{running_indexes}" }
       ((0..1000).to_a - running_indexes).first
     end
 

@@ -21,10 +21,9 @@ module Karma::Queue
   def self.host_name
     ::Socket.gethostname.to_s
   end
-  
+
   def self.incoming_queue_url
     s = "#{Karma.karma_user_id}-#{Karma.karma_project_id}-#{host_name}"
-    Karma.logger.debug { s }
     "#{base_queue_url}/#{::Digest::MD5.hexdigest(s)}"
   end
 

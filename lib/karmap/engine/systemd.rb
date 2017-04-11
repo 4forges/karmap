@@ -34,12 +34,12 @@ module Karma::Engine
 
     def start_service(service)
       # get first stopped instance name and start it
-      Karma.logger.debug { "starting #{service.full_name}" }
+      Karma.logger.debug{ "#{__method__}: starting #{service.full_name}" }
       status = show_service(service)
       (1..service.class.config_max_running).each do |i|
         instance_name = "#{service.full_name}@#{service.class.config_port+(i-1)}.service"
         if status[instance_name].nil?
-          Karma.logger.info { "starting instance #{instance_name}!" }
+          Karma.logger.info{ "#{__method__}: starting instance #{instance_name}" }
           `systemctl --user start #{instance_name}`
           return instance_name
         end
@@ -49,18 +49,20 @@ module Karma::Engine
 
     def stop_service(pid, params = {})
       # get instance by pid and stop it
+      Karma.logger.debug{ "#{__method__}: stopping #{pid}" }
       status = show_service_by_pid(pid)
       instance_name = status.keys[0]
-      Karma.logger.info { "stopping instance #{instance_name}!" }
+      Karma.logger.info{ "#{__method__}: stopping instance #{instance_name}" }
       `systemctl --user stop #{instance_name}`
       `systemctl --user reset-failed`
     end
 
     def restart_service(pid, params = {})
       # get instance by pid and restart it
+      Karma.logger.debug{ "#{__method__}: restarting #{pid}" }
       status = show_service_by_pid(pid)
       instance_name = status.keys[0]
-      Karma.logger.info { "restarting instance #{instance_name}!" }
+      Karma.logger.info{ "#{__method__}: restarting instance #{instance_name}" }
       `systemctl --user restart #{instance_name}`
       `systemctl --user reset-failed`
     end
@@ -76,7 +78,7 @@ module Karma::Engine
       # https://www.freedesktop.org/software/systemd/man/systemctl.html
       # https://www.freedesktop.org/software/systemd/man/systemd.unit.html#Specifiers
 
-      Karma.logger.info { "started systemd export for service #{service.name}" }
+      Karma.logger.info{ "#{__method__}: started systemd export for service #{service.name}" }
 
       super
 
@@ -117,7 +119,7 @@ module Karma::Engine
 
       reload
 
-      Karma.logger.info { "end systemd export for service #{service.name}" }
+      Karma.logger.info { "#{__method__}: end systemd export for service #{service.name}" }
     end
 
     def remove_service(service)

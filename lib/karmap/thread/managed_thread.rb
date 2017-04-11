@@ -9,9 +9,9 @@ module Karma::Thread
     def initialize(blocks = {}, options = {})
       @thread = nil
       @running_sleep_time = options[:running_sleep_time]||1
-      blocks[:starting] ||= Proc.new { Karma.logger.debug "#{$$}::#{Thread.current.to_s} Starting" }
-      blocks[:finishing] ||= Proc.new { Karma.logger.debug "#{$$}::#{Thread.current.to_s} Finishing" }
-      blocks[:running] ||= Proc.new { Karma.logger.debug "#{$$}::#{Thread.current.to_s} Running" }
+      blocks[:starting] ||= Proc.new { Karma.logger.debug "#{$$}::#{Thread.current.to_s} starting" }
+      blocks[:finishing] ||= Proc.new { Karma.logger.debug "#{$$}::#{Thread.current.to_s} finishing" }
+      blocks[:running] ||= Proc.new { Karma.logger.debug "#{$$}::#{Thread.current.to_s} running" }
       @thread = ::Thread.new do
         Thread.current[:status] = :initing
         Thread.current[:initing_at] = Time.now
@@ -21,7 +21,7 @@ module Karma::Thread
         Thread.current[:is_managed_thread] = true
         Thread.current[:status] = :inited
         Thread.current[:thread_index] = options[:thread_index]
-        Karma.logger.info "#{$$}::#{Thread.current.to_s} inited"
+        Karma.logger.debug{ "#{$$}::#{Thread.current.to_s} initialized" }
         Thread.stop
         outer_block(blocks)
       end
@@ -39,7 +39,7 @@ module Karma::Thread
     def thread_index
       @thread[:thread_index]
     end
-    
+
     def start
       @thread[:status] = :running
       @thread.run
@@ -85,7 +85,7 @@ module Karma::Thread
       end
       ret
     end
-    
+
     def kill_inner_thread
       @thread.kill
     end
@@ -104,7 +104,7 @@ module Karma::Thread
             sleep @running_sleep_time
           rescue ::Exception => e
             @thread[:status] = :error
-            Karma.logger.error e
+            Karma.logger.error{ e }
           end
         end
         if stopping?
@@ -114,12 +114,12 @@ module Karma::Thread
         end
       rescue ::Exception => e
         @thread[:status] = :error
-        Karma.logger.error e
+        Karma.logger.error{ e }
       end
     end
 
     def running_default_block
-      Karma.logger.debug { "#{$$}::#{Thread.current.to_s} #{Time.now}" }
+      Karma.logger.debu { "#{$$}::#{Thread.current.to_s} running - #{Time.now}" }
     end
 
   end

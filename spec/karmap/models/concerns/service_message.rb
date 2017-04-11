@@ -11,8 +11,6 @@ module Karma
 
       def send_to_queue(msg)
         queue_client = Karma::Queue::Client.new
-        Karma.logger.info { "Sending message to queue: #{Karma::Queue.incoming_queue_url}" }
-        Karma.logger.info { "message: #{msg.to_message}" }
         queue_client.send_message(queue_url: Karma::Queue.incoming_queue_url, message: msg.to_message)
       end
 
@@ -28,7 +26,6 @@ module Karma
 
       def process_config_update(config)
         h = self.to_process_config.merge!({:memory_max=>'1000M', :cpu_quota=>'50%', :auto_start=>true}.merge!(config).merge!(service: self.new.class.name))
-        Karma.logger.info { h }
         msg = Karma::Messages::ProcessConfigUpdateMessage.new(h)
         send_to_queue(msg)
       end

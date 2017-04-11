@@ -9,15 +9,13 @@ module Karma::Queue
     end
 
     def notify(message)
-      if !message.nil? && message.valid?
-        Karma.logger.info { "Sending message: #{message.to_message} to #{Karma::Queue.outgoing_queue_url}" }
-        queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, message: message.to_message)
+      if message.nil?
+        Karma.logger.warn{ "#{__method__}: empty message" }
+      elsif !message.valid?
+        Karma.logger.warn{ "#{__method__}: message is not valid - #{message.to_message}" }
       else
-        if message.nil?
-          Karma.logger.info { "No message provided" } 
-        else
-          Karma.logger.info { "Message: #{message.to_message} is not valid" }
-        end
+        Karma.logger.debug{ "#{__method__}: outgoing message - #{message}" }
+        queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, message: message.to_message)
       end
     end
 

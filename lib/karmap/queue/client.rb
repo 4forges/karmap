@@ -7,25 +7,24 @@ module Karma::Queue
   class Client
 
     def poll(queue_url:)
-      Karma.logger.debug { "Start polling from queue #{queue_url}" }
+      Karma.logger.debug{ "#{__method__}: start polling queue #{queue_url}" }
       begin
         poller = Aws::SQS::QueuePoller.new(queue_url, { client: _client })
         poller.poll(skip_delete: true) do |msg|
           begin
-            Karma.logger.debug "MSG: #{msg}"
+            Karma.logger.debug{ "#{__method__}: got mesage - #{msg}"}
             yield(msg)
           rescue ::Exception => e
-            Karma.logger.error("ERROR")
+            Karma.logger.error{ "#{__method__}: #{e.message}" }
           end
           Karma.logger.debug { "delete_message" }
           ret = poller.delete_message(msg)
           Karma.logger.debug { ret }
         end
       rescue ::Exception => e
-        Karma.logger.error('ERROR during poller setup')
-        Karma.logger.error(e.message)
+        Karma.logger.error{ "#{__method__}: error during poller setup - #{e.message}" }
       end
-      
+
     end
 
     def send_message(queue_url:, message:)
