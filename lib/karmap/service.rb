@@ -13,7 +13,6 @@ module Karma
 
     def initialize
       @engine = Karma.engine_class.new
-      Karma.logger.info 'Engine initialized'
       @notifier = Karma.notifier_class.new
       @thread_pool = Karma::Thread::ThreadPool.new(Proc.new { perform })
       @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(
@@ -94,6 +93,8 @@ module Karma
     end
 
     def run
+      Karma.logger.info{ "#{__method__}: enter" }
+
       Signal.trap('INT') do
         stop
       end
@@ -121,7 +122,7 @@ module Karma
         self.class.update_thread_config(@thread_config_reader.config) if @thread_config_reader.config.present?
         @thread_pool.manage(self.class.to_thread_config)
 
-        Karma.logger.debug 'Service is running'
+        Karma.logger.debug{ "#{__method__}: alive" }
         sleep(@sleep_time)
       end
 
@@ -145,7 +146,7 @@ module Karma
         notifier.notify(message)
       rescue ::Exception => e
         # TODO HANDLE THIS
-        Karma.logger.error e
+        Karma.logger.error{ e }
       end
     end
 
