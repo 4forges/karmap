@@ -38,15 +38,7 @@ RSpec.configure do |config|
       config.aws_secret_access_key =  'fake'
       config.services =               ['TestService']
       config.log_folder =             'spec/log'
-    end
-
-    allow_any_instance_of(Karma::Queue::Client).to receive(:_client) do
-      Aws::SQS::Client.new(
-        access_key_id: Karma.aws_access_key_id,
-        secret_access_key: Karma.aws_secret_access_key,
-        region: 'eu-west-1',
-        stub_responses: true
-      )
+      config.notifier =               'logger'
     end
   end
 

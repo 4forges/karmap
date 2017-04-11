@@ -141,7 +141,15 @@ module Karma
         message = Karma::Messages::ProcessRegisterMessage.new(
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
-          service: self.name
+          service: self.name,
+          memory_max: self.class.config_memory_max,
+          cpu_quota: self.class.config_cpu_quota,
+          min_running: self.class.config_min_running,
+          max_running: self.class.config_max_running,
+          auto_restart: self.class.config_auto_restart,
+          auto_start: self.class.config_auto_start,
+          log_level: Karma.logger.level,
+          num_threads: self.class.config_num_threads
         )
         notifier.notify(message)
       rescue ::Exception => e

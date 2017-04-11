@@ -10,6 +10,7 @@ Karma.configuration do |config|
   config.aws_secret_access_key =  'fake'
   config.services =               [TestService]
   config.log_folder =             'spec/log'
+  config.notifier =               'logger'
 end
 
 TestService.new.run
