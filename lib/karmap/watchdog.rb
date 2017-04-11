@@ -9,8 +9,6 @@ module Karma
     port Karma.watchdog_port
 
     SHUTDOWN_SEC = 0
-    START_COMMAND = 'start'
-    STOP_COMMAND = 'stop'
 
     @@instance = nil
     @@service_classes = nil
@@ -224,12 +222,14 @@ module Karma
 
     def handle_process_command(msg)
       case msg.command
-        when START_COMMAND
+        when Karma::Messages::ProcessCommandMessage::COMMANDS[:start]
           cls = constantize(msg.service)
           service = cls.new
           engine.start_service(service)
-        when STOP_COMMAND
+        when Karma::Messages::ProcessCommandMessage::COMMANDS[:stop]
           engine.stop_service(msg.pid)
+        when Karma::Messages::ProcessCommandMessage::COMMANDS[:restart]
+          engine.restart_service(msg.pid)
         else
           Karma.logger.warn("Invalid process command: #{msg.command} - #{msg.inspect}")
       end
@@ -244,7 +244,6 @@ module Karma
       maintain_worker_count(service)
     end
 
-    # TODO review if this still makes sense
     def maintain_worker_count(service)
       # stop instances
       engine.to_be_stopped_instances(service).each do |instance|

@@ -17,7 +17,7 @@ describe Karma::Engine::Base do
       end
     end
 
-    it 'build service status message from instance' do
+    it 'build service status message' do
       engine.start_service(service)
       wait_for {engine.show_service(service)}.to_not be_empty
       status = engine.show_service(service)
@@ -30,14 +30,6 @@ describe Karma::Engine::Base do
       engine.stop_service(pid)
       wait_for{engine.show_service(service)}.to be_empty
       message = engine.get_process_status_message(service, pid)
-      expect(message.status).to eq('dead')
-    end
-
-    it 'build service status message from string' do
-      service_name = service.full_name
-      expect(service_name).to eq('karma-spec-test-service')
-      message = engine.get_process_status_message(service_name, 1234)
-      expect(message.service).to eq('TestService')
       expect(message.status).to eq('dead')
     end
   end
