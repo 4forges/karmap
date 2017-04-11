@@ -25,9 +25,7 @@ module Karma::Engine
           params[:port] ||= free_ports(service)[0]
           Karma.logger.debug{ "#{__method__}: running '#{service.command}', port: #{params[:port]}" }
           system({'PORT' => params[:port].to_s, 'KARMA_IDENTIFIER' => service.identifier(params[:port])}, service.command)
-          return "#{service.full_name}@#{params[:port]}"
         end
-        return false
       end
     end
 
@@ -48,17 +46,17 @@ module Karma::Engine
 
     def service_status(service_key_or_pid:)
       if service_key_or_pid.is_a?(String)
-        status = ProcTable.ps.select{ |p| identifier = p.environ["KARMA_IDENTIFIER"]; identifier.present? && identifier.start_with?(service_key_or_pid) }
+        status = ProcTable.ps.select{ |p| identifier = p.environ['KARMA_IDENTIFIER']; identifier.present? && identifier.start_with?(service_key_or_pid) }
       else
         status = ProcTable.ps.select{ |p| p.pid == service_key_or_pid.to_i }
       end
       ret = {}
       status.each do |p|
         # :name, :port, :status, :pid, :threads, :memory, :cpu
-        k = p.environ["KARMA_IDENTIFIER"]
+        k = p.environ['KARMA_IDENTIFIER']
         ret[k] = Karma::Engine::ServiceStatus.new(
-          p.environ["KARMA_IDENTIFIER"].split("@")[0],
-          p.environ["PORT"].to_i,
+          p.environ['KARMA_IDENTIFIER'].split('@')[0],
+          p.environ['PORT'].to_i,
           to_karma_status(p.state),
           p.pid,
           -1,
@@ -71,7 +69,7 @@ module Karma::Engine
 
     def to_karma_status(process_status)
       case process_status
-        when 2, "R", "D"
+        when 2, 'R', 'D'
           Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]
         else
           process_status
