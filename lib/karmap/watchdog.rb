@@ -134,6 +134,7 @@ module Karma
     def self.stop_all_services
       s = self.new
       status = s.engine.show_all_services
+      status.reject!{|k,v| v.name == s.full_name}
       status.values.map(&:pid).each do |pid|
         s.engine.stop_service(pid)
       end
@@ -142,6 +143,7 @@ module Karma
     def self.restart_all_services
       s = self.new
       status = s.engine.show_all_services
+      status.reject!{|k,v| v.name == s.full_name}
       status.values.map(&:pid).each do |pid|
         s.engine.restart_service(pid)
       end
