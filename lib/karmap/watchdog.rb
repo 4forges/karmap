@@ -279,7 +279,7 @@ module Karma
 
     def check_service_statuses
       new_service_statuses = engine.show_all_services
-      new_service_statuses.reject!{|k,v| v.name == s.full_name}
+      new_service_statuses.reject!{|k,v| v.name == self.full_name}
       Karma.logger.debug{ "#{__method__}: currently #{new_service_statuses.size} running instances" }
       service_statuses.each do |instance, status|
         if new_service_statuses[instance].present?
