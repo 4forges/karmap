@@ -17,9 +17,7 @@ module Karma::Queue
           rescue ::Exception => e
             Karma.logger.error{ "#{__method__}: #{e.message}" }
           end
-          Karma.logger.debug { "delete_message" }
-          ret = poller.delete_message(msg)
-          Karma.logger.debug { ret }
+          poller.delete_message(msg)
         end
       rescue ::Exception => e
         Karma.logger.error{ "#{__method__}: error during poller setup - #{e.message}" }

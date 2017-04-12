@@ -48,7 +48,7 @@ module Karma
     end
 
     def command
-      "rails runner -e #{Karma.env} \"#{self.class.name}.run\"" # override if needed
+      "bin/rails runner -e #{Karma.env} \"#{self.class.name}.run\"" # override if needed
     end
 
     def timeout_stop

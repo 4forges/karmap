@@ -14,7 +14,7 @@ module Karma::Queue
       elsif !message.valid?
         Karma.logger.warn{ "#{__method__}: message is not valid - #{message.to_message}" }
       else
-        Karma.logger.debug{ "#{__method__}: outgoing message - #{message}" }
+        Karma.logger.debug{ "#{__method__}: outgoing message - #{message.to_message}" }
         queue_client.send_message(queue_url: Karma::Queue.outgoing_queue_url, message: message.to_message)
       end
     end
