@@ -97,8 +97,10 @@ module Karma::Engine
         instances[max..-1].each do |file|
           instance_name = file.split('/').last
           `systemctl --user stop #{instance_name}`
+          sleep(5) # TODO TEST REMOVE THIS
           clean file
         end
+        `systemctl --user reset-failed`
 
       # check if there are less instances than max, and create if needed
       elsif instances.size < max
