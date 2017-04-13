@@ -52,7 +52,7 @@ module Karma
         sleep 1
         i += 1
         if (i%10).zero?
-          check_service_statuses
+          check_services_status
         end
         if (i%60).zero?
           Karma.logger.info{ "#{__method__}: alive" }
@@ -128,6 +128,7 @@ module Karma
         service = cls.new
         s.engine.start_service(service)
         service.register
+        s.ensure_service_instances_count(service)
       end
     end
 
@@ -146,6 +147,24 @@ module Karma
       status.reject!{|k,v| v.name == s.full_name}
       status.values.map(&:pid).each do |pid|
         s.engine.restart_service(pid)
+      end
+    end
+
+    def ensure_service_instances_count(service)
+      # stop instances
+      engine.to_be_stopped_instances(service).each do |instance|
+        Karma.logger.debug{ "#{__method__}: stop instance #{instance.name}" }
+        engine.stop_service(instance.pid)
+      end
+
+      # start instances
+      if service.class.config_auto_start
+        engine.to_be_started_ports(service).each do |port|
+          Karma.logger.debug{ "#{__method__}: start new instance of #{service.name} on port #{port}" }
+          engine.start_service(service)
+        end
+      else
+        Karma.logger.debug{ "#{__method__}: autostart for service #{service.name} is false" }
       end
     end
 
@@ -231,25 +250,7 @@ module Karma
       service = cls.new
       cls.update_process_config(msg.to_config)
       engine.export_service(service)
-      maintain_worker_count(service)
-    end
-
-    def maintain_worker_count(service)
-      # stop instances
-      engine.to_be_stopped_instances(service).each do |instance|
-        Karma.logger.debug{ "#{__method__}: stop instance #{instance.name}" }
-        engine.stop_service(instance.pid)
-      end
-
-      # start instances
-      if service.class.config_auto_start
-        engine.to_be_started_ports(service).each do |port|
-          Karma.logger.debug{ "#{__method__}: start new instance of #{service.name} on port #{port}" }
-          engine.start_service(service)
-        end
-      else
-        Karma.logger.debug{ "#{__method__}: autostart for service #{service.name} is false" }
-      end
+      ensure_service_instances_count(service)
     end
 
     # keys: [:log_level, :num_threads]
@@ -277,7 +278,7 @@ module Karma
       end
     end
 
-    def check_service_statuses
+    def check_services_status
       new_service_statuses = engine.show_all_services
       new_service_statuses.reject!{|k,v| v.name == self.full_name}
       Karma.logger.debug{ "#{__method__}: currently #{new_service_statuses.size} running instances" }
