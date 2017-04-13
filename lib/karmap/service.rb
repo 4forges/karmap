@@ -14,7 +14,7 @@ module Karma
     def initialize
       @engine = Karma.engine_class.new
       @notifier = Karma.notifier_class.new
-      @thread_pool = Karma::Thread::ThreadPool.new(Proc.new { perform })
+      @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new { performance } )
       @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(
         default_config: self.class.to_thread_config,
         port: env_port
@@ -53,6 +53,10 @@ module Karma
 
     def timeout_stop
       5 # override if needed
+    end
+    
+    def performance
+      0
     end
 
     def perform
@@ -167,10 +171,11 @@ module Karma
     end
 
     def notify_status(pid: $$, status: nil)
+      active_threads = @thread_pool.active.size
       if status.present?
-        message = engine.get_process_status_message(self, pid, status: status)
+        message = engine.get_process_status_message(self, pid, status: status, active_threads: active_threads, execution_time: @thread_pool.average_execution_time, performance_execution_time: @thread_pool.average_performance_execution_time, performance: @thread_pool.average_performance)
       else
-        message = engine.get_process_status_message(self, pid)
+        message = engine.get_process_status_message(self, pid, active_threads: active_threads, execution_time: @thread_pool.average_execution_time, performance_execution_time: @thread_pool.average_performance_execution_time, performance: @thread_pool.average_performance)
       end
       if message.present? && message.valid?
         notifier.notify(message)

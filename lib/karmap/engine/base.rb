@@ -69,11 +69,13 @@ module Karma::Engine
           project: Karma.karma_project_id,
           service: service.name,
           pid: status.values[0].pid,
-          status: status.values[0].status
+          status: status.values[0].status,
+          active_threads: params[:active_threads],
+          execution_time: params[:execution_time],
+          performance_execution_time: params[:performance_execution_time],
+          performance:  params[:performance]
         }
-        if params[:status].present?
-          attrs[:status] = params[:status]
-        end
+        attrs[:status] = params[:status] if params[:status].present?
       else
         Karma.logger.warn{ "#{__method__}: cannot find status for service #{service.name} (#{pid})" }
         attrs = {

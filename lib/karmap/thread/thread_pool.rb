@@ -7,8 +7,8 @@ module Karma::Thread
     attr_accessor :thread
     cattr_accessor :list, :thread_index
 
-    def initialize(task_block, options = {})
-      @task_block = task_block
+    def initialize(blocks, options = {})
+      @blocks = blocks
       @list = []
       @thread_index = 0
     end
@@ -31,7 +31,7 @@ module Karma::Thread
       Karma.logger.debug{ "Active size: #{active.size} - max_workers: #{max_workers}" }
       while (active.size) < max_workers
         Karma.logger.debug{ "Adding new thread..." }
-        add({running: @task_block}, { running_sleep_time: @current_config[:sleep_time] })
+        add({running: @task_block, performance: @performance_block }, { running_sleep_time: @current_config[:sleep_time] })
       end
       while (active.size) > max_workers
         Karma.logger.debug{ "Stopping thread..." }
@@ -95,6 +95,7 @@ module Karma::Thread
     end
 
     def add(blocks = {}, options = {})
+      blocks = @blocks if blocks.empty?
       if options[:thread_index].nil?
         options[:thread_index] = get_first_thread_index
       end
@@ -118,6 +119,30 @@ module Karma::Thread
 
     def reload_list
       @list = all.map{|t| t[:parent_class]}
+    end
+    
+    def average_execution_time
+      execution_times = []
+      running.map do |t|
+        execution_times << t.execution_time
+      end
+      execution_times.sum.to_f / execution_times.size.to_f
+    end
+
+    def average_performance_execution_time
+      performance_execution_times = []
+      running.map do |t|
+        performance_execution_times << t.performance_execution_time
+      end
+      performance_execution_times.sum.to_f / performance_execution_times.size.to_f
+    end
+
+    def average_performance
+      performances = []
+      running.map do |t|
+        performances << t.performance
+      end
+      performances.sum.to_f / performances.size.to_f
     end
 
   end

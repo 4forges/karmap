@@ -9,9 +9,10 @@ module Karma::Thread
     def initialize(blocks = {}, options = {})
       @thread = nil
       @running_sleep_time = options[:running_sleep_time]||1
-      blocks[:starting] ||= Proc.new { Karma.logger.debug "#{$$}::#{Thread.current.to_s} starting" }
-      blocks[:finishing] ||= Proc.new { Karma.logger.debug "#{$$}::#{Thread.current.to_s} finishing" }
-      blocks[:running] ||= Proc.new { Karma.logger.debug "#{$$}::#{Thread.current.to_s} running" }
+      blocks[:starting] ||= Proc.new { Karma.logger.debug { "#{$$}::#{Thread.current.to_s} starting" } }
+      blocks[:finishing] ||= Proc.new { Karma.logger.debug { "#{$$}::#{Thread.current.to_s} finishing" } }
+      blocks[:running] ||= Proc.new { Karma.logger.debug { "#{$$}::#{Thread.current.to_s} running" } }
+      blocks[:performance] ||= Proc.new { Karma.logger.debug { "#{$$}::#{Thread.current.to_s} performance" } }
       @thread = ::Thread.new do
         Thread.current[:status] = :initing
         Thread.current[:initing_at] = Time.now
@@ -89,6 +90,18 @@ module Karma::Thread
     def kill_inner_thread
       @thread.kill
     end
+    
+    def execution_time
+      @thread[:execution_time]
+    end
+    
+    def performance_execution_time
+      @thread[:performance_execution_time]
+    end
+    
+    def performance
+      @thread[:performance]
+    end
 
     def outer_block(blocks = {})
       begin
@@ -97,9 +110,27 @@ module Karma::Thread
           begin
             case @thread[:status]
               when :running
+                @thread[:start_time] = Time.now
                 blocks[:running].call
+                @thread[:end_time] = Time.now
+                @thread[:execution_time] = @thread[:end_time] - @thread[:start_time]
+
+                @thread[:performance_start_time] = Time.now
+                begin
+                  @thread[:performance] = blocks[:performance].call
+                rescue ::Exception => e
+                  Karma.logger.error { "Error during performance block: #{e.message}" }
+                  @thread[:performance] = 0
+                end
+                @thread[:performance_end_time] = Time.now
+                @thread[:performance_execution_time] = @thread[:performance_end_time] - @thread[:performance_start_time]
+                
+                Karma.logger.debug { "Execution time: #{@thread[:execution_time]}" }
+                Karma.logger.debug { "Performance: #{@thread[:performance]}" }
+                Karma.logger.debug { "Performance execution time: #{@thread[:performance_execution_time]}" }
+                
               else
-                Karma.debug.debug { "Thread status: #{@thread[:status]}" }
+                Karma.logger.debug { "Thread status: #{@thread[:status]}" }
               end
             sleep @running_sleep_time
           rescue ::Exception => e
