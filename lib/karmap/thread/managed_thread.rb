@@ -90,15 +90,15 @@ module Karma::Thread
     def kill_inner_thread
       @thread.kill
     end
-    
+
     def execution_time
       @thread[:execution_time]
     end
-    
+
     def performance_execution_time
       @thread[:performance_execution_time]
     end
-    
+
     def performance
       @thread[:performance]
     end
@@ -124,11 +124,11 @@ module Karma::Thread
                 end
                 @thread[:performance_end_time] = Time.now
                 @thread[:performance_execution_time] = @thread[:performance_end_time] - @thread[:performance_start_time]
-                
+
                 Karma.logger.debug { "Execution time: #{@thread[:execution_time]}" }
                 Karma.logger.debug { "Performance: #{@thread[:performance]}" }
                 Karma.logger.debug { "Performance execution time: #{@thread[:performance_execution_time]}" }
-                
+
               else
                 Karma.logger.debug { "Thread status: #{@thread[:status]}" }
               end
@@ -150,7 +150,7 @@ module Karma::Thread
     end
 
     def running_default_block
-      Karma.logger.debu { "#{$$}::#{Thread.current.to_s} running - #{Time.now}" }
+      Karma.logger.debug{ "#{$$}::#{Thread.current.to_s} running - #{Time.now}" }
     end
 
   end

@@ -54,7 +54,7 @@ module Karma
     def timeout_stop
       5 # override if needed
     end
-    
+
     def performance
       0
     end
@@ -172,11 +172,14 @@ module Karma
 
     def notify_status(pid: $$, status: nil)
       active_threads = @thread_pool.active.size
-      if status.present?
-        message = engine.get_process_status_message(self, pid, status: status, active_threads: active_threads, execution_time: @thread_pool.average_execution_time, performance_execution_time: @thread_pool.average_performance_execution_time, performance: @thread_pool.average_performance)
-      else
-        message = engine.get_process_status_message(self, pid, active_threads: active_threads, execution_time: @thread_pool.average_execution_time, performance_execution_time: @thread_pool.average_performance_execution_time, performance: @thread_pool.average_performance)
-      end
+      params = {
+        active_threads: active_threads,
+        execution_time: @thread_pool.average_execution_time,
+        performance_execution_time: @thread_pool.average_performance_execution_time,
+        performance: @thread_pool.average_performance
+      }
+      params[:status] = status if status.present?
+      message = engine.get_process_status_message(self, pid, params)
       if message.present? && message.valid?
         notifier.notify(message)
       end
