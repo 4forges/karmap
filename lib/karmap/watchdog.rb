@@ -126,9 +126,9 @@ module Karma
       s = self.new
       s.service_classes.each do |cls|
         service = cls.new
-        s.engine.start_service(service)
+        # only call register on each service. Karma server will then push a ProcessConfigUpdateMessage that
+        # will trigger the starting of instances.
         service.register
-        s.ensure_service_instances_count(service)
       end
     end
 
