@@ -119,7 +119,7 @@ module Karma::Thread
     def reload_list
       @list = all.map{|t| t[:parent_class]}
     end
-    
+
     def average_execution_time
       execution_times = []
       running.map do |t|
