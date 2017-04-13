@@ -286,7 +286,7 @@ module Karma
           # notify server if pid has changed
           if new_service_statuses[instance].pid != status.pid
             service_name = classify(status.name.sub("#{Karma.project_name}-", ''))
-            service = constantize(service_name)
+            service = constantize(service_name).new
             service.notify_status(pid: status.pid, status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead])
           end
         end
