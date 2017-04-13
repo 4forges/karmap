@@ -14,7 +14,7 @@ module Karma
     def initialize
       @engine = Karma.engine_class.new
       @notifier = Karma.notifier_class.new
-      @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new { performance } )
+      @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new { return performance } )
       @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(
         default_config: self.class.to_thread_config,
         port: env_port
