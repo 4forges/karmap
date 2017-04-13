@@ -31,7 +31,7 @@ module Karma::Thread
       Karma.logger.debug{ "Active size: #{active.size} - max_workers: #{max_workers}" }
       while (active.size) < max_workers
         Karma.logger.debug{ "Adding new thread..." }
-        add({running: @task_block, performance: @performance_block }, { running_sleep_time: @current_config[:sleep_time] })
+        add({ running_sleep_time: @current_config[:sleep_time] })
       end
       while (active.size) > max_workers
         Karma.logger.debug{ "Stopping thread..." }
@@ -94,12 +94,11 @@ module Karma::Thread
       ((0..1000).to_a - running_indexes).first
     end
 
-    def add(blocks = {}, options = {})
-      blocks = @blocks if blocks.empty?
+    def add(options = {})
       if options[:thread_index].nil?
         options[:thread_index] = get_first_thread_index
       end
-      new_thread = Karma::Thread::ManagedThread.new(blocks, options)
+      new_thread = Karma::Thread::ManagedThread.new(@blocks, options)
       @list << new_thread
       until new_thread.inited?
         sleep 0.1
@@ -124,26 +123,25 @@ module Karma::Thread
     def average_execution_time
       execution_times = []
       running.map do |t|
-        execution_times << t.execution_time
+        execution_times << t.execution_time if !t.execution_time.nil?
       end
-      execution_times.sum.to_f / execution_times.size.to_f
+      execution_times.size > 0 ? execution_times.sum.to_f / execution_times.size.to_f : 0
     end
 
     def average_performance_execution_time
       performance_execution_times = []
       running.map do |t|
-        performance_execution_times << t.performance_execution_time
+        performance_execution_times << t.performance_execution_time if !t.performance_execution_time.nil?
       end
-      performance_execution_times.sum.to_f / performance_execution_times.size.to_f
+      performance_execution_times.size > 0 ? performance_execution_times.sum.to_f / performance_execution_times.size.to_f : 0
     end
 
     def average_performance
-      # performances = []
-      # running.map do |t|
-      #   performances << t.performance
-      # end
-      # performances.sum.to_f / performances.size.to_f
-      0
+      performances = []
+      running.map do |t|
+        performances << t.performance if !t.performance.nil?
+      end
+      performances.size > 0 ? performances.sum.to_f / performances.size.to_f : 0
     end
 
   end

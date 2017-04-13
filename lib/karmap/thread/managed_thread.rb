@@ -117,7 +117,7 @@ module Karma::Thread
 
                 @thread[:performance_start_time] = Time.now
                 begin
-                  @thread[:performance] = blocks[:performance].call
+                  blocks[:performance].call
                 rescue ::Exception => e
                   Karma.logger.error { "Error during performance block: #{e.message}" }
                   @thread[:performance] = 0
