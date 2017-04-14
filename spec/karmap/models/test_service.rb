@@ -10,7 +10,6 @@ class TestService < Karma::Service
   min_running  2
   max_running  5
   port         33000
-  auto_restart false
 
   num_threads  2
 
