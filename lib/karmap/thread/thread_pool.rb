@@ -2,8 +2,6 @@ module Karma::Thread
 
   class ThreadPool
 
-    FROZEN_THREADS_TIMEOUT = 1.hours.to_i
-
     attr_accessor :thread
     cattr_accessor :list, :thread_index
 
@@ -19,10 +17,6 @@ module Karma::Thread
 
       max_workers = @current_config[:num_threads]
       log_level = @current_config[:log_level]
-
-      Karma.logger.debug{ 'Killing frozen threads...' }
-      num_killed = kill_frozen(FROZEN_THREADS_TIMEOUT)
-      Karma.logger.debug{ num_killed > 0 ? "#{num_killed} killed" : "Nothing to kill" }
 
       Karma.logger.debug{ 'Pruning stopped threads...' }
       num_pruned = prune_list
@@ -40,6 +34,16 @@ module Karma::Thread
 
       Karma.logger.debug{ "Set log level to #{log_level}"}
       set_log_level(log_level)
+    end
+
+    # Call this method repeatedly inside fetching jobs that might take more than 1.hour (like garbage collectors)
+    # to avoid getting killed.
+    def self.signal_alive
+      Thread.current[:last_running_at] = Time.now
+      if Thread.current[:last_logged_at].nil? || (Time.now.to_i - Thread.current[:last_logged_at].to_i) > 10
+        Thread.current[:logger].info 'I\'m alive' if Thread.current[:logger].present?
+        Thread.current[:last_logged_at] = Thread.current[:last_running_at]
+      end
     end
 
     def all
@@ -62,24 +66,13 @@ module Karma::Thread
       @list.select{|thread| thread.stopping?}
     end
 
-    def frozen(threshold)
-      @list.select{|thread| thread.frozen?(threshold)}
-    end
-
-    def kill_frozen(threshold)
-      ret = 0
-      frozen(threshold).map{|t| ret+=1; t.kill_inner_thread}
-      ret
-    end
-
     def prune_list
       ret = 0
       @list.reject! do |managed_thread|
-        is_frozen = managed_thread.frozen?(FROZEN_THREADS_TIMEOUT)
         is_stopped = managed_thread.stopped?
         is_failed = managed_thread.stopped?
-        ret += 1 if is_stopped || is_frozen
-        is_stopped || is_frozen
+        ret += 1 if is_stopped
+        is_stopped
       end
       ret
     end

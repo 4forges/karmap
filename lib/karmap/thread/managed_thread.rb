@@ -78,15 +78,6 @@ module Karma::Thread
       @thread[:status]
     end
 
-    def frozen?(threshold)
-      ret = (initing? && Time.now - (@thread[:last_running_at]||0) > 10) || (Time.now - (@thread[:last_running_at]||0) > threshold)
-      if ret
-        @thread[:status] = :frozen
-        @thread[:frozen_at] = Time.now
-      end
-      ret
-    end
-
     def kill_inner_thread
       @thread.kill
     end
