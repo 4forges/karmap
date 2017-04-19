@@ -2,7 +2,7 @@ module Karma::Thread
 
   class SimpleTcpConfigReader
 
-    attr_reader :config
+    attr_reader :runtime_config
 
     def initialize(default_config:, port:)
       @config = default_config || {}
@@ -16,8 +16,8 @@ module Karma::Thread
         loop do
           client = @server.accept
           data = client.gets
-          @config = JSON.parse(data).symbolize_keys
-          Karma.logger.info "#{$$} - received new thread config #{@config}"
+          @runtime_config = JSON.parse(data).symbolize_keys
+          Karma.logger.info "#{$$} - received new thread config #{@runtime_config}"
           client.close
         end
       end

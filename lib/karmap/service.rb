@@ -15,24 +15,30 @@ module Karma
       @engine = Karma.engine_class.new
       @notifier = Karma.notifier_class.new
       @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new{ ::Thread.current[:performance] = performance } )
+      default_config = engine.import_config(self)
+      if default_config.present?
+        Karma.logger.info{ "read config from file" }
+        self.class.set_process_config(default_config)
+        self.class.set_thread_config(default_config)
+      end
       @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(
-        default_config: self.class.to_thread_config,
-        port: env_port
+        default_config: self.class.get_thread_config,
+        port: instance_port
       )
       @sleep_time = 1
       @running = false
     end
 
-    def env_port
+    def instance_port
       ENV['PORT'] || 8899 # port comes from service environment, 8899 is for testing
     end
 
-    def env_identifier
+    def instance_identifier
       ENV['KARMA_IDENTIFIER']
     end
 
-    def log_prefix
-      env_identifier
+    def instance_log_prefix
+      instance_identifier
     end
 
     def name
@@ -44,7 +50,7 @@ module Karma
     end
 
     def identifier(port = nil)
-      "#{full_name}@#{port||env_port}"
+      "#{full_name}@#{port||instance_port}"
     end
 
     def command
@@ -105,7 +111,7 @@ module Karma
       Signal.trap('TERM') do
         stop
       end
-
+      
       before_start
       @thread_config_reader.start
       @running = true
@@ -122,9 +128,10 @@ module Karma
           notify_status
           last_notified_at = Time.now
         end
-
-        self.class.update_thread_config(@thread_config_reader.config) if @thread_config_reader.config.present?
-        @thread_pool.manage(self.class.to_thread_config)
+        
+        # manage thread config update
+        self.class.set_thread_config(@thread_config_reader.runtime_config) if @thread_config_reader.runtime_config.present?
+        @thread_pool.manage(self.class.get_thread_config)
 
         Karma.logger.debug{ "#{__method__}: alive" }
         sleep(@sleep_time)

@@ -25,13 +25,13 @@ module Karma
       end
 
       def process_config_update(config)
-        h = self.to_process_config.merge!({:memory_max=>'1000M', :cpu_quota=>'50%', :auto_start=>true}.merge!(config).merge!(service: self.new.class.name))
+        h = self.get_process_config.merge!({:memory_max=>'1000M', :cpu_quota=>'50%', :auto_start=>true}.merge!(config).merge!(service: self.new.class.name))
         msg = Karma::Messages::ProcessConfigUpdateMessage.new(h)
         send_to_queue(msg)
       end
 
       def thread_config_update(config)
-        h = self.to_thread_config.merge!(config).merge!(service: self.new.class.name)
+        h = self.get_thread_config.merge!(config).merge!(service: self.new.class.name)
         msg = Karma::Messages::ThreadConfigUpdateMessage.new(h)
         send_to_queue(msg)
       end

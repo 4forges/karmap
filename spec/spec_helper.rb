@@ -5,6 +5,7 @@ require 'karmap/models/test_service'
 require 'karmap/models/mock_service'
 require 'rspec'
 require 'rspec/wait'
+require 'byebug'
 
 module Rails
   # simulate rails environment

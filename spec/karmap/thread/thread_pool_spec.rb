@@ -5,7 +5,7 @@ require 'spec_helper'
 describe Karma::Thread::ThreadPool do
 
   def set_num_threads(service, num)
-    s = TCPSocket.new('127.0.0.1', service.env_port)
+    s = TCPSocket.new('127.0.0.1', service.instance_port)
     s.puts({ log_level: 0, num_threads: num }.to_json)
     s.close
   end

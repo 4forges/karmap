@@ -32,7 +32,7 @@ module Karma
       register
       @poller = ::Thread.new do
         while true
-          perform
+          poll_queue
           Karma.logger.error{ "#{__method__}: error during polling" }
           sleep 10
         end
@@ -70,19 +70,19 @@ module Karma
       end
     end
 
-    def env_port
+    def instance_port
       ENV['PORT']
     end
 
-    def env_identifier
+    def instance_identifier
       ENV['KARMA_IDENTIFIER']
     end
 
     #################################################
     # watchdog config (for export)
     #################################################
-    def log_prefix
-      env_identifier
+    def instance_log_prefix
+      instance_identifier
     end
 
     def name
@@ -94,7 +94,7 @@ module Karma
     end
 
     def identifier
-      "#{full_name}@#{env_port}"
+      "#{full_name}@#{instance_port}"
     end
 
     def command
@@ -172,7 +172,7 @@ module Karma
 
     include Karma::Helpers
 
-    def perform
+    def poll_queue
       Karma.logger.info{ "#{__method__}: started polling queue #{Karma::Queue.incoming_queue_url}" }
       queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
         Karma.logger.debug{ "#{__method__}: got message from queue #{msg.body}" }
@@ -248,8 +248,9 @@ module Karma
     def handle_process_config_update(msg)
       cls = constantize(msg.service)
       service = cls.new
-      cls.update_process_config(msg.to_config)
+      cls.set_process_config(msg.to_config)
       engine.export_service(service)
+      engine.export_config(service)
       ensure_service_instances_count(service)
     end
 
@@ -257,14 +258,15 @@ module Karma
     def handle_thread_config_update(msg)
       cls = constantize(msg.service)
       service = cls.new
-      cls.update_thread_config(msg.to_config)
+      cls.set_thread_config(msg.to_config)
+      engine.export_config(service)
 
       running_instances = engine.running_instances_for_service(service) #keys: [:pid, :full_name, :port]
       running_instances.each do |k, instance|
         begin
           connection_retries ||= 5
           s = TCPSocket.new('127.0.0.1', instance.port)
-          s.puts({ log_level: service.class.config_log_level, num_threads: service.class.config_num_threads }.to_json)
+          s.puts(cls.get_thread_config.to_json)
           s.close
         rescue ::Exception => e
           if (connection_retries -= 1) > 0

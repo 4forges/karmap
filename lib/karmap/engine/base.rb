@@ -56,6 +56,24 @@ module Karma::Engine
     def export_service(service)
       FileUtils.mkdir_p(location) if location
     end
+    
+    def export_config(service)
+      FileUtils.mkdir_p(location) if location
+      service_fn = "#{service.full_name}@.config"
+      # read file
+      config = import_config(service)
+      # merge config
+      config.merge!(service.class.get_process_config)
+      config.merge!(service.class.get_thread_config)
+      # write file
+      write_file(service_fn, config.to_json)
+    end
+
+    def import_config(service)
+      service_fn = "#{service.full_name}@.config"
+      # read file
+      return JSON.parse(read_file(service_fn)).symbolize_keys rescue {}
+    end
 
     def remove_service(service)
       # abstract
@@ -184,6 +202,12 @@ module Karma::Engine
       File.open(filename, "w") do |file|
         file.puts contents
       end
+    end
+
+    def read_file(filename)
+      Karma.logger.debug{ "reading: #{filename}" }
+      filename = File.join(location, filename) unless Pathname.new(filename).absolute?
+      return File.read(filename)
     end
 
   end

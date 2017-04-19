@@ -50,14 +50,14 @@ module Karma
       @instance_logger ||= init_logger
     end
 
-    def log_prefix
-      env_identifier
+    def instance_log_prefix
+      instance_identifier
     end
 
     def init_logger
       ret_logger = nil
-      if env_identifier
-        filename = "#{Karma.log_folder}/#{log_prefix}.log"
+      if instance_identifier
+        filename = "#{Karma.log_folder}/#{instance_log_prefix}.log"
         ret_logger = Logger.new(
           filename,
           Karma::LOGGER_SHIFT_AGE,
@@ -72,14 +72,14 @@ module Karma
       end
       Karma::Messages.logger = ret_logger
       ret_logger.info { "Logger initialized (#{ret_logger.object_id})" }
-      ret_logger.debug { "env_identifier is defined: #{env_identifier.present?}" }
+      ret_logger.debug { "instance_identifier is defined: #{instance_identifier.present?}" }
       ret_logger
     end
 
     def init_thread_logger
       ret_logger = nil
-      if env_identifier
-        filename = "#{Karma.log_folder}/#{log_prefix}-#{::Thread.current[:thread_index]}.log"
+      if instance_identifier
+        filename = "#{Karma.log_folder}/#{instance_log_prefix}-#{::Thread.current[:thread_index]}.log"
         ret_logger = Logger.new(
           filename,
           Karma::LOGGER_SHIFT_AGE,
@@ -93,11 +93,11 @@ module Karma
         end
       end
       ret_logger.info { "Logger initialized (#{ret_logger.object_id})" }
-      ret_logger.debug { "env_identifier is defined: #{env_identifier.present?}" }
+      ret_logger.debug { "instance_identifier is defined: #{instance_identifier.present?}" }
       ret_logger
     end
 
-    def env_identifier
+    def instance_identifier
       ENV['KARMA_IDENTIFIER']
     end
 
