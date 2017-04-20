@@ -78,6 +78,10 @@ module Karma
       ENV['KARMA_IDENTIFIER']
     end
 
+    def generate_instance_identifier(port: )
+      "#{full_name}@#{port}"
+    end
+    
     #################################################
     # watchdog config (for export)
     #################################################
@@ -85,16 +89,20 @@ module Karma
       instance_identifier
     end
 
+    def self.demodulized_name
+      self.name.demodulize
+    end
+
     def name
-      self.class.name.demodulize
+      self.class.demodulized_name
     end
-
+    
+    def self.full_name
+      "#{Karma.project_name}-#{Karma::Helpers::dashify(demodulized_name)}".downcase
+    end
+    
     def full_name
-      "#{Karma.project_name}-#{name}".downcase
-    end
-
-    def identifier
-      "#{full_name}@#{instance_port}"
+      self.class.full_name
     end
 
     def command
@@ -118,7 +126,7 @@ module Karma
     #################################################
 
     def service_classes
-      @@service_classes ||= Karma.services.select{|c| constantize(c).new.is_a?(Karma::Service) rescue false}.map{|c| constantize(c)}
+      @@service_classes ||= Karma.services.select{|c| Karma::Helpers::constantize(c).new.is_a?(Karma::Service) rescue false}.map{|c| Karma::Helpers::constantize(c)}
       @@service_classes
     end
 
@@ -232,7 +240,7 @@ module Karma
     def handle_process_command(msg)
       case msg.command
         when Karma::Messages::ProcessCommandMessage::COMMANDS[:start]
-          cls = constantize(msg.service)
+          cls = Karma::Helpers::constantize(msg.service)
           service = cls.new
           engine.start_service(service)
         when Karma::Messages::ProcessCommandMessage::COMMANDS[:stop]
@@ -246,7 +254,7 @@ module Karma
 
     # keys: [:service, :type, :memory_max, :cpu_quota, :min_running, :max_running, :auto_restart, :auto_start]
     def handle_process_config_update(msg)
-      cls = constantize(msg.service)
+      cls = Karma::Helpers::constantize(msg.service)
       service = cls.new
       cls.set_process_config(msg.to_config)
       engine.export_service(service)
@@ -256,7 +264,7 @@ module Karma
 
     # keys: [:log_level, :num_threads]
     def handle_thread_config_update(msg)
-      cls = constantize(msg.service)
+      cls = Karma::Helpers::constantize(msg.service)
       service = cls.new
       cls.set_thread_config(msg.to_config)
       engine.export_config(service)
@@ -288,8 +296,8 @@ module Karma
         if new_service_statuses[instance].present?
           # notify server if pid has changed
           if new_service_statuses[instance].pid != status.pid
-            service_name = classify(status.name.sub("#{Karma.project_name}-", ''))
-            service = constantize(service_name).new
+            service_name = Karma::Helpers::classify(status.name.sub("#{Karma.project_name}-", ''))
+            service = Karma::Helpers::constantize(service_name).new
             service.notify_status(pid: status.pid, status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead])
           end
         end

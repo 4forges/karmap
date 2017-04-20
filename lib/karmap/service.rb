@@ -8,9 +8,11 @@ module Karma
     include Karma::Helpers
 
     attr_accessor :notifier, :engine
+    cattr_reader :engine
 
     @@running_instance = nil
-
+    @@engine ||= Karma.engine_class.new
+    
     def initialize
       @engine = Karma.engine_class.new
       @notifier = Karma.notifier_class.new
@@ -37,20 +39,28 @@ module Karma
       ENV['KARMA_IDENTIFIER']
     end
 
+    def generate_instance_identifier(port: )
+      "#{full_name}@#{port}"
+    end
+
     def instance_log_prefix
       instance_identifier
     end
 
+    def self.demodulized_name
+      self.name.demodulize
+    end
+    
     def name
-      self.class.name.demodulize
+      self.class.demodulized_name
     end
-
+    
+    def self.full_name
+      "#{Karma.project_name}-#{Karma::Helpers::dashify(demodulized_name)}".downcase
+    end
+    
     def full_name
-      "#{Karma.project_name}-#{dashify(name)}".downcase
-    end
-
-    def identifier(port = nil)
-      "#{full_name}@#{port||instance_port}"
+      self.class.full_name
     end
 
     def command
@@ -152,7 +162,7 @@ module Karma
         message = Karma::Messages::ProcessRegisterMessage.new(
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
-          service: self.name,
+          service: self.class.demodulized_name,
           memory_max: self.class.config_memory_max,
           cpu_quota: self.class.config_cpu_quota,
           min_running: self.class.config_min_running,

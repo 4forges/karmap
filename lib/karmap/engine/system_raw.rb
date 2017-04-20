@@ -24,7 +24,7 @@ module Karma::Engine
         if !params[:port].nil? || free_ports(service).count > 0
           params[:port] ||= free_ports(service)[0]
           Karma.logger.debug{ "#{__method__}: running '#{service.command}', port: #{params[:port]}" }
-          system({'PORT' => params[:port].to_s, 'KARMA_IDENTIFIER' => service.identifier(params[:port])}, service.command)
+          system({'PORT' => params[:port].to_s, 'KARMA_IDENTIFIER' => service.generate_instance_identifier(port: params[:port])}, service.command)
         end
       end
     end

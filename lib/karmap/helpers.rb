@@ -5,14 +5,14 @@ module Karma::Helpers
   # Given a word with dashes, returns a camel cased version of it.
   #
   # classify('job-name') # => 'JobName'
-  def classify(dashed_word)
+  def self.classify(dashed_word)
     dashed_word.split('-').each { |part| part[0] = part[0].chr.upcase }.join
   end
 
   # Given a camel cased word, returns a dashed version of it.
   #
   # dashify('JobName') # => 'job-name'
-  def dashify(camel_case_word)
+  def self.dashify(camel_case_word)
     camel_case_word.split(/(?=[A-Z])/).join('-').downcase
   end
 
@@ -33,7 +33,7 @@ module Karma::Helpers
   # end
   #
   # NameError is raised when the constant is unknown.
-  def constantize(camel_cased_word)
+  def self.constantize(camel_cased_word)
     camel_cased_word = camel_cased_word.to_s
 
     names = camel_cased_word.split('::')
