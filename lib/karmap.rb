@@ -42,7 +42,7 @@ module Karma
       if ::Thread.current[:thread_index].present?
         ::Thread.current[:logger] ||= init_thread_logger
       else
-        @instance_logger ||= init_logger
+        instance_logger
       end
     end
 
@@ -119,6 +119,14 @@ module Karma
         when 'system_raw'
           Karma::Engine::SystemRaw
       end
+    end
+
+    def notifier_instance
+      @notifier_instance ||= Karma.notifier_class.new
+    end
+
+    def engine_instance
+      @engine_instance ||= Karma.engine_class.new
     end
   end
 

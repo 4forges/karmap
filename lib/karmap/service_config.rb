@@ -23,6 +23,30 @@ module Karma
 
     end
 
+    def instance_port
+      ENV['PORT'] || 8899 # port comes from service environment, 8899 is for testing
+    end
+
+    def instance_identifier
+      ENV['KARMA_IDENTIFIER']
+    end
+
+    def generate_instance_identifier(port:)
+      "#{full_name}@#{port}"
+    end
+
+    def instance_log_prefix
+      instance_identifier
+    end
+
+    def name
+      self.class.demodulized_name
+    end
+
+    def full_name
+      self.class.full_name
+    end
+
     module ClassMethods
 
       ################################################
@@ -114,6 +138,14 @@ module Karma
         start_port = self.config_port
         end_port = start_port + self.config_min_running - 1
         (start_port..end_port).to_a
+      end
+
+      def demodulized_name
+        self.name.demodulize
+      end
+
+      def full_name
+        "#{Karma.project_name}-#{Karma::Helpers::dashify(demodulized_name)}".downcase
       end
 
     end

@@ -7,17 +7,11 @@ module Karma
     include Karma::ServiceConfig
     include Karma::Helpers
 
-    attr_accessor :notifier, :engine
-    cattr_reader :engine
+    @@instance = nil
 
-    @@running_instance = nil
-    @@engine ||= Karma.engine_class.new
-    
     def initialize
-      @engine = Karma.engine_class.new
-      @notifier = Karma.notifier_class.new
       @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new{ ::Thread.current[:performance] = performance } )
-      default_config = engine.import_config(self)
+      default_config = Karma.engine_instance.import_config(self)
       if default_config.present?
         Karma.logger.info{ "read config from file" }
         self.class.set_process_config(default_config)
@@ -29,38 +23,6 @@ module Karma
       )
       @sleep_time = 1
       @running = false
-    end
-
-    def instance_port
-      ENV['PORT'] || 8899 # port comes from service environment, 8899 is for testing
-    end
-
-    def instance_identifier
-      ENV['KARMA_IDENTIFIER']
-    end
-
-    def generate_instance_identifier(port: )
-      "#{full_name}@#{port}"
-    end
-
-    def instance_log_prefix
-      instance_identifier
-    end
-
-    def self.demodulized_name
-      self.name.demodulize
-    end
-    
-    def name
-      self.class.demodulized_name
-    end
-    
-    def self.full_name
-      "#{Karma.project_name}-#{Karma::Helpers::dashify(demodulized_name)}".downcase
-    end
-    
-    def full_name
-      self.class.full_name
     end
 
     def command
@@ -101,9 +63,31 @@ module Karma
     #################################################
 
     def self.run
-      if @@running_instance.nil?
-        @@running_instance = true
-        self.new.run
+      if @@instance.nil?
+        @@instance = self.new
+        @@instance.run
+      end
+    end
+
+    def self.register
+      begin
+        message = Karma::Messages::ProcessRegisterMessage.new(
+          host: ::Socket.gethostname,
+          project: Karma.karma_project_id,
+          service: self.demodulized_name,
+          memory_max: self.config_memory_max,
+          cpu_quota: self.config_cpu_quota,
+          min_running: self.config_min_running,
+          max_running: self.config_max_running,
+          auto_restart: self.config_auto_restart,
+          auto_start: self.config_auto_start,
+          log_level: Karma.logger.level,
+          num_threads: self.config_num_threads
+        )
+        Karma.notifier_instance.notify(message)
+      rescue ::Exception => e
+        # TODO HANDLE THIS
+        Karma.logger.error{ e }
       end
     end
 
@@ -121,7 +105,7 @@ module Karma
       Signal.trap('TERM') do
         stop
       end
-      
+
       before_start
       @thread_config_reader.start
       @running = true
@@ -138,7 +122,7 @@ module Karma
           notify_status
           last_notified_at = Time.now
         end
-        
+
         # manage thread config update
         self.class.set_thread_config(@thread_config_reader.runtime_config) if @thread_config_reader.runtime_config.present?
         @thread_pool.manage(self.class.get_thread_config)
@@ -155,28 +139,6 @@ module Karma
 
       # notify queue after stop
       notify_status(status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped])
-    end
-
-    def register
-      begin
-        message = Karma::Messages::ProcessRegisterMessage.new(
-          host: ::Socket.gethostname,
-          project: Karma.karma_project_id,
-          service: self.class.demodulized_name,
-          memory_max: self.class.config_memory_max,
-          cpu_quota: self.class.config_cpu_quota,
-          min_running: self.class.config_min_running,
-          max_running: self.class.config_max_running,
-          auto_restart: self.class.config_auto_restart,
-          auto_start: self.class.config_auto_start,
-          log_level: Karma.logger.level,
-          num_threads: self.class.config_num_threads
-        )
-        notifier.notify(message)
-      rescue ::Exception => e
-        # TODO HANDLE THIS
-        Karma.logger.error{ e }
-      end
     end
 
     def running_thread_count
@@ -196,9 +158,9 @@ module Karma
         performance: @thread_pool.average_performance
       }
       params[:status] = status if status.present?
-      message = engine.get_process_status_message(self, pid, params)
+      message = Karma.engine_instance.get_process_status_message(self, pid, params)
       if message.present? && message.valid?
-        notifier.notify(message)
+        Karma.notifier_instance.notify(message)
       end
     end
 
