@@ -14,11 +14,16 @@ module Karma::Thread
       Karma.logger.debug "#{$$} - started TCP server on port #{@port}"
       @thread = ::Thread.new do
         loop do
-          client = @server.accept
-          data = client.gets
-          @runtime_config = JSON.parse(data).symbolize_keys
-          Karma.logger.info "#{$$} - received new thread config #{@runtime_config}"
-          client.close
+          begin
+            client = @server.accept
+            data = client.gets
+            @runtime_config = JSON.parse(data).symbolize_keys
+            Karma.logger.info "#{$$} - received new thread config #{@runtime_config}"
+          rescue IOError => e
+            Karma.logger.error e
+          ensure
+            client.close if client
+          end
         end
       end
     end
