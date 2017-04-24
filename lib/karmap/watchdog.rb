@@ -15,7 +15,7 @@ module Karma
     @@queue_client = nil
 
     attr_accessor :service_statuses
-    
+
     def initialize
       Karma.logger.info{ "#{__method__}: environment is #{Karma.env}" }
       @service_statuses = {}
