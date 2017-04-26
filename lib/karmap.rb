@@ -54,6 +54,10 @@ module Karma
       instance_identifier
     end
 
+    def instance_identifier
+      ENV['KARMA_IDENTIFIER']
+    end
+
     def init_logger
       ret_logger = nil
       if instance_identifier
@@ -95,10 +99,6 @@ module Karma
       ret_logger.info { "Logger initialized (#{ret_logger.object_id})" }
       ret_logger.debug { "instance_identifier is defined: #{instance_identifier.present?}" }
       ret_logger
-    end
-
-    def instance_identifier
-      ENV['KARMA_IDENTIFIER']
     end
 
     def notifier_class

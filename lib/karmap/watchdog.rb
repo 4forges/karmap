@@ -96,12 +96,10 @@ module Karma
     end
 
     def self.start_all_services
+      # only call register on each service. Karma server will then push a ProcessConfigUpdateMessage that
+      # will trigger the starting of instances.
       s = self.new
-      s.service_classes.each do |cls|
-        # only call register on each service. Karma server will then push a ProcessConfigUpdateMessage that
-        # will trigger the starting of instances.
-        cls.register
-      end
+      s.service_classes.each(&:register)
     end
 
     def self.stop_all_services
