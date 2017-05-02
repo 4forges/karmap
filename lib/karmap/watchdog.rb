@@ -6,7 +6,6 @@ module Karma
   class Watchdog
     include Karma::ServiceConfig
 
-    command "bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\""
     port Karma.watchdog_port
     timeout_stop 30
 
@@ -21,6 +20,10 @@ module Karma
     def initialize
       Karma.logger.info{ "#{__method__}: environment is #{Karma.env}" }
       @service_statuses = {}
+    end
+
+    def self.command
+      "bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\""
     end
 
     def self.run

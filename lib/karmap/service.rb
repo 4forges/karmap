@@ -56,6 +56,11 @@ module Karma
     end
     #################################################
 
+    def self.command
+      # override this with custom run command
+      "bin/rails runner -e #{Karma.env} \"#{self.name}.run\""
+    end
+
     def self.run
       if @@instance.nil?
         @@instance = self.new

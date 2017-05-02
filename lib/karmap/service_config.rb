@@ -3,14 +3,12 @@ module Karma
 
     def self.included(base)
 
-      base.class_attribute :config_min_running, :config_max_running, :config_memory_max, :config_cpu_quota, :config_auto_start, :config_auto_restart, :config_port, :config_num_threads, :config_log_level,
-                           :config_command, :config_timeout_stop
+      base.class_attribute :config_min_running, :config_max_running, :config_memory_max, :config_cpu_quota, :config_auto_start, :config_auto_restart, :config_port, :config_num_threads, :config_log_level, :config_timeout_stop
       base.extend(ClassMethods)
 
       ################################################
       # service configuration
       ################################################
-      base.command("bin/rails runner -e #{Karma.env} \"#{self.name}.run\"")
       base.port(5000)
       base.timeout_stop(5)
       base.min_running(1)
@@ -51,10 +49,6 @@ module Karma
       ################################################
       # service configuration
       ################################################
-      def command(val)
-        self.config_command = val
-      end
-
       def port(val)
         self.config_port = val
       end

@@ -40,7 +40,7 @@ describe Karma::Engine::Systemd do
 
     before(:each) { allow_any_instance_of(Karma::Engine::Systemd).to receive(:work_directory).and_return('/tmp/app') }
 
-    it "exports to the filesystem" do
+    it "exports TestService to filesystem" do
       engine.export_service(TestService)
 
       expect(File.read("#{engine.location}/karma-spec.target").strip).to                eq(example_export_file("systemd/karma-spec.target").strip)
@@ -49,6 +49,17 @@ describe Karma::Engine::Systemd do
 
       expect(File.directory?("#{engine.location}/karma-spec-test-service.target.wants")).to be_truthy
       expect(File.symlink?("#{engine.location}/karma-spec-test-service.target.wants/karma-spec-test-service@33000.service")).to be_truthy
+    end
+
+    it "exports MockService to filesystem" do
+      engine.export_service(MockService)
+
+      expect(File.read("#{engine.location}/karma-spec.target").strip).to                eq(example_export_file("systemd/karma-spec.target").strip)
+      expect(File.read("#{engine.location}/karma-spec-mock-service.target").strip).to    eq(example_export_file("systemd/karma-spec-mock-service.target").strip)
+      expect(File.read("#{engine.location}/karma-spec-mock-service@.service").strip).to  eq(example_export_file("systemd/karma-spec-mock-service@.service").strip)
+
+      expect(File.directory?("#{engine.location}/karma-spec-mock-service.target.wants")).to be_truthy
+      expect(File.symlink?("#{engine.location}/karma-spec-mock-service.target.wants/karma-spec-mock-service@33100.service")).to be_truthy
     end
 
     it "cleans up if exporting into an existing dir" do
