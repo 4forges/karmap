@@ -4,8 +4,6 @@ require 'spec_helper'
 
 class MockService < Karma::Service
 
-  include Karma::ServiceMessage
-
   min_running  2
   max_running  5
   port         33100

@@ -11,7 +11,7 @@ module Karma
 
     def initialize
       @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new{ ::Thread.current[:performance] = performance } )
-      default_config = Karma.engine_instance.import_config(self)
+      default_config = Karma.engine_instance.import_config(self.class)
       if default_config.present?
         Karma.logger.info{ 'read config from file' }
         self.class.set_process_config(default_config)
@@ -25,15 +25,9 @@ module Karma
       @running = false
     end
 
-    def command
-      "bin/rails runner -e #{Karma.env} \"#{self.class.name}.run\"" # override if needed
-    end
-
-    def timeout_stop
-      5 # override if needed
-    end
-
     def performance
+      # override this with custom performance calculation.
+      # return a value between 0-100, where 100 is good and 0 is bad.
       0
     end
 
@@ -138,7 +132,7 @@ module Karma
       after_stop
 
       # notify queue after stop
-      notify_status(status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped])
+      notify_status(params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]})
     end
 
     def running_thread_count
@@ -149,15 +143,15 @@ module Karma
       @thread_pool.stop_all
     end
 
-    def notify_status(pid: $$, status: nil)
-      active_threads = @thread_pool.active.size
-      params = {
-        active_threads: active_threads,
-        execution_time: @thread_pool.average_execution_time,
-        performance_execution_time: @thread_pool.average_performance_execution_time,
-        performance: @thread_pool.average_performance
-      }
-      params[:status] = status if status.present?
+    def notify_status(pid: $$, params: {})
+      params[:active_threads] = @thread_pool.active.size
+      params[:execution_time] = @thread_pool.average_execution_time
+      params[:performance_execution_time] = @thread_pool.average_performance_execution_time
+      params[:performance] = @thread_pool.average_performance
+      self.class.notify_status(pid: pid, params: params)
+    end
+
+    def self.notify_status(pid:, params: {})
       message = Karma.engine_instance.get_process_status_message(self, pid, params)
       if message.present? && message.valid?
         Karma.notifier_instance.notify(message)

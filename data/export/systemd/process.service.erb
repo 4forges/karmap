@@ -10,15 +10,15 @@ Environment=KARMA_PROJECT_ID=<%= Karma.karma_project_id %>
 Environment=KARMA_USER_ID=<%= Karma.karma_user_id %>
 Environment=KARMA_AWS_USER_ACCESS_KEY=<%= Karma.aws_access_key_id %>
 Environment=KARMA_AWS_USER_SECRET_ACCESS_KEY=<%= Karma.aws_secret_access_key %>
-ExecStart=/bin/bash -lc '<%= service.command %>'
-Restart=<%= service.class.config_auto_restart ? 'always' : 'no' %>
+ExecStart=/bin/bash -lc '<%= service.config_command %>'
+Restart=<%= service.config_auto_restart ? 'always' : 'no' %>
 StandardInput=null
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=%n
 KillMode=mixed
-TimeoutStopSec=<%= service.timeout_stop %>
-<% if service.class.config_cpu_quota.present? %>CPUAccounting=true<% end %>
-<% if service.class.config_cpu_quota.present? %>CPUQuota=<%= service.class.config_cpu_quota %>%<% end %>
-<% if service.class.config_memory_max.present? %>MemoryAccounting=true<% end %>
-<% if service.class.config_memory_max.present? %>MemoryLimit=<%= service.class.config_memory_max %><% end %>
+TimeoutStopSec=<%= service.config_timeout_stop %>
+<% if service.config_cpu_quota.present? %>CPUAccounting=true<% end %>
+<% if service.config_cpu_quota.present? %>CPUQuota=<%= service.config_cpu_quota %>%<% end %>
+<% if service.config_memory_max.present? %>MemoryAccounting=true<% end %>
+<% if service.config_memory_max.present? %>MemoryLimit=<%= service.config_memory_max %><% end %>

@@ -3,15 +3,18 @@ module Karma
 
     def self.included(base)
 
-      base.class_attribute :config_min_running, :config_max_running, :config_memory_max, :config_cpu_quota, :config_auto_start, :config_auto_restart, :config_port, :config_num_threads, :config_log_level
+      base.class_attribute :config_min_running, :config_max_running, :config_memory_max, :config_cpu_quota, :config_auto_start, :config_auto_restart, :config_port, :config_num_threads, :config_log_level,
+                           :config_command, :config_timeout_stop
       base.extend(ClassMethods)
 
       ################################################
       # service configuration
       ################################################
+      base.command("bin/rails runner -e #{Karma.env} \"#{self.name}.run\"")
+      base.port(5000)
+      base.timeout_stop(5)
       base.min_running(1)
       base.max_running(1)
-      base.port(5000)
       base.auto_restart(true)
       base.auto_start(true)
 
@@ -31,10 +34,6 @@ module Karma
       ENV['KARMA_IDENTIFIER']
     end
 
-    def generate_instance_identifier(port:)
-      "#{full_name}@#{port}"
-    end
-
     def instance_log_prefix
       instance_identifier
     end
@@ -52,8 +51,16 @@ module Karma
       ################################################
       # service configuration
       ################################################
+      def command(val)
+        self.config_command = val
+      end
+
       def port(val)
         self.config_port = val
+      end
+
+      def timeout_stop(val)
+        self.config_timeout_stop = val
       end
 
       def min_running(val)
@@ -97,7 +104,7 @@ module Karma
       def set_process_config(config)
         # note: port does not change
         [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart].each do |k|
-          self.send(k, config[k])
+          send(k, config[k])
         end
         get_process_config
       end
@@ -105,14 +112,14 @@ module Karma
       def get_process_config
         Hash.new.tap do |h|
           [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart].each do |k|
-            h[k] = self.send("config_#{k}")
+            h[k] = send("config_#{k}")
           end
         end
       end
 
       def set_thread_config(config)
         [:num_threads, :log_level].each do |k|
-          self.send(k, config[k])
+          send(k, config[k])
         end
         get_thread_config
       end
@@ -120,7 +127,7 @@ module Karma
       def get_thread_config
         Hash.new.tap do |h|
           [:num_threads, :log_level].each do |k|
-            h[k] = self.send("config_#{k}")
+            h[k] = send("config_#{k}")
           end
         end
       end
@@ -146,6 +153,10 @@ module Karma
 
       def full_name
         "#{Karma.project_name}-#{Karma::Helpers::dashify(demodulized_name)}".downcase
+      end
+
+      def generate_instance_identifier(port:)
+        "#{full_name}@#{port}"
       end
 
     end

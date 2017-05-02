@@ -1,6 +1,5 @@
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'karmap'
-require 'karmap/models/concerns/service_message'
 require 'karmap/models/test_service'
 require 'karmap/models/mock_service'
 require 'rspec'
@@ -37,7 +36,7 @@ RSpec.configure do |config|
       config.karma_user_id =          'fake'
       config.aws_access_key_id =      'fake'
       config.aws_secret_access_key =  'fake'
-      config.services =               ['TestService']
+      config.services =               ['TestService', 'InvalidService']
       config.log_folder =             'spec/log'
       config.notifier =               'logger'
     end

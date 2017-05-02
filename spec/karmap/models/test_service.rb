@@ -1,21 +1,14 @@
 # encoding: UTF-8
 
-require_relative 'concerns/service_message'
 require 'karmap'
 
 class TestService < Karma::Service
 
-  include Karma::ServiceMessage
-
+  command 'bundle exec ruby spec/scripts/run_test_service.rb'
   min_running  2
   max_running  5
   port         33000
-
   num_threads  2
-
-  def command
-    'bundle exec ruby spec/scripts/run_test_service.rb'
-  end
 
   def perform
     msg = "#{Time.now} :: process #{$$} :: thread #{Thread.current.object_id} :: method #{__method__}"

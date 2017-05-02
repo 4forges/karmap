@@ -7,8 +7,6 @@ module Karma::Engine
   class Base
     include Karma::Helpers
 
-    attr_accessor :service
-
     def location
       nil # override (engine dependant)
     end
@@ -56,15 +54,15 @@ module Karma::Engine
     def export_service(service)
       FileUtils.mkdir_p(location) if location
     end
-    
+
     def export_config(service)
       FileUtils.mkdir_p(location) if location
       service_fn = "#{service.full_name}@.config"
       # read file
       config = import_config(service)
       # merge config
-      config.merge!(service.class.get_process_config)
-      config.merge!(service.class.get_thread_config)
+      config.merge!(service.get_process_config)
+      config.merge!(service.get_thread_config)
       # write file
       write_file(service_fn, config.to_json)
     end
@@ -85,7 +83,7 @@ module Karma::Engine
         attrs = {
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
-          service: service.name,
+          service: service.demodulized_name,
           pid: status.values[0].pid,
           status: status.values[0].status,
           active_threads: params[:active_threads],
@@ -99,7 +97,7 @@ module Karma::Engine
         attrs = {
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
-          service: service.name,
+          service: service.demodulized_name,
           pid: pid,
           status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]
         }
@@ -117,7 +115,7 @@ module Karma::Engine
       running_ports = running_instances.values.map{ |i| i.port.to_i }
       Karma.logger.debug{ "#{__method__}: #{running_ports.size} running instances found for #{service.name}" }
 
-      to_be_stopped_ports = running_ports - service.class.max_ports
+      to_be_stopped_ports = running_ports - service.max_ports
       Karma.logger.debug{ "#{__method__}: #{to_be_stopped_ports.size} running instances to be stopped" }
       running_instances.values.select do |i|
         to_be_stopped_ports.include?(i.port)
@@ -139,7 +137,7 @@ module Karma::Engine
       running_ports = running_instances.values.map{ |i| i.port.to_i }
       Karma.logger.debug{ "#{__method__}: #{running_ports.size} running instances found for #{service.name}" }
 
-      free_ports = service.class.max_ports - running_ports
+      free_ports = service.max_ports - running_ports
       Karma.logger.debug{ "#{__method__}: #{free_ports.size} free ports" }
       free_ports
     end

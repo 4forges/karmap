@@ -6,7 +6,9 @@ module Karma
   class Watchdog
     include Karma::ServiceConfig
 
+    command "bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\""
     port Karma.watchdog_port
+    timeout_stop 30
 
     SHUTDOWN_SEC = 0
 
@@ -71,27 +73,19 @@ module Karma
       end
     end
 
-    def command
-      "bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\""
-    end
-
-    def timeout_stop
-      30
-    end
-
     def self.export
-      s = self.new
-      Karma.engine_instance.export_service(s)
-      status = Karma.engine_instance.show_service(s)
+      Karma.engine_instance.export_service(Karma::Watchdog)
+      status = Karma.engine_instance.show_service(Karma::Watchdog)
       if status.empty?
-        Karma.engine_instance.start_service(s)
+        Karma.engine_instance.start_service(Karma::Watchdog)
       else
-        Karma.engine_instance.restart_service(status.values[0].pid, { service: s })
+        Karma.engine_instance.restart_service(status.values[0].pid, { service: Karma::Watchdog })
       end
     end
 
     def service_classes
-      @@service_classes ||= Karma.services.select{|c| Karma::Helpers::constantize(c).new.is_a?(Karma::Service) rescue false}.map{|c| Karma::Helpers::constantize(c)}
+      services_cls = Karma.services.map{|c| Karma::Helpers::constantize(c) rescue nil}.compact
+      @@service_classes ||= services_cls.select{|c| c <= Karma::Service}
       @@service_classes
     end
 
@@ -126,7 +120,7 @@ module Karma
       end
 
       # start instances
-      if service.class.config_auto_start
+      if service.config_auto_start
         Karma.engine_instance.to_be_started_ports(service).each do |port|
           Karma.logger.debug{ "#{__method__}: start new instance of #{service.name} on port #{port}" }
           Karma.engine_instance.start_service(service)
@@ -155,8 +149,7 @@ module Karma
       Karma.logger.info{ "#{__method__}: #{service_classes.count} services found" }
       service_classes.each do |cls|
         Karma.logger.info{ "#{__method__}: exporting #{cls.name}..." }
-        service = cls.new
-        Karma.engine_instance.export_service(service)
+        Karma.engine_instance.export_service(cls)
         cls.register
       end
       Karma.logger.info{ "#{__method__}: done registering services" }
@@ -201,8 +194,7 @@ module Karma
       case msg.command
         when Karma::Messages::ProcessCommandMessage::COMMANDS[:start]
           cls = Karma::Helpers::constantize(msg.service)
-          service = cls.new
-          Karma.engine_instance.start_service(service)
+          Karma.engine_instance.start_service(cls)
         when Karma::Messages::ProcessCommandMessage::COMMANDS[:stop]
           Karma.engine_instance.stop_service(msg.pid)
         when Karma::Messages::ProcessCommandMessage::COMMANDS[:restart]
@@ -215,21 +207,19 @@ module Karma
     # keys: [:service, :type, :memory_max, :cpu_quota, :min_running, :max_running, :auto_restart, :auto_start]
     def handle_process_config_update(msg)
       cls = Karma::Helpers::constantize(msg.service)
-      service = cls.new
       cls.set_process_config(msg.to_config)
-      Karma.engine_instance.export_service(service)
-      Karma.engine_instance.export_config(service)
-      ensure_service_instances_count(service)
+      Karma.engine_instance.export_service(cls)
+      Karma.engine_instance.export_config(cls)
+      ensure_service_instances_count(cls)
     end
 
     # keys: [:log_level, :num_threads]
     def handle_thread_config_update(msg)
       cls = Karma::Helpers::constantize(msg.service)
-      service = cls.new
       cls.set_thread_config(msg.to_config)
-      Karma.engine_instance.export_config(service)
+      Karma.engine_instance.export_config(cls)
 
-      running_instances = Karma.engine_instance.running_instances_for_service(service) #keys: [:pid, :full_name, :port]
+      running_instances = Karma.engine_instance.running_instances_for_service(cls) #keys: [:pid, :full_name, :port]
       running_instances.each do |k, instance|
         begin
           connection_retries ||= 5
@@ -257,8 +247,8 @@ module Karma
           # notify server if pid has changed
           if new_service_statuses[instance].pid != status.pid
             service_name = Karma::Helpers::classify(status.name.sub("#{Karma.project_name}-", ''))
-            service = Karma::Helpers::constantize(service_name).new
-            service.notify_status(pid: status.pid, status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead])
+            cls = Karma::Helpers::constantize(service_name)
+            cls.notify_status(pid: status.pid, params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]})
           end
         end
       end

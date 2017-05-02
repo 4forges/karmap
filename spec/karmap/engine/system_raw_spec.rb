@@ -4,27 +4,12 @@ require 'spec_helper'
 
 describe Karma::Engine::SystemRaw do
 
-  before(:all) { Karma.engine = "system_raw" }
+  before(:all) { Karma.engine = 'system_raw' }
 
   let(:engine) { Karma::Engine::SystemRaw.new }
-  let(:service) { TestService.new }
-  let(:service2) { MockService.new }
   let(:watchdog) { Karma::Watchdog.new }
 
-  before(:each) { engine.remove_service(service) }
-  before(:each) { engine.remove_service(service2) }
-
-  context 'watchdog' do
-
-    before(:each) { allow_any_instance_of(Karma::Engine::SystemRaw).to receive(:start_service).and_return(true) }
-
-    it 'exports self' do
-    end
-
-    it 'discovers and exports service' do
-    end
-
-  end
+  before(:each) { engine.remove_service(TestService) }
 
   context 'manage service instances' do
 
@@ -37,9 +22,9 @@ describe Karma::Engine::SystemRaw do
     end
 
     it 'engine starts service instance' do
-      engine.start_service(service)
-      wait_for {engine.show_service(service)}.to_not be_empty
-      status = engine.show_service(service)
+      engine.start_service(TestService)
+      wait_for {engine.show_service(TestService)}.to_not be_empty
+      status = engine.show_service(TestService)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karma-spec-test-service@33000')
       expect(status.values[0].name).to eq('karma-spec-test-service')
@@ -49,32 +34,32 @@ describe Karma::Engine::SystemRaw do
     end
 
     it 'engine stops service instance' do
-      engine.start_service(service)
-      wait_for {engine.show_service(service)}.to_not be_empty
-      status = engine.show_service(service)
+      engine.start_service(TestService)
+      wait_for {engine.show_service(TestService)}.to_not be_empty
+      status = engine.show_service(TestService)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karma-spec-test-service@33000')
       expect(status.values[0].status).to eq('running')
       pid = status.values[0].pid
 
       engine.stop_service(pid)
-      wait_for{engine.show_service(service)}.to be_empty
-      status = engine.show_service(service)
+      wait_for{engine.show_service(TestService)}.to be_empty
+      status = engine.show_service(TestService)
       expect(status.size).to eq(0)
     end
 
     it 'engine restarts service instance' do
-      engine.start_service(service)
-      wait_for {engine.show_service(service)}.to_not be_empty
-      status = engine.show_service(service)
+      engine.start_service(TestService)
+      wait_for {engine.show_service(TestService)}.to_not be_empty
+      status = engine.show_service(TestService)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karma-spec-test-service@33000')
       expect(status.values[0].status).to eq('running')
       old_pid = status.values[0].pid
 
-      engine.restart_service(old_pid, { service: service })
-      wait_for {engine.show_service(service)}.to_not be_empty
-      status = engine.show_service(service)
+      engine.restart_service(old_pid, { service: TestService })
+      wait_for {engine.show_service(TestService)}.to_not be_empty
+      status = engine.show_service(TestService)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karma-spec-test-service@33000')
       expect(status.values[0].status).to eq('running')
