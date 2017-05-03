@@ -18,3 +18,7 @@ StandardError=syslog
 SyslogIdentifier=%n
 KillMode=mixed
 TimeoutStopSec=5
+CPUAccounting=true
+CPUQuota=25%
+MemoryAccounting=true
+MemoryLimit=512M

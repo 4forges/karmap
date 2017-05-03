@@ -8,6 +8,8 @@ class MockService < Karma::Service
   max_running  5
   port         33100
   auto_restart false
+  memory_max   '512M'
+  cpu_quota    25
 
   def perform
     File.open("#{folder}/#{name}-#{__method__}.log", 'w') { |file| file.puts("process #{$$} :: thread #{Thread.current.object_id} :: method #{__method__}") }
