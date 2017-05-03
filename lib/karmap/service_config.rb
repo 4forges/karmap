@@ -3,7 +3,7 @@ module Karma
 
     def self.included(base)
 
-      base.class_attribute :config_min_running, :config_max_running, :config_memory_max, :config_cpu_quota, :config_auto_start, :config_auto_restart, :config_port, :config_num_threads, :config_log_level, :config_timeout_stop
+      base.class_attribute :config_min_running, :config_max_running, :config_memory_max, :config_cpu_quota, :config_auto_start, :config_auto_restart, :config_port, :config_num_threads, :config_log_level, :config_timeout_stop, :config_push_notifications
       base.extend(ClassMethods)
 
       ################################################
@@ -15,6 +15,7 @@ module Karma
       base.max_running(1)
       base.auto_restart(true)
       base.auto_start(true)
+      base.push_notifications(false)
 
       #################################################
       # thread configuration
@@ -79,6 +80,10 @@ module Karma
 
       def auto_restart(val)
         self.config_auto_restart = val
+      end
+
+      def push_notifications(val)
+        self.config_push_notifications = val
       end
 
       #################################################
