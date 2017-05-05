@@ -1,4 +1,4 @@
-dist: trusty
+dist: xenial
 sudo: required
 language: ruby
 
@@ -6,9 +6,4 @@ rvm:
   - 2.3.3
 
 before_install:
-  - sudo add-apt-repository -y ppa:pitti/systemd
-  - sudo apt-get update -y
-  - sudo apt-get install -y systemd
   - gem install bundler -v 1.13.6
-  - echo $PATH
-  - export PATH=/sbin:$PATH
