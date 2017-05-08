@@ -14,7 +14,7 @@ module Karma
   extend Configuration
 
   LOGGER_SHIFT_AGE = 2
-  LOGGER_SHIFT_SIZE = 52428800
+  LOGGER_SHIFT_SIZE = 50*1024*1024
 
   define_setting :home_path # user home folder path without trailing slash, ie. /home/extendi (required)
   define_setting :project_name # project name as string (required)
