@@ -244,8 +244,11 @@ module Karma
     def check_services_status
       new_service_statuses = Karma.engine_instance.show_all_services
       new_service_statuses.reject!{|k,v| v.name == self.full_name}
-      Karma.logger.debug{ "#{__method__}: currently #{new_service_statuses.size} running instances" }
-      Karma.logger.debug{ "#{__method__}: #{new_service_statuses.group_by{|k,v| v.name}.map{|k,v| "#{k}: #{v.size}"}.join(', ')}"}
+
+      new_running_instances = new_service_statuses.select{|i, s| s.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}
+      Karma.logger.debug{ "#{__method__}: currently #{new_running_instances.size} running instances" }
+      Karma.logger.debug{ "#{__method__}: #{new_running_instances.group_by{|k,v| v.name}.map{|k,v| "#{k}: #{v.size}"}.join(', ')}"}
+
       service_statuses.each do |instance, status|
         if new_service_statuses[instance].present?
           if new_service_statuses[instance].pid != status.pid

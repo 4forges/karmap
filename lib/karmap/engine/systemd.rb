@@ -35,6 +35,7 @@ module Karma::Engine
     def start_service(service)
       # get first stopped instance name and start it
       Karma.logger.debug{ "#{__method__}: starting #{service.full_name}" }
+      `systemctl --user reset-failed`
       status = show_service(service)
       (1..service.config_max_running).each do |i|
         instance_name = "#{service.full_name}@#{service.config_port+(i-1)}.service"
@@ -50,21 +51,21 @@ module Karma::Engine
     def stop_service(pid, params = {})
       # get instance by pid and stop it
       Karma.logger.debug{ "#{__method__}: stopping #{pid}" }
+      `systemctl --user reset-failed`
       status = show_service_by_pid(pid)
       instance_name = status.keys[0]
       Karma.logger.info{ "#{__method__}: stopping instance #{instance_name}" }
       `systemctl --user stop #{instance_name}`
-      `systemctl --user reset-failed`
     end
 
     def restart_service(pid, params = {})
       # get instance by pid and restart it
       Karma.logger.debug{ "#{__method__}: restarting #{pid}" }
+      `systemctl --user reset-failed`
       status = show_service_by_pid(pid)
       instance_name = status.keys[0]
       Karma.logger.info{ "#{__method__}: restarting instance #{instance_name}" }
       `systemctl --user restart #{instance_name}`
-      `systemctl --user reset-failed`
     end
 
     def export_service(service)
