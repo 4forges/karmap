@@ -244,18 +244,39 @@ module Karma
     def check_services_status
       new_service_statuses = Karma.engine_instance.show_all_services
       new_service_statuses.reject!{|k,v| v.name == self.full_name}
-      Karma.logger.debug{ "#{__method__}: currently #{new_service_statuses.size} running instances" }
+
+      new_running_instances = new_service_statuses.select{|i, s| s.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}
+      Karma.logger.debug{ "#{__method__}: currently #{new_running_instances.size} running instances" }
+      Karma.logger.debug{ "#{__method__}: #{new_running_instances.group_by{|k,v| v.name}.map{|k,v| "#{k}: #{v.size}"}.join(', ')}"}
+
       service_statuses.each do |instance, status|
         if new_service_statuses[instance].present?
-          # notify server if pid has changed
           if new_service_statuses[instance].pid != status.pid
-            service_name = Karma::Helpers::classify(status.name.sub("#{Karma.project_name}-", ''))
-            cls = Karma::Helpers::constantize(service_name)
+            # same service instance but different pid: notify server
+            Karma.logger.info{ "#{__method__}: found restarted instance (#{instance}, old pid: #{status.pid}, new pid: #{new_service_statuses[instance].pid})" }
+            cls = service_class_from_name(status.name)
             cls.notify_status(pid: status.pid, params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]})
+          elsif new_service_statuses[instance].status != status.status
+            # service instance with changed status: notify server
+            Karma.logger.info{ "#{__method__}: found instance with changed state (#{instance}, was: #{status.status}, now: #{new_service_statuses[instance].status})" }
+            cls = service_class_from_name(status.name)
+            cls.notify_status(pid: status.pid)
           end
+        else
+          # service instance disappeared for some reason: notify server
+          Karma.logger.info{ "#{__method__}: found missing instance (#{instance})" }
+          cls = service_class_from_name(status.name)
+          cls.notify_status(pid: status.pid, params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]})
         end
       end
       @service_statuses = new_service_statuses
+    end
+
+    # Utility method for getting a service class from an instance name
+    # ie. project-name-dummy-service -> DummyService
+    def service_class_from_name(name)
+      service_name = Karma::Helpers::classify(name.sub("#{Karma.project_name}-", ''))
+      return Karma::Helpers::constantize(service_name)
     end
 
   end

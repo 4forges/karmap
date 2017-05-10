@@ -51,16 +51,4 @@ describe Karma::Watchdog do
     watchdog.send(:handle_message, msg.to_message)
   end
 
-  it 'starts all services' do
-    # TODO
-  end
-
-  it 'stops all services' do
-    # TODO
-  end
-
-  it 'restarts all services' do
-    # TODO
-  end
-
 end
