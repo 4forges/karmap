@@ -248,15 +248,25 @@ module Karma
       Karma.logger.debug{ "#{__method__}: #{new_service_statuses.group_by{|k,v| v.name}.map{|k,v| "#{k}: #{v.size}"}.join(', ')}"}
       service_statuses.each do |instance, status|
         if new_service_statuses[instance].present?
-          # notify server if pid has changed
+          # same service instance but different pid: notify server
           if new_service_statuses[instance].pid != status.pid
-            service_name = Karma::Helpers::classify(status.name.sub("#{Karma.project_name}-", ''))
-            cls = Karma::Helpers::constantize(service_name)
+            cls = service_class_from_name(status.name)
             cls.notify_status(pid: status.pid, params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]})
           end
+        else
+          # service instance disappeared for some reason: notify server
+          cls = service_class_from_name(status.name)
+          cls.notify_status(pid: status.pid, params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]})
         end
       end
       @service_statuses = new_service_statuses
+    end
+
+    # Utility method for getting a service class from an instance name
+    # ie. project-name-dummy-service -> DummyService
+    def service_class_from_name(name)
+      service_name = Karma::Helpers::classify(name.sub("#{Karma.project_name}-", ''))
+      return Karma::Helpers::constantize(service_name)
     end
 
   end
