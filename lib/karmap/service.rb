@@ -153,6 +153,7 @@ module Karma
       params[:execution_time] = @thread_pool.average_execution_time
       params[:performance_execution_time] = @thread_pool.average_performance_execution_time
       params[:performance] = @thread_pool.average_performance
+      params[:current_version] = File.read(Karma.version_file_path) if !Karma.version_file_path.nil?
       self.class.notify_status(pid: pid, params: params)
     end
 
