@@ -245,6 +245,7 @@ module Karma
       new_service_statuses = Karma.engine_instance.show_all_services
       new_service_statuses.reject!{|k,v| v.name == self.full_name}
       Karma.logger.debug{ "#{__method__}: currently #{new_service_statuses.size} running instances" }
+      Karma.logger.debug{ "#{__method__}: #{new_service_statuses.group_by{|k,v| v.name}.map{|k,v| "#{k}: #{v.size}"}.join(', ')}"}
       service_statuses.each do |instance, status|
         if new_service_statuses[instance].present?
           # notify server if pid has changed

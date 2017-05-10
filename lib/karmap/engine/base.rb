@@ -127,7 +127,7 @@ module Karma::Engine
       running_ports = running_instances.values.map{ |i| i.port.to_i }
       Karma.logger.debug{ "#{__method__}: #{running_ports.size} running instances found for #{service.name}" }
 
-      to_be_started_ports = service.class.min_ports - running_ports
+      to_be_started_ports = service.min_ports - running_ports
       Karma.logger.debug{ "#{__method__}: #{to_be_started_ports.size} running instances to be started" }
       to_be_started_ports
     end
