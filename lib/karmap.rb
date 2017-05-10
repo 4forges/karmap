@@ -31,6 +31,7 @@ module Karma
   define_setting :engine, 'systemd'
   define_setting :notifier, 'queue'
   define_setting :watchdog_port, 32000
+  define_setting :version_file_path # file to update for version check
   define_setting :log_folder, 'log' # custom log folder
   define_setting :template_folder # custom engine templates folder
 

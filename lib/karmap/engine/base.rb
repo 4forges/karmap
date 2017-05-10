@@ -90,6 +90,7 @@ module Karma::Engine
           performance:  params[:performance]
         }
         attrs[:status] = params[:status] if params[:status].present?
+        attrs[:current_version] = params[:current_version] if params[:current_version].present?
       else
         Karma.logger.warn{ "#{__method__}: cannot find status for service #{service.name} (#{pid})" }
         attrs = {
