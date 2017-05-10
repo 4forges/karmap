@@ -248,15 +248,20 @@ module Karma
       Karma.logger.debug{ "#{__method__}: #{new_service_statuses.group_by{|k,v| v.name}.map{|k,v| "#{k}: #{v.size}"}.join(', ')}"}
       service_statuses.each do |instance, status|
         if new_service_statuses[instance].present?
-          # same service instance but different pid: notify server
           if new_service_statuses[instance].pid != status.pid
+            # same service instance but different pid: notify server
             Karma.logger.info{ "#{__method__}: found restarted instance (#{instance}, old pid: #{status.pid}, new pid: #{new_service_statuses[instance].pid})" }
             cls = service_class_from_name(status.name)
             cls.notify_status(pid: status.pid, params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]})
+          elsif new_service_statuses[instance].status != status.status
+            # service instance with changed status: notify server
+            Karma.logger.info{ "#{__method__}: found instance with changed state (#{instance}, was: #{status.status}, now: #{new_service_statuses[instance].status})" }
+            cls = service_class_from_name(status.name)
+            cls.notify_status(pid: status.pid)
           end
         else
           # service instance disappeared for some reason: notify server
-          Karma.logger.info{ "#{__method__}: found dead instance (#{instance})" }
+          Karma.logger.info{ "#{__method__}: found missing instance (#{instance})" }
           cls = service_class_from_name(status.name)
           cls.notify_status(pid: status.pid, params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]})
         end
