@@ -250,11 +250,13 @@ module Karma
         if new_service_statuses[instance].present?
           # same service instance but different pid: notify server
           if new_service_statuses[instance].pid != status.pid
+            Karma.logger.info{ "#{__method__}: found restarted instance (#{instance}, old pid: #{status.pid}, new pid: #{new_service_statuses[instance].pid})" }
             cls = service_class_from_name(status.name)
             cls.notify_status(pid: status.pid, params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]})
           end
         else
           # service instance disappeared for some reason: notify server
+          Karma.logger.info{ "#{__method__}: found dead instance (#{instance})" }
           cls = service_class_from_name(status.name)
           cls.notify_status(pid: status.pid, params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]})
         end
