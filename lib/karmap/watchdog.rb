@@ -180,11 +180,6 @@ module Karma
             Karma.error(msg.errors) unless msg.valid?
             handle_process_config_update(msg)
 
-          when Karma::Messages::ThreadConfigUpdateMessage.name
-            msg = Karma::Messages::ThreadConfigUpdateMessage.new(message)
-            Karma.error(msg.errors) unless msg.valid?
-            handle_thread_config_update(msg)
-
           else
             Karma.error("Invalid message type: #{message[:type]}")
         end
@@ -207,27 +202,22 @@ module Karma
       end
     end
 
-    # keys: [:service, :type, :memory_max, :cpu_quota, :min_running, :max_running, :auto_restart, :auto_start]
     def handle_process_config_update(msg)
       cls = Karma::Helpers::constantize(msg.service)
       cls.set_process_config(msg.to_config)
+
+      # export new configurations
       Karma.engine_instance.export_service(cls)
       Karma.engine_instance.export_config(cls)
       ensure_service_instances_count(cls)
-    end
 
-    # keys: [:log_level, :num_threads]
-    def handle_thread_config_update(msg)
-      cls = Karma::Helpers::constantize(msg.service)
-      cls.set_thread_config(msg.to_config)
-      Karma.engine_instance.export_config(cls)
-
+      # push configurations to all running threads
       running_instances = Karma.engine_instance.running_instances_for_service(cls) #keys: [:pid, :full_name, :port]
       running_instances.each do |k, instance|
         begin
           connection_retries ||= 5
           s = TCPSocket.new('127.0.0.1', instance.port)
-          s.puts(cls.get_thread_config.to_json)
+          s.puts(cls.get_process_config.to_json)
           s.close
         rescue ::Exception => e
           if (connection_retries -= 1) > 0
@@ -240,14 +230,13 @@ module Karma
         end
       end
     end
-
     def check_services_status
       new_service_statuses = Karma.engine_instance.show_all_services
       new_service_statuses.reject!{|k,v| v.name == self.full_name}
 
-      new_running_instances = new_service_statuses.select{|i, s| s.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}
+      new_running_instances = new_service_statuses.select{|i,s| s.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}
       Karma.logger.debug{ "#{__method__}: currently #{new_running_instances.size} running instances" }
-      Karma.logger.debug{ "#{__method__}: #{new_running_instances.group_by{|k,v| v.name}.map{|k,v| "#{k}: #{v.size}"}.join(', ')}"}
+      Karma.logger.debug{ "#{__method__}: #{new_running_instances.group_by{|i,s| s.name}.map{|i,g| "#{i}: #{g.size}"}.join(', ')}"}
 
       service_statuses.each do |instance, status|
         if new_service_statuses[instance].present?

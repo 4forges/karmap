@@ -12,13 +12,12 @@ module Karma
     def initialize
       @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new{ ::Thread.current[:performance] = performance } )
       default_config = Karma.engine_instance.import_config(self.class)
-      if default_config.present?
+      if default_config.size > 0
         Karma.logger.info{ 'read config from file' }
         self.class.set_process_config(default_config)
-        self.class.set_thread_config(default_config)
       end
-      @thread_config_reader = Karma::Thread::SimpleTcpConfigReader.new(
-        default_config: self.class.get_thread_config,
+      @config_reader = Karma::Thread::SimpleTcpConfigReader.new(
+        default_config: self.class.get_process_config,
         port: instance_port
       )
       @sleep_time = 1
@@ -106,7 +105,7 @@ module Karma
       end
 
       before_start
-      @thread_config_reader.start
+      @config_reader.start
       @running = true
       after_start
 
@@ -123,15 +122,15 @@ module Karma
         end
 
         # manage thread config update
-        self.class.set_thread_config(@thread_config_reader.runtime_config) if @thread_config_reader.runtime_config.present?
-        @thread_pool.manage(self.class.get_thread_config)
+        self.class.set_process_config(@config_reader.runtime_config) if @config_reader.runtime_config.present?
+        @thread_pool.manage(self.class.get_process_config)
 
         Karma.logger.debug{ "#{__method__}: alive" }
         sleep(@sleep_time)
       end
 
       stop_all_threads
-      @thread_config_reader.stop
+      @config_reader.stop
 
       # note: after_stop callback will not be called if service has been killed (not stopped correctly)
       after_stop
