@@ -11,7 +11,7 @@ module Karma
 
     def initialize
       @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new{ ::Thread.current[:performance] = performance } )
-      default_config = Karma.engine_instance.import_config(self.class)
+      default_config = Karma.engine_instance.import_config(self.class) #read config from file
       if default_config.present?
         Karma.logger.info{ 'read config from file' }
         self.class.set_process_config(default_config)
