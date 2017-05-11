@@ -16,10 +16,6 @@ module Karma
       base.auto_restart(true)
       base.auto_start(true)
       base.push_notifications(false)
-
-      #################################################
-      # thread configuration
-      #################################################
       base.num_threads(1)
       base.log_level(:info)
 
@@ -86,9 +82,6 @@ module Karma
         self.config_push_notifications = val
       end
 
-      #################################################
-      # thread configuration
-      #################################################
       def num_threads(val)
         self.config_num_threads = val
       end
@@ -102,7 +95,7 @@ module Karma
       #################################################
       def set_process_config(config)
         # note: port does not change
-        [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart].each do |k|
+        [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart, :push_notifications, :num_threads, :log_level].each do |k|
           send(k, config[k])
         end
         get_process_config
@@ -110,22 +103,7 @@ module Karma
 
       def get_process_config
         Hash.new.tap do |h|
-          [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart].each do |k|
-            h[k] = send("config_#{k}")
-          end
-        end
-      end
-
-      def set_thread_config(config)
-        [:num_threads, :log_level].each do |k|
-          send(k, config[k])
-        end
-        get_thread_config
-      end
-
-      def get_thread_config
-        Hash.new.tap do |h|
-          [:num_threads, :log_level].each do |k|
+          [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart, :push_notifications, :num_threads, :log_level].each do |k|
             h[k] = send("config_#{k}")
           end
         end
