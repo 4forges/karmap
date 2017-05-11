@@ -12,7 +12,8 @@ module Karma::Queue
         poller = Aws::SQS::QueuePoller.new(queue_url, { client: _client })
         poller.poll(skip_delete: true) do |msg|
           begin
-            Karma.logger.debug{ "#{__method__}: got message - #{msg}"}
+            Karma.logger.info{ "#{__method__} INCOMING MESSAGE: #{msg.body[:type]}" }
+            Karma.logger.debug{ "#{__method__} INCOMING MESSAGE: #{msg.body}" }
             yield(msg)
           rescue ::Exception => e
             Karma.logger.error{ "#{__method__}: #{e.message}" }
