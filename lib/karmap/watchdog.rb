@@ -140,7 +140,7 @@ module Karma
     def poll_queue
       Karma.logger.info{ "#{__method__}: started polling queue #{Karma::Queue.incoming_queue_url}" }
       queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
-        Karma.logger.debug{ "#{__method__} INCOMING MESSAGE: #{msg.body}" }
+        # Karma.logger.debug{ "#{__method__} INCOMING MESSAGE: #{msg.body}" }
         body = JSON.parse(msg.body).deep_symbolize_keys
         handle_message(body)
       end
