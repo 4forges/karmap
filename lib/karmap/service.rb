@@ -70,7 +70,7 @@ module Karma
     def self.register
       begin
         # this version is the last version of the repo
-        version = File.read(Karma.version_file_path) if !Karma.version_file_path.nil?
+        version = !Karma.version_file_path.nil? ? File.read(Karma.version_file_path) : nil
         message = Karma::Messages::ProcessRegisterMessage.new(
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
