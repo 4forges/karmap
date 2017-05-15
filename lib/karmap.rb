@@ -76,8 +76,8 @@ module Karma
         end
       end
       Karma::Messages.logger = ret_logger
-      ret_logger.info { "Logger initialized (#{ret_logger.object_id})" }
-      ret_logger.debug { "instance_identifier is defined: #{instance_identifier.present?}" }
+      ret_logger.info { "#{__method__} done (#{ret_logger.object_id})" }
+      ret_logger.debug { "#{__method__} instance_identifier: #{instance_identifier}" }
       ret_logger
     end
 
@@ -97,8 +97,8 @@ module Karma
           log.progname = self.name
         end
       end
-      ret_logger.info { "Logger initialized (#{ret_logger.object_id})" }
-      ret_logger.debug { "instance_identifier is defined: #{instance_identifier.present?}" }
+      ret_logger.info { "#{__method__} done (#{ret_logger.object_id})" }
+      ret_logger.debug { "#{__method__} instance_identifier: #{instance_identifier}" }
       ret_logger
     end
 

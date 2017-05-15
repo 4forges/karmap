@@ -111,10 +111,10 @@ module Karma::Engine
     def to_be_stopped_instances(service)
       running_instances = running_instances_for_service(service) #keys: [:pid, :full_name, :port]
       running_ports = running_instances.values.map{ |i| i.port.to_i }
-      Karma.logger.debug{ "#{__method__}: #{running_ports.size} running instances found for #{service.name}" }
+      Karma.logger.debug{ "#{__method__}: #{running_ports.size} running instances of #{service.name}" }
 
       to_be_stopped_ports = running_ports - service.max_ports
-      Karma.logger.debug{ "#{__method__}: #{to_be_stopped_ports.size} running instances to be stopped" }
+      Karma.logger.debug{ "#{__method__}: #{to_be_stopped_ports.size} to be stopped" }
       running_instances.values.select do |i|
         to_be_stopped_ports.include?(i.port)
       end
@@ -123,17 +123,17 @@ module Karma::Engine
     def to_be_started_ports(service)
       running_instances = running_instances_for_service(service) #keys: [:pid, :full_name, :port]
       running_ports = running_instances.values.map{ |i| i.port.to_i }
-      Karma.logger.debug{ "#{__method__}: #{running_ports.size} running instances found for #{service.name}" }
+      Karma.logger.debug{ "#{__method__}: #{running_ports.size} running instances of #{service.name}" }
 
       to_be_started_ports = service.min_ports - running_ports
-      Karma.logger.debug{ "#{__method__}: #{to_be_started_ports.size} running instances to be started" }
+      Karma.logger.debug{ "#{__method__}: #{to_be_started_ports.size} to be started" }
       to_be_started_ports
     end
 
     def free_ports(service)
       running_instances = running_instances_for_service(service) #keys: [:pid, :full_name, :port]
       running_ports = running_instances.values.map{ |i| i.port.to_i }
-      Karma.logger.debug{ "#{__method__}: #{running_ports.size} running instances found for #{service.name}" }
+      Karma.logger.debug{ "#{__method__}: #{running_ports.size} running instances of #{service.name}" }
 
       free_ports = service.max_ports - running_ports
       Karma.logger.debug{ "#{__method__}: #{free_ports.size} free ports" }

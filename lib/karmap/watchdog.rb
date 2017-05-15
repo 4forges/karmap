@@ -140,7 +140,7 @@ module Karma
     def poll_queue
       Karma.logger.info{ "#{__method__}: started polling queue #{Karma::Queue.incoming_queue_url}" }
       queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
-        Karma.logger.info{ "#{__method__} INCOMING MESSAGE: #{msg.body}" }
+        Karma.logger.debug{ "#{__method__} INCOMING MESSAGE: #{msg.body}" }
         body = JSON.parse(msg.body).deep_symbolize_keys
         handle_message(body)
       end
@@ -204,28 +204,36 @@ module Karma
 
     def handle_process_config_update(msg)
       cls = Karma::Helpers::constantize(msg.service)
-      cls.set_process_config(msg.to_config)
+      new_config = msg.to_config
+      old_config = Karma.engine_instance.import_config(cls)
 
-      # export new configurations
-      Karma.engine_instance.export_service(cls)
-      Karma.engine_instance.export_config(cls)
-      ensure_service_instances_count(cls)
+      if new_config == old_config
+        # no changes in configuration
+        Karma.logger.info{ "#{__method__}: config not changed" }
 
-      # push configurations to all running threads
-      running_instances = Karma.engine_instance.running_instances_for_service(cls) #keys: [:pid, :full_name, :port]
-      running_instances.each do |k, instance|
-        begin
-          connection_retries ||= 5
-          s = TCPSocket.new('127.0.0.1', instance.port)
-          s.puts(cls.get_process_config.to_json)
-          s.close
-        rescue ::Exception => e
-          if (connection_retries -= 1) > 0
-            Karma.logger.warn{ "#{__method__}: #{e.message}" }
-            sleep(1)
-            retry
-          else
-            Karma.logger.error{ "#{__method__}: #{e.message}" }
+      else
+        # export new configuration
+        cls.set_process_config(new_config)
+        Karma.engine_instance.export_service(cls)
+        Karma.engine_instance.export_config(cls)
+        ensure_service_instances_count(cls)
+
+        # push configuration to all running threads
+        running_instances = Karma.engine_instance.running_instances_for_service(cls) #keys: [:pid, :full_name, :port]
+        running_instances.each do |k, instance|
+          begin
+            connection_retries ||= 5
+            s = TCPSocket.new('127.0.0.1', instance.port)
+            s.puts(cls.get_process_config.to_json)
+            s.close
+          rescue ::Exception => e
+            if (connection_retries -= 1) > 0
+              Karma.logger.warn{ "#{__method__}: #{e.message}" }
+              sleep(1)
+              retry
+            else
+              Karma.logger.error{ "#{__method__}: #{e.message}" }
+            end
           end
         end
       end
