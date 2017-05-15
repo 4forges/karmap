@@ -69,6 +69,8 @@ module Karma
 
     def self.register
       begin
+        # this version is the last version of the repo
+        version = File.read(Karma.version_file_path) if !Karma.version_file_path.nil?
         message = Karma::Messages::ProcessRegisterMessage.new(
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
@@ -81,7 +83,8 @@ module Karma
           auto_start: self.config_auto_start,
           push_notifications: self.config_push_notifications,
           log_level: Karma.logger.level,
-          num_threads: self.config_num_threads
+          num_threads: self.config_num_threads,
+          version: version
         )
         Karma.notifier_instance.notify(message)
       rescue ::Exception => e
@@ -153,6 +156,7 @@ module Karma
       params[:execution_time] = @thread_pool.average_execution_time
       params[:performance_execution_time] = @thread_pool.average_performance_execution_time
       params[:performance] = @thread_pool.average_performance
+      # this version is the current version of the running instance
       params[:current_version] = File.read(Karma.version_file_path) if !Karma.version_file_path.nil?
       self.class.notify_status(pid: pid, params: params)
     end
