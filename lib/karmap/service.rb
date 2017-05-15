@@ -79,6 +79,7 @@ module Karma
           max_running: self.config_max_running,
           auto_restart: self.config_auto_restart,
           auto_start: self.config_auto_start,
+          push_notifications: self.config_push_notifications,
           log_level: Karma.logger.level,
           num_threads: self.config_num_threads
         )
