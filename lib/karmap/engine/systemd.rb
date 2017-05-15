@@ -126,6 +126,7 @@ module Karma::Engine
 
     def remove_service(service)
       Dir["#{location}/#{service.full_name}*.service"]
+          .concat(Dir["#{location}/#{service.full_name}.config"])
           .concat(Dir["#{location}/#{service.full_name}.target"])
           .concat(Dir["#{location}/#{service.full_name}*.target.wants/*"])
           .each do |file|

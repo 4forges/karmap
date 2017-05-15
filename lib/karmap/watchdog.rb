@@ -230,6 +230,7 @@ module Karma
         end
       end
     end
+
     def check_services_status
       new_service_statuses = Karma.engine_instance.show_all_services
       new_service_statuses.reject!{|k,v| v.name == self.full_name}

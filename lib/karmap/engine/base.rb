@@ -57,7 +57,7 @@ module Karma::Engine
 
     def export_config(service)
       FileUtils.mkdir_p(location) if location
-      service_fn = "#{service.full_name}@.config"
+      service_fn = "#{service.full_name}.config"
       config = import_config(service)
       config.merge!(service.get_process_config)
       Karma.logger.debug{ "writing config to file: #{config}" }
@@ -65,7 +65,7 @@ module Karma::Engine
     end
 
     def import_config(service)
-      service_fn = "#{service.full_name}@.config"
+      service_fn = "#{service.full_name}.config"
       config = JSON.parse(read_file(service_fn)).symbolize_keys rescue {}
       Karma.logger.debug{ "read config from file: #{config}" }
       return config
@@ -101,8 +101,7 @@ module Karma::Engine
           status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]
         }
       end
-      msg = Karma::Messages::ProcessStatusUpdateMessage.new(attrs)
-      return msg
+      return Karma::Messages::ProcessStatusUpdateMessage.new(attrs)
     end
 
     def running_instances_for_service(service)
