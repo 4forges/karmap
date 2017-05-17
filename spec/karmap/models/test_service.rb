@@ -4,8 +4,8 @@ require 'karmap'
 
 class TestService < Karma::Service
 
-  min_running  2
-  max_running  5
+  min_running  1
+  max_running  1
   port         33000
   num_threads  2
 

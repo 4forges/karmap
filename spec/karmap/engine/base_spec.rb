@@ -12,7 +12,7 @@ describe Karma::Engine::Base do
       status = engine.show_all_services
       status.values.each do |s|
         engine.stop_service(s.pid)
-        sleep(1)
+        sleep(2)
       end
     end
 

@@ -4,13 +4,10 @@ require 'spec_helper'
 
 describe Karma::Engine::Systemd do
 
-  before(:all) { Karma.engine = 'systemd' }
-
   let(:engine) { Karma::Engine::Systemd.new }
   let(:watchdog) { Karma::Watchdog.new }
 
-  before(:each) { engine.remove_service(TestService) }
-  before(:each) { engine.remove_service(MockService) }
+  before(:each) { Karma.engine = 'systemd' }
 
   context 'watchdog' do
 
@@ -39,6 +36,8 @@ describe Karma::Engine::Systemd do
   context 'template exports' do
 
     before(:each) { allow_any_instance_of(Karma::Engine::Systemd).to receive(:work_directory).and_return('/tmp/app') }
+    after(:each) { engine.remove_service(TestService) }
+    after(:each) { engine.remove_service(MockService) }
 
     it "exports TestService to filesystem" do
       engine.export_service(TestService)
@@ -63,6 +62,7 @@ describe Karma::Engine::Systemd do
     end
 
     it "cleans up if exporting into an existing dir" do
+      expect(FileUtils).to receive(:rm).with("#{engine.location}/karma-spec-test-service.target.wants/karma-spec-test-service@33000.service").at_least(1).times
       expect(FileUtils).to receive(:rm).with("#{engine.location}/karma-spec-test-service@.service").at_least(1).times
       expect(FileUtils).to receive(:rm).with("#{engine.location}/karma-spec-test-service.target").at_least(1).times
 
@@ -79,6 +79,9 @@ describe Karma::Engine::Systemd do
       instances_dir = "#{TestService.full_name}.target.wants"
       instances = Dir["#{engine.location}/#{instances_dir}/*"].sort
       expect(instances.size).to eq(TestService.config_max_running)
+
+      # reset
+      TestService.max_running(TestService.config_max_running - 1)
     end
 
     it 'delete extra instance symlink' do
@@ -89,6 +92,9 @@ describe Karma::Engine::Systemd do
       engine.export_service(TestService)
       files = Dir["#{engine.location}/karma-spec-test-service.target.wants/*"]
       expect(files.size).to eq(TestService.config_max_running)
+
+      # reset
+      TestService.max_running(TestService.config_max_running + 1)
     end
 
     it 'delete single service' do
@@ -127,9 +133,10 @@ describe Karma::Engine::Systemd do
       status = engine.show_all_services
       status.values.each do |s|
         engine.stop_service(s.pid)
-        sleep(1)
+        sleep(2)
       end
     end
+    after(:each) { engine.remove_service(TestService) }
 
     it 'engine starts service instance' do
       engine.start_service(TestService)

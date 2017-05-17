@@ -36,7 +36,7 @@ RSpec.configure do |config|
       config.karma_user_id =          'fake'
       config.aws_access_key_id =      'fake'
       config.aws_secret_access_key =  'fake'
-      config.services =               ['TestService', 'InvalidService']
+      config.services =               ['TestService', 'MockService', 'InvalidService']
       config.log_folder =             'spec/log'
       config.notifier =               'logger'
     end

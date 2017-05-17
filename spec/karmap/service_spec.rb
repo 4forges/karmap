@@ -9,9 +9,10 @@ describe Karma::Service do
     status = Karma.engine_instance.show_all_services
     status.values.each do |s|
       Karma.engine_instance.stop_service(s.pid)
-      sleep(1)
+      sleep(2)
     end
   end
+  after(:each) { Karma.engine_instance.remove_service(TestService) }
 
   it 'service calls lifecycle callbacks' do
     Karma.engine_instance.start_service(TestService)

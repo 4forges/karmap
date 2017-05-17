@@ -4,8 +4,8 @@ require 'spec_helper'
 
 class MockService < Karma::Service
 
-  min_running  2
-  max_running  5
+  min_running  1
+  max_running  1
   port         33100
   auto_restart false
   memory_max   '512M'

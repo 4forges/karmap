@@ -38,7 +38,7 @@ module Karma::Engine
     end
 
     def restart_service(pid, params = {})
-      stop_service(pid)
+      `kill #{pid}`
       start_service(params[:service])
     end
 
@@ -72,7 +72,7 @@ module Karma::Engine
         when 2, 'R', 'D'
           Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]
         else
-          process_status
+          Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]
       end
     end
   end
