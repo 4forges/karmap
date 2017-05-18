@@ -4,6 +4,7 @@ require 'spec_helper'
 
 describe Karma::Engine::SystemRaw do
 
+=begin
   before(:all) { Karma.engine = 'system_raw' }
 
   let(:engine) { Karma::Engine::SystemRaw.new }
@@ -69,6 +70,6 @@ describe Karma::Engine::SystemRaw do
     end
 
   end
-
+=end
 
 end

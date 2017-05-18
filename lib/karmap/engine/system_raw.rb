@@ -21,7 +21,7 @@ module Karma::Engine
     def start_service(service, params = {})
       ::Thread.abort_on_exception = true
       ::Thread.new do
-        if !params[:port].nil? || free_ports(service).count > 0
+        if params[:port].present? || free_ports(service).count > 0
           params[:port] ||= free_ports(service)[0]
           Karma.logger.debug{ "#{__method__}: running '#{service.command}', port: #{params[:port]}" }
           system({'PORT' => params[:port].to_s, 'KARMA_IDENTIFIER' => service.generate_instance_identifier(port: params[:port])}, service.command)
