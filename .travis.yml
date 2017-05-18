@@ -1,5 +1,5 @@
-dist: xenial
-sudo: required
+#dist: xenial
+#sudo: required
 language: ruby
 
 rvm:
@@ -8,6 +8,7 @@ rvm:
 before_install:
   - gem install bundler
 
+# stolen from https://github.com/ledbettj/systemd-journal/blob/master/.travis.yml
 before_script:
   - export PREV_DIR=$(pwd)
   - sudo apt-get update -qq
