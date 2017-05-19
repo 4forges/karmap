@@ -4,28 +4,25 @@ require 'spec_helper'
 
 describe Karma::Engine::SystemRaw do
 
-=begin
-  before(:all) { Karma.engine = 'system_raw' }
-
-  let(:engine) { Karma::Engine::SystemRaw.new }
   let(:watchdog) { Karma::Watchdog.new }
 
-  before(:each) { engine.remove_service(TestService) }
+  before(:each) { Karma.engine = 'system_raw' }
+  before(:each) { Karma.engine_instance.remove_service(TestService) }
 
   context 'manage service instances' do
 
     after(:each) do
-      status = engine.show_all_services
+      status = Karma.engine_instance.show_all_services
       status.values.each do |s|
-        engine.stop_service(s.pid)
+        Karma.engine_instance.stop_service(s.pid)
         sleep(1)
       end
     end
 
     it 'engine starts service instance' do
-      engine.start_service(TestService)
-      wait_for {engine.show_service(TestService)}.to_not be_empty
-      status = engine.show_service(TestService)
+      Karma.engine_instance.start_service(TestService)
+      wait_for {Karma.engine_instance.show_service(TestService)}.to_not be_empty
+      status = Karma.engine_instance.show_service(TestService)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karma-spec-test-service@33000')
       expect(status.values[0].name).to eq('karma-spec-test-service')
@@ -35,32 +32,32 @@ describe Karma::Engine::SystemRaw do
     end
 
     it 'engine stops service instance' do
-      engine.start_service(TestService)
-      wait_for {engine.show_service(TestService)}.to_not be_empty
-      status = engine.show_service(TestService)
+      Karma.engine_instance.start_service(TestService)
+      wait_for {Karma.engine_instance.show_service(TestService)}.to_not be_empty
+      status = Karma.engine_instance.show_service(TestService)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karma-spec-test-service@33000')
       expect(status.values[0].status).to eq('running')
       pid = status.values[0].pid
 
-      engine.stop_service(pid)
-      wait_for{engine.show_service(TestService)}.to be_empty
-      status = engine.show_service(TestService)
+      Karma.engine_instance.stop_service(pid)
+      wait_for{Karma.engine_instance.show_service(TestService)}.to be_empty
+      status = Karma.engine_instance.show_service(TestService)
       expect(status.size).to eq(0)
     end
 
     it 'engine restarts service instance' do
-      engine.start_service(TestService)
-      wait_for {engine.show_service(TestService)}.to_not be_empty
-      status = engine.show_service(TestService)
+      Karma.engine_instance.start_service(TestService)
+      wait_for {Karma.engine_instance.show_service(TestService)}.to_not be_empty
+      status = Karma.engine_instance.show_service(TestService)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karma-spec-test-service@33000')
       expect(status.values[0].status).to eq('running')
       old_pid = status.values[0].pid
 
-      engine.restart_service(old_pid, { service: TestService })
-      wait_for {engine.show_service(TestService)}.to_not be_empty
-      status = engine.show_service(TestService)
+      Karma.engine_instance.restart_service(old_pid, { service: TestService })
+      wait_for {Karma.engine_instance.show_service(TestService)}.to_not be_empty
+      status = Karma.engine_instance.show_service(TestService)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karma-spec-test-service@33000')
       expect(status.values[0].status).to eq('running')
@@ -70,6 +67,5 @@ describe Karma::Engine::SystemRaw do
     end
 
   end
-=end
 
 end
