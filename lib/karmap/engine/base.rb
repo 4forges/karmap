@@ -52,6 +52,7 @@ module Karma::Engine
     end
 
     def export_service(service)
+      safe_init_config(service)
       FileUtils.mkdir_p(location) if location
     end
 
