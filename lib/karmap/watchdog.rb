@@ -152,6 +152,7 @@ module Karma
       Karma.logger.info{ "#{__method__}: #{service_classes.count} services found" }
       service_classes.each do |cls|
         Karma.logger.info{ "#{__method__}: exporting #{cls.name}..." }
+        Karma.engine_instance.safe_init_config(cls)
         Karma.engine_instance.export_service(cls)
         cls.register
       end
@@ -215,7 +216,7 @@ module Karma
         # export new configuration
         cls.set_process_config(new_config)
         Karma.engine_instance.export_service(cls)
-        Karma.engine_instance.export_config(cls)
+        Karma.engine_instance.export_config(cls, cls.get_process_config)
         ensure_service_instances_count(cls)
 
         # push configuration to all running threads

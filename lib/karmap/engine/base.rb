@@ -55,11 +55,18 @@ module Karma::Engine
       FileUtils.mkdir_p(location) if location
     end
 
-    def export_config(service)
+    def safe_init_config(service)
+      if !exists_config?(service)
+        config = service.get_process_config
+        export_config(service, config)
+      end
+      config = import_config(service)
+      service.set_process_config(config)
+    end
+    
+    def export_config(service, config)
       FileUtils.mkdir_p(location) if location
       service_fn = "#{service.full_name}.config"
-      config = import_config(service)
-      config.merge!(service.get_process_config)
       Karma.logger.debug{ "writing config to file: #{config}" }
       write_file(service_fn, config.to_json)
     end
@@ -69,6 +76,12 @@ module Karma::Engine
       config = JSON.parse(read_file(service_fn)).symbolize_keys rescue {}
       Karma.logger.debug{ "read config from file: #{config}" }
       return config
+    end
+    
+    def exists_config?(service)
+      service_fn = "#{service.full_name}.config"
+      config = JSON.parse(read_file(service_fn)).symbolize_keys rescue {}
+      return config.present?
     end
 
     def remove_service(service)
