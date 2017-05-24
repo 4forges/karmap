@@ -96,7 +96,7 @@ module Karma
       # only call register on each service. Karma server will then push a ProcessConfigUpdateMessage that
       # will trigger the starting of instances.
       s = self.new
-      s.service_classes.each(&:register)
+      s.service_classes.each{|s| s.register}
     end
 
     def self.stop_all_services
@@ -137,6 +137,11 @@ module Karma
 
     include Karma::Helpers
 
+    def queue_client
+      @@queue_client ||= Karma::Queue::Client.new
+      @@queue_client
+    end
+
     def poll_queue
       Karma.logger.info{ "#{__method__}: started polling queue #{Karma::Queue.incoming_queue_url}" }
       queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
@@ -152,16 +157,10 @@ module Karma
       Karma.logger.info{ "#{__method__}: #{service_classes.count} services found" }
       service_classes.each do |cls|
         Karma.logger.info{ "#{__method__}: exporting #{cls.name}..." }
-        Karma.engine_instance.safe_init_config(cls)
         Karma.engine_instance.export_service(cls)
         cls.register
       end
       Karma.logger.info{ "#{__method__}: done registering services" }
-    end
-
-    def queue_client
-      @@queue_client ||= Karma::Queue::Client.new
-      @@queue_client
     end
 
     def handle_message(message)
@@ -214,9 +213,8 @@ module Karma
 
       else
         # export new configuration
-        cls.set_process_config(new_config)
+        Karma.engine_instance.export_config(cls, new_config)
         Karma.engine_instance.export_service(cls)
-        Karma.engine_instance.export_config(cls, cls.get_process_config)
         ensure_service_instances_count(cls)
 
         # push configuration to all running threads
