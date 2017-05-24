@@ -61,6 +61,7 @@ describe Karma::Engine::Systemd do
     end
 
     it "cleans up if exporting into an existing dir" do
+      expect(FileUtils).to receive(:rm).with("#{Karma.engine_instance.location}/karma-spec-test-service.config").at_least(1).times
       expect(FileUtils).to receive(:rm).with("#{Karma.engine_instance.location}/karma-spec-test-service.target.wants/karma-spec-test-service@33000.service").at_least(1).times
       expect(FileUtils).to receive(:rm).with("#{Karma.engine_instance.location}/karma-spec-test-service@.service").at_least(1).times
       expect(FileUtils).to receive(:rm).with("#{Karma.engine_instance.location}/karma-spec-test-service.target").at_least(1).times

@@ -86,7 +86,7 @@ module Karma
       end
     end
 
-    def service_classes
+    def self.service_classes
       services_cls = Karma.services.map{|c| Karma::Helpers::constantize(c) rescue nil}.compact
       @@service_classes ||= services_cls.select{|c| c <= Karma::Service}
       @@service_classes
@@ -95,8 +95,7 @@ module Karma
     def self.start_all_services
       # only call register on each service. Karma server will then push a ProcessConfigUpdateMessage that
       # will trigger the starting of instances.
-      s = self.new
-      s.service_classes.each{|s| s.register}
+      self.service_classes.each{|s| s.register}
     end
 
     def self.stop_all_services
@@ -116,6 +115,8 @@ module Karma
     end
 
     def ensure_service_instances_count(service)
+      Karma.engine_instance.safe_init_config(service)
+
       # stop instances
       Karma.engine_instance.to_be_stopped_instances(service).each do |instance|
         Karma.logger.debug{ "#{__method__}: stop instance #{instance.name}" }
@@ -154,8 +155,8 @@ module Karma
     # Notifies the Karma server about the current host and all Karma::Service subclasses
     def register
       Karma.logger.info{ "#{__method__}: registering services..." }
-      Karma.logger.info{ "#{__method__}: #{service_classes.count} services found" }
-      service_classes.each do |cls|
+      Karma.logger.info{ "#{__method__}: #{self.class.service_classes.count} services found" }
+      self.class.service_classes.each do |cls|
         Karma.logger.info{ "#{__method__}: exporting #{cls.name}..." }
         Karma.engine_instance.export_service(cls)
         cls.register
@@ -170,7 +171,7 @@ module Karma
 
           when Karma::Messages::ProcessCommandMessage.name
             # set the array of discovered services for validation
-            Karma::Messages::ProcessCommandMessage.services = service_classes.map(&:to_s)
+            Karma::Messages::ProcessCommandMessage.services = self.class.service_classes.map(&:to_s)
             msg = Karma::Messages::ProcessCommandMessage.new(message)
             Karma.error(msg.errors) unless msg.valid?
             handle_process_command(msg)
@@ -241,6 +242,11 @@ module Karma
     def check_services_status
       new_service_statuses = Karma.engine_instance.show_all_services
       new_service_statuses.reject!{|k,v| v.name == self.full_name}
+      
+      self.class.service_classes.each do |service_class|
+        ensure_service_instances_count(service_class)
+      end
+      sleep 1
 
       new_running_instances = new_service_statuses.select{|i,s| s.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}
       Karma.logger.debug{ "#{__method__}: currently #{new_running_instances.size} running instances" }
