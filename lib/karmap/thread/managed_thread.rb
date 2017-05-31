@@ -30,7 +30,7 @@ module Karma::Thread
     end
 
     def to_s
-      "#{@thread.inspect} index:#{@thread[:thread_index]} status:#{@thread[:status]}, initing_at:#{@thread[:initing_at]}, last_running_at:#{@thread[:last_running_at]}"
+      "#{@thread.inspect} index:#{@thread[:thread_index]} status:#{@thread[:status]}, initing_at:#{@thread[:initing_at]}, last_running_at:#{@thread[:last_running_at]} (#{Time.now - @thread[:last_running_at]} secs ago)"
     end
 
     def set_log_level(level)
@@ -119,6 +119,7 @@ module Karma::Thread
                 Karma.logger.debug { "Execution time: #{@thread[:execution_time]}" }
                 Karma.logger.debug { "Performance: #{@thread[:performance]}" }
                 Karma.logger.debug { "Performance execution time: #{@thread[:performance_execution_time]}" }
+                Thread.current[:last_running_at] = Time.now
 
               else
                 Karma.logger.debug { "Thread status: #{@thread[:status]}" }

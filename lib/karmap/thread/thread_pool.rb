@@ -5,18 +5,24 @@ module Karma::Thread
     attr_accessor :thread
     cattr_accessor :list, :thread_index
 
+    # blocks:
+    # :starting
+    # :finishing
+    # :running
+    # :performance
+
     def initialize(blocks, options = {})
       @blocks = blocks
       @list = []
       @thread_index = 0
     end
 
-    def manage(config = nil)
+    def manage(config = {})
       @default_config ||= config
       @current_config = config || @default_config
 
-      max_workers = @current_config[:num_threads]
-      log_level = @current_config[:log_level]
+      max_workers = @current_config[:num_threads]||0
+      log_level = @current_config[:log_level]||0
 
       Karma.logger.debug{ 'Pruning stopped threads...' }
       num_pruned = prune_list
@@ -34,6 +40,12 @@ module Karma::Thread
 
       Karma.logger.debug{ "Set log level to #{log_level}"}
       set_log_level(log_level)
+      
+      Karma.logger.debug{ "Active threads:"}
+      active.each do |t|
+        Karma.logger.debug{ t.to_s }
+      end
+      true
     end
 
     # Call this method repeatedly inside fetching jobs that might take more than 1.hour (like garbage collectors)
@@ -78,7 +90,7 @@ module Karma::Thread
     end
 
     def set_log_level(log_level)
-      running.map{|managed_thread| managed_thread.set_log_level(log_level)}
+      running.each{|managed_thread| managed_thread.set_log_level(log_level)}
     end
 
     def get_first_thread_index
@@ -115,7 +127,7 @@ module Karma::Thread
 
     def average_execution_time
       execution_times = []
-      running.map do |t|
+      running.each do |t|
         execution_times << t.execution_time if !t.execution_time.nil?
       end
       execution_times.size > 0 ? execution_times.sum.to_f / execution_times.size.to_f : 0
@@ -123,7 +135,7 @@ module Karma::Thread
 
     def average_performance_execution_time
       performance_execution_times = []
-      running.map do |t|
+      running.each do |t|
         performance_execution_times << t.performance_execution_time if !t.performance_execution_time.nil?
       end
       performance_execution_times.size > 0 ? performance_execution_times.sum.to_f / performance_execution_times.size.to_f : 0
@@ -131,7 +143,7 @@ module Karma::Thread
 
     def average_performance
       performances = []
-      running.map do |t|
+      running.each do |t|
         performances << t.performance if !t.performance.nil?
       end
       performances.size > 0 ? performances.sum.to_f / performances.size.to_f : 0
