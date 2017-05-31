@@ -13,6 +13,7 @@ module Karma::Thread
       blocks[:finishing] ||= Proc.new { Karma.logger.debug { "#{$$}::#{Thread.current.to_s} finishing" } }
       blocks[:running] ||= Proc.new { Karma.logger.debug { "#{$$}::#{Thread.current.to_s} running" } }
       blocks[:performance] ||= Proc.new { Karma.logger.debug { "#{$$}::#{Thread.current.to_s} performance" } }
+
       @thread = ::Thread.new do
         Thread.current[:status] = :initing
         Thread.current[:initing_at] = Time.now
@@ -27,10 +28,11 @@ module Karma::Thread
         outer_block(blocks)
       end
       @thread.abort_on_exception = true #only for debug
+      @thread[:custom_inspect_block] ||= Proc.new { "#{$$}::#{@thread[:thread_index]} #{Time.now} custom_inspect" }
     end
 
     def to_s
-      "#{@thread.inspect} index:#{@thread[:thread_index]} status:#{@thread[:status]}, initing_at:#{@thread[:initing_at]}, last_running_at:#{@thread[:last_running_at]} (#{Time.now - @thread[:last_running_at]} secs ago)"
+      "#{@thread.inspect} index:#{@thread[:thread_index]} status:#{@thread[:status]}, initing_at:#{@thread[:initing_at]}, last_running_at:#{@thread[:last_running_at]} (#{Time.now - @thread[:last_running_at]} secs ago) custom: #{@thread[:custom_inspect_block].call.to_s}"
     end
 
     def set_log_level(level)
@@ -140,7 +142,7 @@ module Karma::Thread
         Karma.logger.error{ e }
       end
     end
-
+    
     def running_default_block
       Karma.logger.debug{ "#{$$}::#{Thread.current.to_s} running - #{Time.now}" }
     end

@@ -10,7 +10,7 @@ module Karma
     @@instance = nil
 
     def initialize
-      @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new{ ::Thread.current[:performance] = performance } )
+      @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new{ ::Thread.current[:performance] = performance }, custom_inspect: Proc.new { custom_inspect } )
       Karma.engine_instance.safe_init_config(self.class)
       @config_reader = Karma::Thread::SimpleTcpConfigReader.new(
         default_config: self.class.get_process_config,
@@ -24,6 +24,11 @@ module Karma
       # override this with custom performance calculation.
       # return a value between 0-100, where 100 is good and 0 is bad.
       0
+    end
+
+    def custom_inspect
+      # override this with custom inspect_info
+      "custom_inspect"
     end
 
     def perform
