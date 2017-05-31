@@ -12,5 +12,4 @@ end
 
 require 'karmap/thread/managed_thread'
 require 'karmap/thread/thread_pool'
-require 'karmap/thread/simple_tcp_config_reader'
 require 'karmap/thread/fake_config_reader'

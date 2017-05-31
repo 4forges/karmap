@@ -10,6 +10,10 @@ module Karma::Engine
     def location
       nil # override (engine dependant)
     end
+    
+    def config_location
+      "#{Karma.home_path}/.config/systemd/user"
+    end
 
     def project_name
       Karma.project_name
@@ -57,6 +61,7 @@ module Karma::Engine
     end
 
     def safe_init_config(service)
+      byebug
       if !exists_config?(service)
         config = service.get_process_config
         export_config(service, config)

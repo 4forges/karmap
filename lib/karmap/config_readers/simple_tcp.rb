@@ -1,6 +1,6 @@
-module Karma::Thread
+module Karma::ConfigReaders
 
-  class SimpleTcpConfigReader
+  class SimpleTcp
 
     attr_reader :runtime_config
 

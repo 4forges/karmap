@@ -145,5 +145,6 @@ require 'karmap/watchdog'
 require 'karmap/version'
 require 'karmap/queue'
 require 'karmap/thread'
+require 'karmap/config_reader'
 
 require 'karmap/railtie' if defined?(::Rails)

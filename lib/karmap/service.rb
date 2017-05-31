@@ -6,20 +6,39 @@ module Karma
   class Service
     include Karma::ServiceConfig
     include Karma::Helpers
-
+    
+    attr_reader :config_reader
     @@instance = nil
 
-    def initialize
-      @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new{ ::Thread.current[:performance] = performance } )
-      Karma.engine_instance.safe_init_config(self.class)
-      @config_reader = Karma::Thread::SimpleTcpConfigReader.new(
-        default_config: self.class.get_process_config,
-        port: instance_port
-      )
-      @sleep_time = 1
-      @running = false
+    def self.engine
+      Karma.engine_instance
     end
 
+    def self.config_engine
+      Karma.engine_instance
+    end
+    
+    def self.init_config_reader_for_instance(instance)
+      # Karma::ConfigReaders::SimpleTcp.new(
+      #   default_config: self.class.get_process_config,
+      #   port: instance_port
+      # )
+      Karma.engine_instance
+    end
+    
+    def initialize
+      byebug
+      @running = false
+      @run_sleep_seconds = 1
+
+      # init thread pool
+      @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new{ ::Thread.current[:performance] = performance } )
+      # init config reader
+      @config_reader = self.class.init_config_reader_for_instance(self)
+
+      @config_reader.safe_init_config(self.class)
+    end
+    
     def performance
       # override this with custom performance calculation.
       # return a value between 0-100, where 100 is good and 0 is bad.
@@ -126,7 +145,7 @@ module Karma
         @thread_pool.manage(self.class.get_process_config)
 
         Karma.logger.debug{ "#{__method__}: alive" }
-        sleep(@sleep_time)
+        sleep(@run_sleep_seconds)
       end
 
       stop_all_threads
@@ -158,7 +177,7 @@ module Karma
     end
 
     def self.notify_status(pid:, params: {})
-      message = Karma.engine_instance.get_process_status_message(self, pid, params)
+      message = self.engine_instance.get_process_status_message(self, pid, params)
       if message.present? && message.valid?
         Karma.notifier_instance.notify(message)
       end
