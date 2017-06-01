@@ -120,10 +120,12 @@ module Karma::Engine
       write_template 'systemd/master.target.erb', "#{project_name}.target", binding
 
       reload
+
       if service == Karma::Watchdog
-        instance_name = "#{service.full_name}@#{service.config_port+(i-1)}.service"
+        instance_name = "#{service.full_name}@#{Karma.watchdog_port}.service"
         `systemctl enable --user #{instance_name}`
       end
+
       Karma.logger.info { "#{__method__}: end systemd export for service #{service.name}" }
     end
 
