@@ -31,7 +31,7 @@ module Karma::Thread
       Karma.logger.debug{ "Active size: #{active.size} - max_workers: #{max_workers}" }
       while (active.size) < max_workers
         Karma.logger.debug{ "Adding new thread..." }
-        add({ running_sleep_time: @current_config[:sleep_time] })
+        add_and_start({ running_sleep_time: @current_config[:sleep_time] })
       end
       while (active.size) > max_workers
         Karma.logger.debug{ "Stopping thread..." }
@@ -99,7 +99,7 @@ module Karma::Thread
       ((0..1000).to_a - running_indexes).first
     end
 
-    def add(options = {})
+    def add_and_start(options = {})
       if options[:thread_index].nil?
         options[:thread_index] = get_first_thread_index
       end
@@ -114,6 +114,7 @@ module Karma::Thread
         sleep 0.1
       end
       Karma.logger.debug{ "\n\n\n\n\n\n\n\n\n\n*********************************************************#{$$}********#{new_thread.thread[:thread_index]} #{new_thread.thread.status}" }
+      new_thread
     end
 
     def stop
