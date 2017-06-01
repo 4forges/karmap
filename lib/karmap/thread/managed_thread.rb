@@ -17,17 +17,23 @@ module Karma::Thread
       blocks[:performance] ||= Proc.new { Karma.logger.debug { "#{$$}::#{Thread.current.to_s} performance" } }
 
       @thread = ::Thread.new do
-        Thread.current[:status] = :initing
-        Thread.current[:initing_at] = Time.now
-        Thread.current[:last_running_at] = Thread.current[:initing_at]
-        Thread.current[:parent_class] = self
-        Thread.current[:internal_key] = "#{Karma::Thread::ManagedThread.internal_key_prefix}#{$$}"
-        Thread.current[:is_managed_thread] = true
-        Thread.current[:status] = :inited
-        Thread.current[:thread_index] = options[:thread_index]
-        Karma.logger.debug{ "#{$$}::#{Thread.current.to_s} initialized" }
-        Thread.stop
-        outer_block(blocks)
+        begin
+          Thread.current[:status] = :initing
+          Thread.current[:initing_at] = Time.now
+          Thread.current[:last_running_at] = Thread.current[:initing_at]
+          Thread.current[:parent_class] = self
+          Thread.current[:internal_key] = "#{Karma::Thread::ManagedThread.internal_key_prefix}#{$$}"
+          Thread.current[:is_managed_thread] = true
+          Thread.current[:status] = :inited
+          Thread.current[:thread_index] = options[:thread_index]
+          Karma.logger.debug{ "#{$$}::#{Thread.current.to_s} initialized" }
+          Thread.stop
+          outer_block(blocks)
+        rescue Exception => e
+          Karma.logger.error{ "#{$$}::#{Thread.current.to_s} ERROREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE" }
+          Karma.logger.error{ "#{$$}::#{Thread.current.to_s} #{e.message}" }
+          raise e
+        end
       end
       @thread.abort_on_exception = true #only for debug
       # @thread[:custom_inspect_block] ||= Proc.new { "#{$$}::#{@thread[:thread_index]} #{Time.now} custom_inspect" }
