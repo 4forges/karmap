@@ -67,11 +67,22 @@ module Karma
         @@instance.run
       end
     end
+    
+    def self.version
+      if Karma.version_file_path.present?
+        if File.exists?(Karma.version_file_path)
+          File.read(Karma.version_file_path)
+        else
+          'file not exists'
+        end
+      else
+        'no version set'
+      end
+    end
 
     def self.register
       begin
         # this version is the last version of the repo
-        version = !Karma.version_file_path.nil? ? File.read(Karma.version_file_path) : nil
         message = Karma::Messages::ProcessRegisterMessage.new(
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
@@ -85,7 +96,7 @@ module Karma
           push_notifications: self.config_push_notifications,
           log_level: Karma.logger.level,
           num_threads: self.config_num_threads,
-          version: version
+          version: self.version
         )
         Karma.notifier_instance.notify(message)
       rescue ::Exception => e
@@ -158,7 +169,7 @@ module Karma
       params[:performance_execution_time] = @thread_pool.average_performance_execution_time
       params[:performance] = @thread_pool.average_performance
       # this version is the current version of the running instance
-      params[:current_version] = File.read(Karma.version_file_path) if !Karma.version_file_path.nil?
+      params[:current_version] = self.class.version
       self.class.notify_status(pid: pid, params: params)
     end
 

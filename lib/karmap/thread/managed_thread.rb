@@ -1,6 +1,8 @@
 module Karma::Thread
 
   class ManagedThread
+    
+    attr_reader :thread
 
     def self.internal_key_prefix
       'Karma::Thread::ManagedThread_'

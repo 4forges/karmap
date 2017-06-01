@@ -109,6 +109,11 @@ module Karma::Thread
         sleep 0.1
       end
       new_thread.start
+      until new_thread.running?
+        Karma.logger.debug{ "\n\n\n\n\n\n\n\n\n\n****************************************************************** Wait for thread to start" }
+        sleep 0.1
+      end
+      Karma.logger.debug{ "\n\n\n\n\n\n\n\n\n\n*********************************************************#{$$}********#{new_thread.thread[:thread_index]} #{new_thread.thread.status}" }
     end
 
     def stop
