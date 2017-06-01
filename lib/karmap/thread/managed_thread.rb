@@ -16,6 +16,7 @@ module Karma::Thread
       blocks[:running] ||= Proc.new { Karma.logger.debug { "#{$$}::#{Thread.current.to_s} running" } }
       blocks[:performance] ||= Proc.new { Karma.logger.debug { "#{$$}::#{Thread.current.to_s} performance" } }
 
+      Thread.abort_on_exception = true #only for debug
       @thread = ::Thread.new do
         begin
           Thread.current[:status] = :initing
@@ -28,6 +29,7 @@ module Karma::Thread
           Thread.current[:thread_index] = options[:thread_index]
           Karma.logger.debug{ "#{$$}::#{Thread.current.to_s} initialized" }
           Thread.stop
+          Karma.logger.debug{ "#{$$}::#{Thread.current.to_s} STARTED" }
           outer_block(blocks)
         rescue Exception => e
           Karma.logger.error{ "#{$$}::#{Thread.current.to_s} ERROREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE" }
@@ -35,7 +37,6 @@ module Karma::Thread
           raise e
         end
       end
-      @thread.abort_on_exception = true #only for debug
       # @thread[:custom_inspect_block] ||= Proc.new { "#{$$}::#{@thread[:thread_index]} #{Time.now} custom_inspect" }
     end
 
