@@ -28,8 +28,7 @@ module Karma::Thread
           Thread.current[:status] = :inited
           Thread.current[:thread_index] = options[:thread_index]
           Karma.logger.debug{ "#{$$}::#{Thread.current.to_s} initialized #{Thread.current[:status]}" }
-          Thread.stop
-          Thread.current[:status] = :running
+          sleep 0.1 until Thread.current[:status] == :running
           Karma.logger.debug{ "#{$$}::#{Thread.current.to_s} started #{Thread.current[:status]}" }
           outer_block(blocks)
         rescue Exception => e
@@ -54,7 +53,7 @@ module Karma::Thread
     end
 
     def start
-      @thread.run
+      @thread[:status] = :running
     end
 
     def stop
