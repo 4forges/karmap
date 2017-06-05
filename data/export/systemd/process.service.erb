@@ -1,6 +1,9 @@
 [Unit]
 PartOf=<%= service.full_name %>.target
 
+[Install]
+WantedBy=default.target
+
 [Service]
 WorkingDirectory=<%= work_directory %>
 Environment=PORT=%i
@@ -22,6 +25,3 @@ TimeoutStopSec=<%= service.config_timeout_stop %>
 <% if service.config_cpu_quota.present? %>CPUQuota=<%= service.config_cpu_quota %>%<% end %>
 <% if service.config_memory_max.present? %>MemoryAccounting=true<% end %>
 <% if service.config_memory_max.present? %>MemoryLimit=<%= service.config_memory_max %><% end %>
-
-[Install]
-WantedBy=default.target

@@ -74,27 +74,30 @@ describe Karma::Engine::Systemd do
       Karma.engine_instance.export_service(TestService)
 
       TestService.max_running(TestService.config_max_running + 1)
-
       Karma.engine_instance.export_service(TestService)
+
       instances_dir = "#{TestService.full_name}.target.wants"
       instances = Dir["#{Karma.engine_instance.location}/#{instances_dir}/*"].sort
       expect(instances.size).to eq(TestService.config_max_running)
 
       # reset
       TestService.max_running(TestService.config_max_running - 1)
+      Karma.engine_instance.export_service(TestService)
     end
 
     it 'delete extra instance symlink' do
       Karma.engine_instance.export_service(TestService)
 
       TestService.max_running(TestService.config_max_running - 1)
-
       Karma.engine_instance.export_service(TestService)
-      files = Dir["#{Karma.engine_instance.location}/karma-spec-test-service.target.wants/*"]
-      expect(files.size).to eq(TestService.config_max_running)
+
+      instances_dir = "#{TestService.full_name}.target.wants"
+      instances = Dir["#{Karma.engine_instance.location}/#{instances_dir}/*"].sort
+      expect(instances.size).to eq(TestService.config_max_running)
 
       # reset
       TestService.max_running(TestService.config_max_running + 1)
+      Karma.engine_instance.export_service(TestService)
     end
 
     it 'delete single service' do
