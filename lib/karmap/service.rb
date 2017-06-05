@@ -155,8 +155,12 @@ module Karma
       notify_status(params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]})
     end
 
+    def self.read_config
+      Karma.engine_instance.import_config(self)
+    end
+
     def self.running_instances_count
-      Karma.engine_instance.show_service(self).values.select{|s| s.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}.size
+      Karma.engine_instance.running_instances_for_service(self).size
     end
 
     def running_thread_count
