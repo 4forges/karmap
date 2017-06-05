@@ -200,7 +200,7 @@ module Karma
     def handle_process_config_update(msg)
       cls = Karma::Helpers::constantize(msg.service)
       new_config = msg.to_config
-      old_config = Karma.engine_instance.import_config(cls)
+      old_config = cls.read_config
 
       if new_config == old_config
         # no changes in configuration
