@@ -11,26 +11,59 @@ module Karma
 
     SHUTDOWN_SEC = 0
 
-    @@instance = nil
-    @@service_classes = nil
-    @@queue_client = nil
-
     attr_accessor :service_statuses
-
-    def initialize
-      Karma.logger.info{ "#{__method__}: environment is #{Karma.env}" }
-      @service_statuses = {}
-    end
 
     def self.command
       "bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\""
     end
 
     def self.run
-      if @@instance.nil?
-        @@instance = self.new
-        @@instance.run
+      (@@instance = self.new).run if !defined?(@@instance)
+    end
+
+    def self.export
+      Karma.engine_instance.export_service(Karma::Watchdog)
+      status = Karma.engine_instance.show_service(Karma::Watchdog)
+      if status.empty?
+        Karma.engine_instance.start_service(Karma::Watchdog)
+      else
+        Karma.engine_instance.restart_service(status.values[0].pid, { service: Karma::Watchdog })
       end
+    end
+
+    def self.service_classes
+      @@service_classes = (Karma.services.map do |c|
+        klass = (Karma::Helpers::constantize(c) rescue nil)
+        klass.present? && klass <= Karma::Service ? klass : nil
+      end.compact||[]) if !defined?(@@service_classes)
+      @@service_classes
+    end
+
+    def self.start_all_services
+      # only call register on each service. Karma server will then push a ProcessConfigUpdateMessage that
+      # will trigger the starting of instances.
+      self.service_classes.each{|s| s.register}
+    end
+
+    def self.stop_all_services
+      status = Karma.engine_instance.show_all_services
+      status.reject!{|k,v| v.name == Karma::Watchdog.full_name}
+      status.values.map(&:pid).each do |pid|
+        Karma.engine_instance.stop_service(pid)
+      end
+    end
+
+    def self.restart_all_services
+      status = Karma.engine_instance.show_all_services
+      status.reject!{|k,v| v.name == Karma::Watchdog.full_name}
+      status.values.map(&:pid).each do |pid|
+        Karma.engine_instance.restart_service(pid)
+      end
+    end
+
+    def initialize
+      Karma.logger.info{ "#{__method__}: environment is #{Karma.env}" }
+      @service_statuses = {}
     end
 
     def run
@@ -76,43 +109,7 @@ module Karma
       end
     end
 
-    def self.export
-      Karma.engine_instance.export_service(Karma::Watchdog)
-      status = Karma.engine_instance.show_service(Karma::Watchdog)
-      if status.empty?
-        Karma.engine_instance.start_service(Karma::Watchdog)
-      else
-        Karma.engine_instance.restart_service(status.values[0].pid, { service: Karma::Watchdog })
-      end
-    end
-
-    def self.service_classes
-      services_cls = Karma.services.map{|c| Karma::Helpers::constantize(c) rescue nil}.compact
-      @@service_classes ||= services_cls.select{|c| c <= Karma::Service}
-      @@service_classes
-    end
-
-    def self.start_all_services
-      # only call register on each service. Karma server will then push a ProcessConfigUpdateMessage that
-      # will trigger the starting of instances.
-      self.service_classes.each{|s| s.register}
-    end
-
-    def self.stop_all_services
-      status = Karma.engine_instance.show_all_services
-      status.reject!{|k,v| v.name == Karma::Watchdog.full_name}
-      status.values.map(&:pid).each do |pid|
-        Karma.engine_instance.stop_service(pid)
-      end
-    end
-
-    def self.restart_all_services
-      status = Karma.engine_instance.show_all_services
-      status.reject!{|k,v| v.name == Karma::Watchdog.full_name}
-      status.values.map(&:pid).each do |pid|
-        Karma.engine_instance.restart_service(pid)
-      end
-    end
+    private ##############################
 
     def ensure_service_instances_count(service)
       Karma.engine_instance.safe_init_config(service)
@@ -134,19 +131,16 @@ module Karma
       end
     end
 
-    private ##############################
-
     include Karma::Helpers
 
     def queue_client
-      @@queue_client ||= Karma::Queue::Client.new
+      @@queue_client = Karma::Queue::Client.new if !defined?(@@queue_client)
       @@queue_client
     end
 
     def poll_queue
       Karma.logger.info{ "#{__method__}: started polling queue #{Karma::Queue.incoming_queue_url}" }
       queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
-        # Karma.logger.debug{ "#{__method__} INCOMING MESSAGE: #{msg.body}" }
         body = JSON.parse(msg.body).deep_symbolize_keys
         handle_message(body)
       end

@@ -7,8 +7,6 @@ module Karma
     include Karma::ServiceConfig
     include Karma::Helpers
 
-    @@instance = nil
-
     def initialize
       @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new{ ::Thread.current[:performance] = performance }, custom_inspect: Proc.new { custom_inspect } )
       Karma.engine_instance.safe_init_config(self.class)
@@ -62,10 +60,7 @@ module Karma
     end
 
     def self.run
-      if @@instance.nil?
-        @@instance = self.new
-        @@instance.run
-      end
+      (@@instance = self.new).run if !defined?(@@instance)
     end
     
     def self.version
