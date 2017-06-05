@@ -156,7 +156,7 @@ module Karma
     def register
       Karma.logger.info{ "#{__method__}: registering services..." }
       Karma.logger.info{ "#{__method__}: #{self.class.service_classes.count} services found" }
-      self.class.service_classes.each do |cls|
+      Karma::Watchdog.service_classes.each do |cls|
         Karma.logger.info{ "#{__method__}: exporting #{cls.name}..." }
         Karma.engine_instance.export_service(cls)
         cls.register
@@ -171,7 +171,7 @@ module Karma
 
           when Karma::Messages::ProcessCommandMessage.name
             # set the array of discovered services for validation
-            Karma::Messages::ProcessCommandMessage.services = self.class.service_classes.map(&:to_s)
+            Karma::Messages::ProcessCommandMessage.services = Karma::Watchdog.service_classes.map(&:to_s)
             msg = Karma::Messages::ProcessCommandMessage.new(message)
             Karma.error(msg.errors) unless msg.valid?
             handle_process_command(msg)
@@ -242,8 +242,8 @@ module Karma
     def check_services_status
       new_service_statuses = Karma.engine_instance.show_all_services
       new_service_statuses.reject!{|k,v| v.name == self.full_name}
-      
-      self.class.service_classes.each do |service_class|
+
+      Karma::Watchdog.service_classes.each do |service_class|
         ensure_service_instances_count(service_class)
       end
       sleep 1
