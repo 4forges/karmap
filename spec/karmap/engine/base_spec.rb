@@ -15,6 +15,7 @@ describe Karma::Engine::Base do
         sleep(2)
       end
     end
+    before(:each) { engine.remove_service(TestService) }
 
     it 'build service status message' do
       engine.start_service(TestService)
