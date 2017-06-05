@@ -13,6 +13,7 @@ describe Karma::Engine::SystemRaw do
 
     after(:each) do
       status = Karma.engine_instance.show_all_services
+      sleep 5
       status.values.each do |s|
         Karma.engine_instance.stop_service(s.pid)
         sleep(1)
@@ -39,7 +40,7 @@ describe Karma::Engine::SystemRaw do
       expect(status.keys[0]).to eq('karma-spec-test-service@33000')
       expect(status.values[0].status).to eq('running')
       pid = status.values[0].pid
-
+      sleep 5
       Karma.engine_instance.stop_service(pid)
       wait_for{Karma.engine_instance.show_service(TestService)}.to be_empty
       status = Karma.engine_instance.show_service(TestService)
@@ -55,6 +56,7 @@ describe Karma::Engine::SystemRaw do
       expect(status.values[0].status).to eq('running')
       old_pid = status.values[0].pid
 
+      sleep 5
       Karma.engine_instance.restart_service(old_pid, { service: TestService })
       wait_for {Karma.engine_instance.show_service(TestService)}.to_not be_empty
       status = Karma.engine_instance.show_service(TestService)

@@ -20,11 +20,23 @@ module Karma::Engine
 
     def start_service(service, params = {})
       ::Thread.abort_on_exception = true
-      ::Thread.new do
-        if params[:port].present? || free_ports(service).count > 0
-          params[:port] ||= free_ports(service)[0]
-          Karma.logger.debug{ "#{__method__}: running '#{service.command}', port: #{params[:port]}" }
-          system({'PORT' => params[:port].to_s, 'KARMA_IDENTIFIER' => service.generate_instance_identifier(port: params[:port])}, service.command)
+      if free_ports(service).count > 0
+        params[:port] = free_ports(service)[0]
+        Karma.logger.debug{ "#{__method__}: starting '#{service.command}', port: #{params[:port]}" }
+        environment_vars = Hash.new.tap do |h|
+          h['PORT'] = params[:port].to_s
+          h['KARMA_IDENTIFIER'] = service.generate_instance_identifier(port: params[:port])
+          h['KARMA_ENV'] = Karma.env
+          h['KARMA_PROJECT_ID'] = Karma.karma_project_id
+          h['KARMA_USER_ID'] = Karma.karma_user_id
+          h['KARMA_AWS_USER_ACCESS_KEY'] = Karma.aws_access_key_id
+          h['KARMA_AWS_USER_SECRET_ACCESS_KEY'] = Karma.aws_secret_access_key
+        end
+        fork do
+          environment_vars.each do |k, v|
+            ENV[k] = v
+          end
+          exec service.command
         end
       end
     end
