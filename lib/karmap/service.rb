@@ -67,7 +67,7 @@ module Karma
         @@instance.run
       end
     end
-    
+
     def self.version
       if Karma.version_file_path.present?
         if File.exists?(Karma.version_file_path)
@@ -153,6 +153,10 @@ module Karma
 
       # notify queue after stop
       notify_status(params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]})
+    end
+
+    def self.running_instances_count
+      Karma.engine_instance.show_service(self).values.select{|s| s.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}.size
     end
 
     def running_thread_count
