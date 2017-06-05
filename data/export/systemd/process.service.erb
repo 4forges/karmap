@@ -23,5 +23,5 @@ TimeoutStopSec=<%= service.config_timeout_stop %>
 <% if service.config_memory_max.present? %>MemoryAccounting=true<% end %>
 <% if service.config_memory_max.present? %>MemoryLimit=<%= service.config_memory_max %><% end %>
 
-[Install]
-WantedBy=default.target
+#[Install]
+#WantedBy=default.target
