@@ -17,13 +17,6 @@ describe Karma::Engine::SystemRaw do
       wait_for{ Karma.engine_instance.show_service(TestService) }.to be_empty
     end
 
-    # after(:each) do
-    #   status.values.each do |s|
-    #     Karma.engine_instance.stop_service(s.pid)
-    #     wait_for{ Karma.engine_instance.show_service(TestService) }.to be_empty
-    #   end
-    # end
-
     it 'engine starts service instance' do
       pid = Karma.engine_instance.start_service(TestService)
       wait_for {Karma.engine_instance.show_service(TestService)}.to_not be_empty

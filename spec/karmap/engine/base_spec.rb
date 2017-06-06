@@ -5,7 +5,7 @@ require 'spec_helper'
 describe Karma::Engine::Base do
 
   [Karma::Engine::Systemd, Karma::Engine::SystemRaw].each do |engine_class|
-    let(:engine) { engine_class.new }
+    let(:engine) { ret = engine_class.new; Karma.engine = ret.config_name; ret }
 
     before(:each) { engine.export_service(TestService) }
     after(:each) do
