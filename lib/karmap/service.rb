@@ -107,7 +107,8 @@ module Karma
 
     def run
       Karma.logger.info{ "#{__method__}: enter" }
-
+      Karma.engine_instance.after_start_service(self)
+      
       Signal.trap('INT') do
         stop
       end
@@ -148,6 +149,7 @@ module Karma
 
       # notify queue after stop
       notify_status(params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]})
+      Karma.engine_instance.after_stop_service(self)
     end
 
     def self.read_config
