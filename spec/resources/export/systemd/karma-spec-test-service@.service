@@ -1,6 +1,9 @@
 [Unit]
 PartOf=karma-spec-test-service.target
 
+[Install]
+WantedBy=default.target
+
 [Service]
 WorkingDirectory=/tmp/app
 Environment=PORT=%i
@@ -10,6 +13,7 @@ Environment=KARMA_PROJECT_ID=fake
 Environment=KARMA_USER_ID=fake
 Environment=KARMA_AWS_USER_ACCESS_KEY=fake
 Environment=KARMA_AWS_USER_SECRET_ACCESS_KEY=fake
+Environment=KARMA_ENGINE=systemd
 ExecStart=/bin/bash -lc 'bundle exec ruby spec/scripts/run_test_service.rb'
 Restart=always
 StandardInput=null

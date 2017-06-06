@@ -1,6 +1,8 @@
 module Karma::Thread
 
   class ManagedThread
+    
+    attr_reader :thread
 
     def self.internal_key_prefix
       'Karma::Thread::ManagedThread_'
@@ -13,24 +15,33 @@ module Karma::Thread
       blocks[:finishing] ||= Proc.new { Karma.logger.debug { "#{$$}::#{Thread.current.to_s} finishing" } }
       blocks[:running] ||= Proc.new { Karma.logger.debug { "#{$$}::#{Thread.current.to_s} running" } }
       blocks[:performance] ||= Proc.new { Karma.logger.debug { "#{$$}::#{Thread.current.to_s} performance" } }
+
+      Thread.abort_on_exception = true #only for debug
       @thread = ::Thread.new do
-        Thread.current[:status] = :initing
-        Thread.current[:initing_at] = Time.now
-        Thread.current[:last_running_at] = Thread.current[:initing_at]
-        Thread.current[:parent_class] = self
-        Thread.current[:internal_key] = "#{Karma::Thread::ManagedThread.internal_key_prefix}#{$$}"
-        Thread.current[:is_managed_thread] = true
-        Thread.current[:status] = :inited
-        Thread.current[:thread_index] = options[:thread_index]
-        Karma.logger.debug{ "#{$$}::#{Thread.current.to_s} initialized" }
-        Thread.stop
-        outer_block(blocks)
+        begin
+          Thread.current[:status] = :initing
+          Thread.current[:initing_at] = Time.now
+          Thread.current[:last_running_at] = Thread.current[:initing_at]
+          Thread.current[:parent_class] = self
+          Thread.current[:internal_key] = "#{Karma::Thread::ManagedThread.internal_key_prefix}#{$$}"
+          Thread.current[:is_managed_thread] = true
+          Thread.current[:status] = :inited
+          Thread.current[:thread_index] = options[:thread_index]
+          Karma.logger.debug{ "#{$$}::#{Thread.current.to_s} initialized #{Thread.current[:status]}" }
+          sleep 0.1 until Thread.current[:status] == :running
+          Karma.logger.debug{ "#{$$}::#{Thread.current.to_s} started #{Thread.current[:status]}" }
+          outer_block(blocks)
+        rescue Exception => e
+          Karma.logger.error{ "#{$$}::#{Thread.current.to_s} ERROREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE" }
+          Karma.logger.error{ "#{$$}::#{Thread.current.to_s} #{e.message}" }
+          raise e
+        end
       end
-      @thread.abort_on_exception = true #only for debug
+      # @thread[:custom_inspect_block] ||= Proc.new { "#{$$}::#{@thread[:thread_index]} #{Time.now} custom_inspect" }
     end
 
     def to_s
-      "#{@thread.inspect} index:#{@thread[:thread_index]} status:#{@thread[:status]}, initing_at:#{@thread[:initing_at]}, last_running_at:#{@thread[:last_running_at]}"
+      "#{@thread.inspect} index:#{@thread[:thread_index]} status:#{@thread[:status]}, initing_at:#{@thread[:initing_at]}, last_running_at:#{@thread[:last_running_at]} (#{Time.now - @thread[:last_running_at]} secs ago)"
     end
 
     def set_log_level(level)
@@ -43,7 +54,6 @@ module Karma::Thread
 
     def start
       @thread[:status] = :running
-      @thread.run
     end
 
     def stop
@@ -119,6 +129,7 @@ module Karma::Thread
                 Karma.logger.debug { "Execution time: #{@thread[:execution_time]}" }
                 Karma.logger.debug { "Performance: #{@thread[:performance]}" }
                 Karma.logger.debug { "Performance execution time: #{@thread[:performance_execution_time]}" }
+                Thread.current[:last_running_at] = Time.now
 
               else
                 Karma.logger.debug { "Thread status: #{@thread[:status]}" }
@@ -139,7 +150,7 @@ module Karma::Thread
         Karma.logger.error{ e }
       end
     end
-
+    
     def running_default_block
       Karma.logger.debug{ "#{$$}::#{Thread.current.to_s} running - #{Time.now}" }
     end

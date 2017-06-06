@@ -28,7 +28,7 @@ module Karma
   else
     define_setting :env # (required)
   end
-  define_setting :engine, 'systemd'
+  define_setting :engine, ENV['KARMA_ENGINE']
   define_setting :notifier, 'queue'
   define_setting :watchdog_port, 32000
   define_setting :version_file_path # file to update for version check
@@ -127,7 +127,8 @@ module Karma
     end
 
     def engine_instance
-      @engine_instance ||= Karma.engine_class.new
+      #@engine_instance ||= Karma.engine_class.new
+      @engine_instance = Karma.engine_class.new
     end
   end
 

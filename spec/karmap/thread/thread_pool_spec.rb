@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 describe Karma::Thread::ThreadPool do
+  before(:each) { Karma.engine = 'systemd' }
 
   def set_num_threads(service, num)
     s = TCPSocket.new('127.0.0.1', service.instance_port)

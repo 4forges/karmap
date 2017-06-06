@@ -54,6 +54,12 @@ module Karma::Engine
     def restart_service(pid, params = {})
       # abstract
     end
+    
+    def after_start_service(service_instence, params = {})
+    end
+
+    def after_stop_service(service_instance, params = {})
+    end
 
     def export_service(service)
       safe_init_config(service)

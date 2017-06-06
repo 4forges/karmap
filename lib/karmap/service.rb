@@ -6,7 +6,7 @@ module Karma
   class Service
     include Karma::ServiceConfig
     include Karma::Helpers
-    
+
     attr_reader :config_reader
     @@instance = nil
 
@@ -27,12 +27,11 @@ module Karma
     end
     
     def initialize
-      byebug
       @running = false
       @run_sleep_seconds = 1
 
       # init thread pool
-      @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new{ ::Thread.current[:performance] = performance } )
+      @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new{ ::Thread.current[:performance] = performance }, custom_inspect: Proc.new { custom_inspect } )
       # init config reader
       @config_reader = self.class.init_config_reader_for_instance(self)
 
@@ -43,6 +42,11 @@ module Karma
       # override this with custom performance calculation.
       # return a value between 0-100, where 100 is good and 0 is bad.
       0
+    end
+
+    def custom_inspect
+      # override this with custom inspect_info
+      "custom_inspect"
     end
 
     def perform
@@ -76,16 +80,24 @@ module Karma
     end
 
     def self.run
-      if @@instance.nil?
-        @@instance = self.new
-        @@instance.run
+      (@@instance = self.new).run if !defined?(@@instance)
+    end
+
+    def self.version
+      if Karma.version_file_path.present?
+        if File.exists?(Karma.version_file_path)
+          File.read(Karma.version_file_path)
+        else
+          'file not exists'
+        end
+      else
+        'no version set'
       end
     end
 
     def self.register
       begin
         # this version is the last version of the repo
-        version = !Karma.version_file_path.nil? ? File.read(Karma.version_file_path) : nil
         message = Karma::Messages::ProcessRegisterMessage.new(
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
@@ -99,7 +111,7 @@ module Karma
           push_notifications: self.config_push_notifications,
           log_level: Karma.logger.level,
           num_threads: self.config_num_threads,
-          version: version
+          version: self.version
         )
         Karma.notifier_instance.notify(message)
       rescue ::Exception => e
@@ -115,7 +127,8 @@ module Karma
 
     def run
       Karma.logger.info{ "#{__method__}: enter" }
-
+      Karma.engine_instance.after_start_service(self)
+      
       Signal.trap('INT') do
         stop
       end
@@ -156,6 +169,15 @@ module Karma
 
       # notify queue after stop
       notify_status(params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]})
+      Karma.engine_instance.after_stop_service(self)
+    end
+
+    def self.read_config
+      Karma.engine_instance.import_config(self)
+    end
+
+    def self.running_instances_count
+      Karma.engine_instance.running_instances_for_service(self).size
     end
 
     def running_thread_count
@@ -172,7 +194,7 @@ module Karma
       params[:performance_execution_time] = @thread_pool.average_performance_execution_time
       params[:performance] = @thread_pool.average_performance
       # this version is the current version of the running instance
-      params[:current_version] = File.read(Karma.version_file_path) if !Karma.version_file_path.nil?
+      params[:current_version] = self.class.version
       self.class.notify_status(pid: pid, params: params)
     end
 

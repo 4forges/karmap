@@ -7,6 +7,10 @@ module Karma::Engine
 
   class Systemd < Base
 
+    def config_name
+      'systemd'
+    end
+
     def location
       "#{Karma.home_path}/.config/systemd/user"
     end
@@ -121,6 +125,11 @@ module Karma::Engine
 
       reload
 
+      if service == Karma::Watchdog
+        instance_name = "#{service.full_name}@#{Karma.watchdog_port}.service"
+        `systemctl enable --user #{instance_name}`
+      end
+
       Karma.logger.info { "#{__method__}: end systemd export for service #{service.name}" }
     end
 
@@ -155,7 +164,7 @@ module Karma::Engine
           data[2].to_i,
           to_karma_status(v['Active']),
           v['Main PID'].to_i,
-          v['Tasks'].to_i,
+          v['Tasks'].to_i, # TODO should return actual thread count
           v['Memory'],
           v['CPU'],
         )

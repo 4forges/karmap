@@ -74,27 +74,30 @@ describe Karma::Engine::Systemd do
       Karma.engine_instance.export_service(TestService)
 
       TestService.max_running(TestService.config_max_running + 1)
-
       Karma.engine_instance.export_service(TestService)
+
       instances_dir = "#{TestService.full_name}.target.wants"
       instances = Dir["#{Karma.engine_instance.location}/#{instances_dir}/*"].sort
       expect(instances.size).to eq(TestService.config_max_running)
 
       # reset
       TestService.max_running(TestService.config_max_running - 1)
+      Karma.engine_instance.export_service(TestService)
     end
 
     it 'delete extra instance symlink' do
       Karma.engine_instance.export_service(TestService)
 
       TestService.max_running(TestService.config_max_running - 1)
-
       Karma.engine_instance.export_service(TestService)
-      files = Dir["#{Karma.engine_instance.location}/karma-spec-test-service.target.wants/*"]
-      expect(files.size).to eq(TestService.config_max_running)
+
+      instances_dir = "#{TestService.full_name}.target.wants"
+      instances = Dir["#{Karma.engine_instance.location}/#{instances_dir}/*"].sort
+      expect(instances.size).to eq(TestService.config_max_running)
 
       # reset
       TestService.max_running(TestService.config_max_running + 1)
+      Karma.engine_instance.export_service(TestService)
     end
 
     it 'delete single service' do
@@ -148,6 +151,7 @@ describe Karma::Engine::Systemd do
       expect(status.values[0].port).to eq(33000)
       expect(status.values[0].status).to eq('running')
       expect(status.values[0].pid).to be > 1
+      expect(TestService.running_instances_count).to eq(1)
     end
 
     it 'engine stops service instance' do
@@ -157,12 +161,15 @@ describe Karma::Engine::Systemd do
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karma-spec-test-service@33000.service')
       expect(status.values[0].status).to eq('running')
+      expect(TestService.running_instances_count).to eq(1)
+
       pid = status.values[0].pid
 
       Karma.engine_instance.stop_service(pid)
       wait_for{Karma.engine_instance.show_service(TestService)}.to be_empty
       status = Karma.engine_instance.show_service(TestService)
       expect(status.size).to eq(0)
+      expect(TestService.running_instances_count).to eq(0)
     end
 
     it 'engine restarts service instance' do
@@ -172,6 +179,8 @@ describe Karma::Engine::Systemd do
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karma-spec-test-service@33000.service')
       expect(status.values[0].status).to eq('running')
+      expect(TestService.running_instances_count).to eq(1)
+
       old_pid = status.values[0].pid
 
       Karma.engine_instance.restart_service(old_pid)
@@ -180,6 +189,8 @@ describe Karma::Engine::Systemd do
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karma-spec-test-service@33000.service')
       expect(status.values[0].status).to eq('running')
+      expect(TestService.running_instances_count).to eq(1)
+
       new_pid = status.values[0].pid
 
       expect(new_pid).to_not eq(old_pid)

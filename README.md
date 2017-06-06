@@ -64,3 +64,6 @@ enabled services
 systemctl --user list-unit-files | grep enabled
 journalctl -f #logs
 systemctl --user start managed-sources-facebookfetcher@33000.service
+
+
+sudo loginctl enable-linger ubuntu
