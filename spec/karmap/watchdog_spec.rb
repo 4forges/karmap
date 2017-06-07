@@ -6,8 +6,11 @@ describe Karma::Watchdog do
 
   let(:watchdog) { Karma::Watchdog.new }
 
-  before(:each) { Karma.engine = 'systemd' }
-  before(:each) { allow_any_instance_of(Karma::Engine::Systemd).to receive(:start_service).and_return(true) }
+  before(:each) do
+    Karma.reset_engine_instance
+    Karma.engine = 'systemd'
+  end
+  # before(:each) { allow_any_instance_of(Karma::Engine::Systemd).to receive(:start_service).and_return(true) }
 
   it 'services to register' do
     expect(Karma::Watchdog.service_classes).to eq([TestService, MockService])

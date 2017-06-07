@@ -4,7 +4,10 @@ require 'spec_helper'
 
 describe Karma::Service do
 
-  before(:each) { Karma.engine = 'systemd' }
+  before(:each) do
+    Karma.reset_engine_instance
+    Karma.engine = 'systemd'
+  end
   before(:each) { Karma.engine_instance.export_service(TestService) }
   after(:each) do
     status = Karma.engine_instance.show_all_services

@@ -5,10 +5,6 @@ module Karma::Engine
 
   class Systemd < Base
 
-    def config_name
-      'systemd'
-    end
-
     def location
       "#{Karma.home_path}/.config/systemd/user"
     end

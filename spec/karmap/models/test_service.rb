@@ -10,7 +10,7 @@ class TestService < Karma::Service
   num_threads  2
 
   def self.command
-    'bundle exec ruby spec/scripts/run_test_service.rb'
+    "bundle exec ruby spec/scripts/run_test_service_#{Karma.engine}.rb"
   end
 
   def perform

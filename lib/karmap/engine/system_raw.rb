@@ -25,10 +25,6 @@ module Karma::Engine
       "#{Karma.home_path}"
     end
 
-    def config_name
-      'system_raw'
-    end
-
     def show_service(service)
       service_status(service_key_or_pid: "#{service.full_name}@")
     end
