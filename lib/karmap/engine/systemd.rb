@@ -1,5 +1,3 @@
-# encoding: UTF-8
-
 require 'karmap/engine'
 require 'karmap/engine/parser/systemd_parser'
 
