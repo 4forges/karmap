@@ -95,7 +95,6 @@ module Karma
         )
         Karma.notifier_instance.notify(message)
       rescue ::Exception => e
-        # TODO HANDLE THIS
         Karma.logger.error{ e }
       end
     end
@@ -108,7 +107,7 @@ module Karma
     def run
       Karma.logger.info{ "#{__method__}: enter" }
       Karma.engine_instance.after_start_service(self)
-      
+
       Signal.trap('INT') do
         stop
       end

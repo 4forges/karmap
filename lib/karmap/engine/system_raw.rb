@@ -7,20 +7,6 @@ module Karma::Engine
   class SystemRaw < Base
     START_TIMEOUT_SECONDS = 20.seconds
 
-    # after start callback to create pid file
-    def after_start_service(service_instance, params = {})
-      instance_identifier = service_instance.instance_identifier
-      filename = pid_filename(identifier: instance_identifier)
-      File.write(filename, Process.pid)
-    end
-
-    # after stop callback to remove pid file
-    def after_stop_service(service_instance, params = {})
-      instance_identifier = service_instance.instance_identifier
-      filename = pid_filename(identifier: instance_identifier)
-      FileUtils.rm_r(filename) rescue ''
-    end
-
     def location
       "#{Karma.home_path}"
     end
@@ -96,6 +82,20 @@ module Karma::Engine
       start_service(params[:service])
     end
 
+    # after start callback to create pid file
+    def after_start_service(service_instance, params = {})
+      instance_identifier = service_instance.instance_identifier
+      filename = pid_filename(identifier: instance_identifier)
+      File.write(filename, Process.pid)
+    end
+
+    # after stop callback to remove pid file
+    def after_stop_service(service_instance, params = {})
+      instance_identifier = service_instance.instance_identifier
+      filename = pid_filename(identifier: instance_identifier)
+      FileUtils.rm_r(filename) rescue ''
+    end
+
     private ####################
 
     def service_status(service_key_or_pid:)
@@ -137,7 +137,7 @@ module Karma::Engine
     ### pid file utility methods ###
 
     # returns filename from service identifier
-    def pid_filename(identifier: )
+    def pid_filename(identifier:)
       filename = File.join(location, identifier.to_s + '.pid')
     end
 
