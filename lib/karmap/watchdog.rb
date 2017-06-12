@@ -13,6 +13,10 @@ module Karma
 
     attr_accessor :service_statuses
 
+    def self.config_location
+      File.join(Karma.home_path, '.config', Karma.project_name)
+    end
+
     def self.command
       "bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\""
     end
@@ -217,7 +221,7 @@ module Karma
 
       else
         # export new configuration
-        Karma::ConfigWriter.export_config(cls, new_config)
+        Karma::ConfigEngine::ConfigExporter.export_config(cls, new_config)
         Karma.engine_instance.export_service(cls)
         ensure_service_instances_count(cls)
         self.config_engine_class.send_config(cls)

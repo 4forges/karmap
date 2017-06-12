@@ -151,7 +151,6 @@ require 'karmap/version'
 require 'karmap/queue'
 require 'karmap/thread'
 require 'karmap/config_engine'
-require 'karmap/config_writer'
 require 'karmap/file_helper'
 
 require 'karmap/railtie' if defined?(::Rails)
