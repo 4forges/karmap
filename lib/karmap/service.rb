@@ -31,7 +31,7 @@ module Karma
       # init config reader
       @config_reader = self.class.init_config_reader_for_instance(self)
 
-      Karma::ConfigEngine::ConfigExporter.safe_init_config(self.class)
+      Karma::ConfigEngine::ConfigImporterExporter.safe_init_config(self.class)
     end
     
     def performance
@@ -172,7 +172,7 @@ module Karma
     end
 
     def self.read_config
-      Karma::ConfigEngine::ConfigImporter.import_config(self)
+      Karma::ConfigEngine::ConfigImporterExporter.import_config(self)
     end
 
     def self.running_instances_count

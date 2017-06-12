@@ -116,7 +116,7 @@ module Karma
     private ##############################
 
     def ensure_service_instances_count(service)
-      Karma::ConfigEngine::ConfigExporter.safe_init_config(service)
+      Karma::ConfigEngine::ConfigImporterExporter.safe_init_config(service)
 
       # stop instances
       Karma.engine_instance.to_be_stopped_instances(service).each do |instance|
@@ -221,7 +221,7 @@ module Karma
 
       else
         # export new configuration
-        Karma::ConfigEngine::ConfigExporter.export_config(cls, new_config)
+        Karma::ConfigEngine::ConfigImporterExporter.export_config(cls, new_config)
         Karma.engine_instance.export_service(cls)
         ensure_service_instances_count(cls)
         self.config_engine_class.send_config(cls)
