@@ -6,11 +6,14 @@ describe Karma::Engine::Systemd do
 
   let(:watchdog) { Karma::Watchdog.new }
 
-  before(:each) { Karma.engine = 'systemd' }
+  before(:each) do
+    Karma.reset_engine_instance
+    Karma.engine = 'systemd'
+  end
 
   context 'watchdog' do
 
-    before(:each) { allow_any_instance_of(Karma::Engine::Systemd).to receive(:start_service).and_return(true) }
+    # before(:each) { allow_any_instance_of(Karma::Engine::Systemd).to receive(:start_service).and_return(true) }
 
     it 'exports self' do
       Karma::Watchdog.export
@@ -35,8 +38,8 @@ describe Karma::Engine::Systemd do
   context 'template exports' do
 
     before(:each) { allow_any_instance_of(Karma::Engine::Systemd).to receive(:work_directory).and_return('/tmp/app') }
-    after(:each) { Karma.engine_instance.remove_service(TestService) }
-    after(:each) { Karma.engine_instance.remove_service(MockService) }
+    before(:each) { Karma.engine_instance.remove_service(TestService) }
+    before(:each) { Karma.engine_instance.remove_service(MockService) }
 
     it "exports TestService to filesystem" do
       Karma.engine_instance.export_service(TestService)
@@ -61,8 +64,6 @@ describe Karma::Engine::Systemd do
     end
 
     it "cleans up if exporting into an existing dir" do
-      expect(FileUtils).to receive(:rm).with("#{Karma.engine_instance.location}/karma-spec-test-service.config").at_least(1).times
-      expect(FileUtils).to receive(:rm).with("#{Karma.engine_instance.location}/karma-spec-test-service.target.wants/karma-spec-test-service@33000.service").at_least(1).times
       expect(FileUtils).to receive(:rm).with("#{Karma.engine_instance.location}/karma-spec-test-service@.service").at_least(1).times
       expect(FileUtils).to receive(:rm).with("#{Karma.engine_instance.location}/karma-spec-test-service.target").at_least(1).times
 
@@ -140,6 +141,10 @@ describe Karma::Engine::Systemd do
       end
     end
     after(:each) { Karma.engine_instance.remove_service(TestService) }
+
+    it 'check engine instance' do
+      expect(Karma.engine_instance.class).to eq(Karma::Engine::Systemd)
+    end
 
     it 'engine starts service instance' do
       Karma.engine_instance.start_service(TestService)

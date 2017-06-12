@@ -1,15 +1,9 @@
-# encoding: UTF-8
-
 require 'karmap/engine'
 require 'karmap/engine/parser/systemd_parser'
 
 module Karma::Engine
 
   class Systemd < Base
-
-    def config_name
-      'systemd'
-    end
 
     def location
       "#{Karma.home_path}/.config/systemd/user"

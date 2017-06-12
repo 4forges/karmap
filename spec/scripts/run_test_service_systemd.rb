@@ -4,6 +4,7 @@ Karma.logger = Logger.new(STDOUT)
 Karma.configuration do |config|
   config.home_path =              ENV['TRAVIS_BUILD_DIR'] || '/home/extendi'
   config.project_name =           'karma-spec'
+  config.engine =                 'systemd'
   config.karma_project_id =       'fake'
   config.karma_user_id =          'fake'
   config.aws_access_key_id =      'fake'

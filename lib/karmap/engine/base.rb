@@ -54,11 +54,13 @@ module Karma::Engine
     def restart_service(pid, params = {})
       # abstract
     end
-    
-    def after_start_service(service_instence, params = {})
+
+    def after_start_service(service_instance, params = {})
+      # abstract
     end
 
     def after_stop_service(service_instance, params = {})
+      # abstract
     end
 
     def export_service(service)
@@ -75,7 +77,7 @@ module Karma::Engine
       config = import_config(service)
       service.set_process_config(config)
     end
-    
+
     def export_config(service, config)
       FileUtils.mkdir_p(location) if location
       service_fn = "#{service.full_name}.config"
@@ -89,7 +91,7 @@ module Karma::Engine
       Karma.logger.debug{ "read config from file: #{config}" }
       return config
     end
-    
+
     def exists_config?(service)
       service_fn = "#{service.full_name}.config"
       config = JSON.parse(read_file(service_fn)).symbolize_keys rescue {}

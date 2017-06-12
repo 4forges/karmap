@@ -3,7 +3,11 @@
 require 'spec_helper'
 
 describe Karma::Thread::ThreadPool do
-  before(:each) { Karma.engine = 'systemd' }
+
+  before(:each) do
+    Karma.reset_engine_instance
+    Karma.engine = 'systemd'
+  end
 
   def set_num_threads(service, num)
     s = TCPSocket.new('127.0.0.1', service.instance_port)
@@ -16,16 +20,18 @@ describe Karma::Thread::ThreadPool do
     ::Thread.new do
       service.run
     end
-    wait_for {service.running_thread_count}.to eq(2)
+    wait_for{File.exists?('spec/log/testservice-after_start.log')}.to be_truthy
+    wait_for{service.running_thread_count}.to eq(2)
 
     set_num_threads(service, 3)
-    wait_for {service.running_thread_count}.to eq(3)
+    wait_for{service.running_thread_count}.to eq(3)
 
     set_num_threads(service, 1)
-    wait_for {service.running_thread_count}.to eq(1)
+    wait_for{service.running_thread_count}.to eq(1)
 
     service.stop
-    wait_for {service.running_thread_count}.to eq(0)
+    wait_for{service.running_thread_count}.to eq(0)
+    wait_for{File.exists?('spec/log/testservice-after_stop.log')}.to be_truthy
   end
 
 end

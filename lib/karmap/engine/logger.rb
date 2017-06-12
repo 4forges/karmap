@@ -4,6 +4,10 @@ module Karma::Engine
 
   class Logger < Base
 
+    def location
+      "#{Karma.log_folder}"
+    end
+
     def show_service(service)
       Karma.logger.debug { "Karma::Engine received #{__method__} for #{service.full_name}" }
     end

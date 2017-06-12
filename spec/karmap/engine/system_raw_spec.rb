@@ -6,15 +6,22 @@ describe Karma::Engine::SystemRaw do
 
   let(:watchdog) { Karma::Watchdog.new }
 
-  before(:each) { Karma.engine = 'system_raw' }
-  before(:each) { Karma.engine_instance.remove_service(TestService) }
+  before(:each) do
+    Karma.reset_engine_instance
+    Karma.engine = 'system_raw'
+  end
+  after(:each) { Karma.engine_instance.remove_service(TestService) }
 
   context 'manage service instances', wait: { timeout: 500 } do
     let(:status) { Karma.engine_instance.show_service(TestService) }
-    
+
     def stop_process(pid)
       Karma.engine_instance.stop_service(pid)
       wait_for{ Karma.engine_instance.show_service(TestService) }.to be_empty
+    end
+
+    it 'check engine instance' do
+      expect(Karma.engine_instance.class).to eq(Karma::Engine::SystemRaw)
     end
 
     it 'engine starts service instance' do
