@@ -13,5 +13,6 @@ module Karma::ConfigEngine
     
     def stop
     end
+
   end
 end

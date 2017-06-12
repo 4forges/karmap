@@ -112,7 +112,7 @@ module Karma
     private ##############################
 
     def ensure_service_instances_count(service)
-      Karma.engine_instance.safe_init_config(service)
+      Karma::ConfigEngine::ConfigExporter.safe_init_config(service)
 
       # stop instances
       Karma.engine_instance.to_be_stopped_instances(service).each do |instance|

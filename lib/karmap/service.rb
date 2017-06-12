@@ -19,11 +19,7 @@ module Karma
     end
     
     def self.init_config_reader_for_instance(instance)
-      # Karma::ConfigReaders::SimpleTcp.new(
-      #   default_config: self.class.get_process_config,
-      #   { port: instance_port }
-      # )
-      Karma.engine_instance
+      Karma::ConfigEngine::SimpleTcp.new(default_config: self.get_process_config, options: { port: instance.instance_port })
     end
     
     def initialize
@@ -35,7 +31,7 @@ module Karma
       # init config reader
       @config_reader = self.class.init_config_reader_for_instance(self)
 
-      @config_reader.safe_init_config(self.class)
+      Karma::ConfigEngine::ConfigExporter.safe_init_config(self.class)
     end
     
     def performance
@@ -176,7 +172,7 @@ module Karma
     end
 
     def self.read_config
-      Karma.engine_instance.import_config(self)
+      Karma::ConfigEngine::ConfigImporter.import_config(self)
     end
 
     def self.running_instances_count
@@ -202,7 +198,7 @@ module Karma
     end
 
     def self.notify_status(pid:, params: {})
-      message = self.engine_instance.get_process_status_message(self, pid, params)
+      message = Karma.engine_instance.get_process_status_message(self, pid, params)
       if message.present? && message.valid?
         Karma.notifier_instance.notify(message)
       end
