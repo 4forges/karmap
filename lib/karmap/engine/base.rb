@@ -11,10 +11,6 @@ module Karma::Engine
       nil # override (engine dependant)
     end
     
-    def config_location
-      "#{Karma.home_path}/.config/systemd/user"
-    end
-
     def project_name
       Karma.project_name
     end
@@ -69,20 +65,12 @@ module Karma::Engine
     end
 
     def safe_init_config(service)
-      byebug
       if !exists_config?(service)
         config = service.get_process_config
-        export_config(service, config)
+        Karma::ConfigWriter.export_config(service, config)
       end
       config = import_config(service)
       service.set_process_config(config)
-    end
-
-    def export_config(service, config)
-      FileUtils.mkdir_p(location) if location
-      service_fn = "#{service.full_name}.config"
-      Karma.logger.debug{ "writing config to file: #{config}" }
-      write_file(service_fn, config.to_json)
     end
 
     def import_config(service)
@@ -220,11 +208,8 @@ module Karma::Engine
     end
 
     def write_file(filename, contents)
-      Karma.logger.debug{ "writing: #{filename}" }
       filename = File.join(location, filename) unless Pathname.new(filename).absolute?
-      File.open(filename, "w") do |file|
-        file.puts contents
-      end
+      Karma::FileHelper::write_file(filename, contents)
     end
 
     def read_file(filename)

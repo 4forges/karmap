@@ -21,7 +21,7 @@ module Karma
     def self.init_config_reader_for_instance(instance)
       # Karma::ConfigReaders::SimpleTcp.new(
       #   default_config: self.class.get_process_config,
-      #   port: instance_port
+      #   { port: instance_port }
       # )
       Karma.engine_instance
     end
@@ -93,6 +93,10 @@ module Karma
       else
         'no version set'
       end
+    end
+
+    def self.config_location
+      File.join(Karma.home_path, '.config', Karma.project_name)
     end
 
     def self.register
