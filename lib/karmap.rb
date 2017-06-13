@@ -29,6 +29,7 @@ module Karma
     define_setting :env # (required)
   end
   define_setting :engine, 'systemd'
+  define_setting :config_engine, 'file'
   define_setting :notifier, 'queue'
   define_setting :watchdog_port, 32000
   define_setting :version_file_path # file to update for version check
@@ -128,6 +129,15 @@ module Karma
 
     def engine_instance
       @engine_instance ||= Karma.engine_class.new
+    end
+
+    def config_engine_class
+      case Karma.config_engine
+        when 'tcp'
+          Karma::ConfigEngine::SimpleTcp
+        when 'file'
+          Karma::ConfigEngine::File
+      end
     end
 
     def reset_engine_instance
