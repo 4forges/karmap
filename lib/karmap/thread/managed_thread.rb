@@ -45,7 +45,7 @@ module Karma::Thread
     end
 
     def set_log_level(level)
-      Karma.logger.level = level
+      @thread[:logger].level = level if @thread[:logger].present?
     end
 
     def thread_index
