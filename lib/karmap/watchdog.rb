@@ -13,6 +13,10 @@ module Karma
 
     attr_accessor :service_statuses
 
+    def self.config_location
+      File.join(Karma.home_path, '.config', Karma.project_name)
+    end
+
     def self.command
       "bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\""
     end
@@ -112,7 +116,7 @@ module Karma
     private ##############################
 
     def ensure_service_instances_count(service)
-      Karma.engine_instance.safe_init_config(service)
+      Karma::ConfigEngine::ConfigImporterExporter.safe_init_config(service)
 
       # stop instances
       Karma.engine_instance.to_be_stopped_instances(service).each do |instance|
@@ -197,6 +201,14 @@ module Karma
       end
     end
 
+    def config_engine
+      @config_engine ||= self.class.new
+    end
+
+    def self.config_engine_class
+      ConfigEngine::SimpleTcp
+    end
+    
     def handle_process_config_update(msg)
       cls = Karma::Helpers::constantize(msg.service)
       new_config = msg.to_config
@@ -208,28 +220,10 @@ module Karma
 
       else
         # export new configuration
-        Karma.engine_instance.export_config(cls, new_config)
+        Karma::ConfigEngine::ConfigImporterExporter.export_config(cls, new_config)
         Karma.engine_instance.export_service(cls)
         ensure_service_instances_count(cls)
-
-        # push configuration to all running threads
-        running_instances = Karma.engine_instance.running_instances_for_service(cls) #keys: [:pid, :full_name, :port]
-        running_instances.each do |k, instance|
-          begin
-            connection_retries ||= 5
-            s = TCPSocket.new('127.0.0.1', instance.port)
-            s.puts(cls.get_process_config.to_json)
-            s.close
-          rescue ::Exception => e
-            if (connection_retries -= 1) > 0
-              Karma.logger.warn{ "#{__method__}: #{e.message}" }
-              sleep(1)
-              retry
-            else
-              Karma.logger.error{ "#{__method__}: #{e.message}" }
-            end
-          end
-        end
+        self.config_engine_class.send_config(cls)
       end
     end
 

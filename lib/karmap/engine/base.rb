@@ -10,7 +10,7 @@ module Karma::Engine
     def location
       nil # override (engine dependant)
     end
-
+    
     def project_name
       Karma.project_name
     end
@@ -60,37 +60,8 @@ module Karma::Engine
     end
 
     def export_service(service)
-      safe_init_config(service)
+      Karma::ConfigEngine::ConfigImporterExporter.safe_init_config(service)
       FileUtils.mkdir_p(location) if location
-    end
-
-    def safe_init_config(service)
-      if !exists_config?(service)
-        config = service.get_process_config
-        export_config(service, config)
-      end
-      config = import_config(service)
-      service.set_process_config(config)
-    end
-
-    def export_config(service, config)
-      FileUtils.mkdir_p(location) if location
-      service_fn = "#{service.full_name}.config"
-      Karma.logger.debug{ "writing config to file: #{config}" }
-      write_file(service_fn, config.to_json)
-    end
-
-    def import_config(service)
-      service_fn = "#{service.full_name}.config"
-      config = JSON.parse(read_file(service_fn)).symbolize_keys rescue {}
-      Karma.logger.debug{ "read config from file: #{config}" }
-      return config
-    end
-
-    def exists_config?(service)
-      service_fn = "#{service.full_name}.config"
-      config = JSON.parse(read_file(service_fn)).symbolize_keys rescue {}
-      return config.present?
     end
 
     def remove_service(service)
@@ -215,11 +186,8 @@ module Karma::Engine
     end
 
     def write_file(filename, contents)
-      Karma.logger.debug{ "writing: #{filename}" }
       filename = File.join(location, filename) unless Pathname.new(filename).absolute?
-      File.open(filename, "w") do |file|
-        file.puts contents
-      end
+      Karma::FileHelper::write_file(filename, contents)
     end
 
     def read_file(filename)
