@@ -210,7 +210,6 @@ module Karma
     end
     
     def handle_process_config_update(msg)
-      byebug
       cls = Karma::Helpers::constantize(msg.service)
       new_config = msg.to_config
       old_config = cls.read_config
