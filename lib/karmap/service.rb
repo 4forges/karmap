@@ -8,7 +8,6 @@ module Karma
     include Karma::Helpers
 
     attr_reader :config_reader
-    @@instance = nil
 
     def self.engine
       Karma.engine_instance
