@@ -1,6 +1,9 @@
 [Unit]
 PartOf=karma-spec-mock-service.target
 
+[Install]
+WantedBy=default.target
+
 [Service]
 WorkingDirectory=/tmp/app
 Environment=PORT=%i

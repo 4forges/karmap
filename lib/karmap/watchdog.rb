@@ -11,15 +11,10 @@ module Karma
 
     SHUTDOWN_SEC = 0
 
-    @@instance = nil
-    @@service_classes = nil
-    @@queue_client = nil
-
     attr_accessor :service_statuses
 
-    def initialize
-      Karma.logger.info{ "#{__method__}: environment is #{Karma.env}" }
-      @service_statuses = {}
+    def self.config_location
+      File.join(Karma.home_path, '.config', Karma.project_name)
     end
 
     def self.command
@@ -27,10 +22,52 @@ module Karma
     end
 
     def self.run
-      if @@instance.nil?
-        @@instance = self.new
-        @@instance.run
+      (@@instance = self.new).run if !defined?(@@instance)
+    end
+
+    def self.export
+      Karma.engine_instance.export_service(Karma::Watchdog)
+      status = Karma.engine_instance.show_service(Karma::Watchdog)
+      if status.empty?
+        Karma.engine_instance.start_service(Karma::Watchdog)
+      else
+        Karma.engine_instance.restart_service(status.values[0].pid, { service: Karma::Watchdog })
       end
+    end
+
+    def self.service_classes
+      @@service_classes = (Karma.services.map do |c|
+        klass = (Karma::Helpers::constantize(c) rescue nil)
+        klass.present? && klass <= Karma::Service ? klass : nil
+      end.compact||[]) if !defined?(@@service_classes)
+      @@service_classes
+    end
+
+    def self.start_all_services
+      # only call register on each service. Karma server will then push a ProcessConfigUpdateMessage that
+      # will trigger the starting of instances.
+      self.service_classes.each{|s| s.register}
+    end
+
+    def self.stop_all_services
+      status = Karma.engine_instance.show_all_services
+      status.reject!{|k,v| v.name == Karma::Watchdog.full_name}
+      status.values.map(&:pid).each do |pid|
+        Karma.engine_instance.stop_service(pid)
+      end
+    end
+
+    def self.restart_all_services
+      status = Karma.engine_instance.show_all_services
+      status.reject!{|k,v| v.name == Karma::Watchdog.full_name}
+      status.values.map(&:pid).each do |pid|
+        Karma.engine_instance.restart_service(pid)
+      end
+    end
+
+    def initialize
+      Karma.logger.info{ "#{__method__}: environment is #{Karma.env}" }
+      @service_statuses = {}
     end
 
     def run
@@ -76,46 +113,10 @@ module Karma
       end
     end
 
-    def self.export
-      Karma.engine_instance.export_service(Karma::Watchdog)
-      status = Karma.engine_instance.show_service(Karma::Watchdog)
-      if status.empty?
-        Karma.engine_instance.start_service(Karma::Watchdog)
-      else
-        Karma.engine_instance.restart_service(status.values[0].pid, { service: Karma::Watchdog })
-      end
-    end
-
-    def self.service_classes
-      services_cls = Karma.services.map{|c| Karma::Helpers::constantize(c) rescue nil}.compact
-      @@service_classes ||= services_cls.select{|c| c <= Karma::Service}
-      @@service_classes
-    end
-
-    def self.start_all_services
-      # only call register on each service. Karma server will then push a ProcessConfigUpdateMessage that
-      # will trigger the starting of instances.
-      self.service_classes.each{|s| s.register}
-    end
-
-    def self.stop_all_services
-      status = Karma.engine_instance.show_all_services
-      status.reject!{|k,v| v.name == Karma::Watchdog.full_name}
-      status.values.map(&:pid).each do |pid|
-        Karma.engine_instance.stop_service(pid)
-      end
-    end
-
-    def self.restart_all_services
-      status = Karma.engine_instance.show_all_services
-      status.reject!{|k,v| v.name == Karma::Watchdog.full_name}
-      status.values.map(&:pid).each do |pid|
-        Karma.engine_instance.restart_service(pid)
-      end
-    end
+    private ##############################
 
     def ensure_service_instances_count(service)
-      Karma.engine_instance.safe_init_config(service)
+      Karma::ConfigEngine::ConfigImporterExporter.safe_init_config(service)
 
       # stop instances
       Karma.engine_instance.to_be_stopped_instances(service).each do |instance|
@@ -134,19 +135,16 @@ module Karma
       end
     end
 
-    private ##############################
-
     include Karma::Helpers
 
     def queue_client
-      @@queue_client ||= Karma::Queue::Client.new
+      @@queue_client = Karma::Queue::Client.new if !defined?(@@queue_client)
       @@queue_client
     end
 
     def poll_queue
       Karma.logger.info{ "#{__method__}: started polling queue #{Karma::Queue.incoming_queue_url}" }
       queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
-        # Karma.logger.debug{ "#{__method__} INCOMING MESSAGE: #{msg.body}" }
         body = JSON.parse(msg.body).deep_symbolize_keys
         handle_message(body)
       end
@@ -203,10 +201,18 @@ module Karma
       end
     end
 
+    def config_engine
+      @config_engine ||= self.class.new
+    end
+
+    def self.config_engine_class
+      ConfigEngine::SimpleTcp
+    end
+    
     def handle_process_config_update(msg)
       cls = Karma::Helpers::constantize(msg.service)
       new_config = msg.to_config
-      old_config = Karma.engine_instance.import_config(cls)
+      old_config = cls.read_config
 
       if new_config == old_config
         # no changes in configuration
@@ -214,28 +220,10 @@ module Karma
 
       else
         # export new configuration
-        Karma.engine_instance.export_config(cls, new_config)
+        Karma::ConfigEngine::ConfigImporterExporter.export_config(cls, new_config)
         Karma.engine_instance.export_service(cls)
         ensure_service_instances_count(cls)
-
-        # push configuration to all running threads
-        running_instances = Karma.engine_instance.running_instances_for_service(cls) #keys: [:pid, :full_name, :port]
-        running_instances.each do |k, instance|
-          begin
-            connection_retries ||= 5
-            s = TCPSocket.new('127.0.0.1', instance.port)
-            s.puts(cls.get_process_config.to_json)
-            s.close
-          rescue ::Exception => e
-            if (connection_retries -= 1) > 0
-              Karma.logger.warn{ "#{__method__}: #{e.message}" }
-              sleep(1)
-              retry
-            else
-              Karma.logger.error{ "#{__method__}: #{e.message}" }
-            end
-          end
-        end
+        self.config_engine_class.send_config(cls)
       end
     end
 

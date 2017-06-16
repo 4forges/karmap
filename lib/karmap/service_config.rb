@@ -96,7 +96,7 @@ module Karma
       def set_process_config(config)
         # note: port does not change
         [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart, :push_notifications, :num_threads, :log_level].each do |k|
-          send(k, config[k])
+          send(k, config[k]) if config.key?(k)
         end
         get_process_config
       end

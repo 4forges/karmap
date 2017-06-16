@@ -32,7 +32,6 @@ module Karma::Thread
           Karma.logger.debug{ "#{$$}::#{Thread.current.to_s} started #{Thread.current[:status]}" }
           outer_block(blocks)
         rescue Exception => e
-          Karma.logger.error{ "#{$$}::#{Thread.current.to_s} ERROREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE" }
           Karma.logger.error{ "#{$$}::#{Thread.current.to_s} #{e.message}" }
           raise e
         end
@@ -46,6 +45,7 @@ module Karma::Thread
 
     def set_log_level(level)
       Karma.logger.level = level
+      @thread[:logger].level = level if @thread[:logger].present?
     end
 
     def thread_index

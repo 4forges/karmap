@@ -7,19 +7,33 @@ module Karma
     include Karma::ServiceConfig
     include Karma::Helpers
 
-    @@instance = nil
+    attr_reader :config_reader
 
-    def initialize
-      @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new{ ::Thread.current[:performance] = performance }, custom_inspect: Proc.new { custom_inspect } )
-      Karma.engine_instance.safe_init_config(self.class)
-      @config_reader = Karma::Thread::SimpleTcpConfigReader.new(
-        default_config: self.class.get_process_config,
-        port: instance_port
-      )
-      @sleep_time = 1
-      @running = false
+    def self.engine
+      Karma.engine_instance
     end
 
+    def self.init_config_reader_for_instance(instance)
+      case Karma.config_engine
+      when 'tcp'
+        Karma::ConfigEngine::SimpleTcp.new(default_config: self.get_process_config, options: { port: instance.instance_port })
+      when 'file'
+        Karma::ConfigEngine::File.new(default_config: self.get_process_config, options: { service_class: self, poll_intervall: 2.seconds })
+      end
+    end
+    
+    def initialize
+      @running = false
+      @run_sleep_seconds = 1
+
+      # init thread pool
+      @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new{ ::Thread.current[:performance] = performance }, custom_inspect: Proc.new { custom_inspect } )
+      # init config reader
+      @config_reader = self.class.init_config_reader_for_instance(self)
+
+      Karma::ConfigEngine::ConfigImporterExporter.safe_init_config(self.class)
+    end
+    
     def performance
       # override this with custom performance calculation.
       # return a value between 0-100, where 100 is good and 0 is bad.
@@ -62,12 +76,9 @@ module Karma
     end
 
     def self.run
-      if @@instance.nil?
-        @@instance = self.new
-        @@instance.run
-      end
+      (@@instance = self.new).run if !defined?(@@instance)
     end
-    
+
     def self.version
       if Karma.version_file_path.present?
         if File.exists?(Karma.version_file_path)
@@ -78,6 +89,10 @@ module Karma
       else
         'no version set'
       end
+    end
+
+    def self.config_location
+      File.join(Karma.home_path, '.config', Karma.project_name)
     end
 
     def self.register
@@ -100,7 +115,6 @@ module Karma
         )
         Karma.notifier_instance.notify(message)
       rescue ::Exception => e
-        # TODO HANDLE THIS
         Karma.logger.error{ e }
       end
     end
@@ -112,6 +126,7 @@ module Karma
 
     def run
       Karma.logger.info{ "#{__method__}: enter" }
+      Karma.engine_instance.after_start_service(self)
 
       Signal.trap('INT') do
         stop
@@ -142,7 +157,7 @@ module Karma
         @thread_pool.manage(self.class.get_process_config)
 
         Karma.logger.debug{ "#{__method__}: alive" }
-        sleep(@sleep_time)
+        sleep(@run_sleep_seconds)
       end
 
       stop_all_threads
@@ -153,6 +168,15 @@ module Karma
 
       # notify queue after stop
       notify_status(params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]})
+      Karma.engine_instance.after_stop_service(self)
+    end
+
+    def self.read_config
+      Karma::ConfigEngine::ConfigImporterExporter.import_config(self)
+    end
+
+    def self.running_instances_count
+      Karma.engine_instance.running_instances_for_service(self).size
     end
 
     def running_thread_count

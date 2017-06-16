@@ -1,5 +1,3 @@
-# encoding: UTF-8
-
 require 'karmap/engine'
 require 'karmap/engine/parser/systemd_parser'
 
@@ -160,7 +158,7 @@ module Karma::Engine
           data[2].to_i,
           to_karma_status(v['Active']),
           v['Main PID'].to_i,
-          v['Tasks'].to_i,
+          v['Tasks'].to_i, # TODO should return actual thread count
           v['Memory'],
           v['CPU'],
         )

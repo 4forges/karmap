@@ -4,27 +4,42 @@ require 'spec_helper'
 
 describe Karma::Thread::ThreadPool do
 
-  def set_num_threads(service, num)
-    s = TCPSocket.new('127.0.0.1', service.instance_port)
-    s.puts({ log_level: 0, num_threads: num }.to_json)
-    s.close
-  end
+  ['file', 'tcp'].shuffle.each do |config_engine|
 
-  it 'spawns 2 threads and change at runtime' do
-    service = TestService.new
-    ::Thread.new do
-      service.run
+    before(:each) do
+      Karma.reset_engine_instance
+      Karma.engine = 'systemd'
+      Karma.config_engine = config_engine
+      new_config = TestService.set_process_config({num_threads: 2})
+      Karma::ConfigEngine::ConfigImporterExporter.export_config(TestService, new_config)
     end
-    wait_for {service.running_thread_count}.to eq(2)
 
-    set_num_threads(service, 3)
-    wait_for {service.running_thread_count}.to eq(3)
+    def set_num_threads(service, num)
+      new_config = service.class.set_process_config({num_threads: num})
+      Karma::ConfigEngine::ConfigImporterExporter.export_config(service.class, new_config)
+      Karma.config_engine_class.send_config(service.class)
+    end  
 
-    set_num_threads(service, 1)
-    wait_for {service.running_thread_count}.to eq(1)
+    it 'spawns 2 threads and change at runtime' do
+      service = TestService.new
+      ::Thread.new do
+        service.run
+      end
+      wait_for{File.exists?('spec/log/testservice-after_start.log')}.to be_truthy
+      wait_for{service.running_thread_count}.to eq(2)
 
-    service.stop
-    wait_for {service.running_thread_count}.to eq(0)
+      set_num_threads(service, 3)
+      wait_for{service.running_thread_count}.to eq(3)
+
+      set_num_threads(service, 1)
+      wait_for{service.running_thread_count}.to eq(1)
+
+      service.stop
+      wait_for{service.running_thread_count}.to eq(0)
+      wait_for{File.exists?('spec/log/testservice-after_stop.log')}.to be_truthy
+    end
+
   end
+
 
 end
