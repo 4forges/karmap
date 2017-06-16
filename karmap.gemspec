@@ -31,7 +31,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'aws-sdk', '~> 2'
   spec.add_dependency 'activesupport', '~> 5.0'
   spec.add_dependency 'karma_messages', '~> 0.1'
-  spec.add_dependency 'sys-proctable', '~> 0.9.0'
+  spec.add_dependency 'sys-proctable'
 
 
   spec.add_development_dependency 'bundler', '~> 1.13'
