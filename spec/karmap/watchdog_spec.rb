@@ -12,12 +12,12 @@ describe Karma::Watchdog do
   end
   # before(:each) { allow_any_instance_of(Karma::Engine::Systemd).to receive(:start_service).and_return(true) }
 
-  it 'services to register' do
+  it 'services to register_services' do
     expect(Karma::Watchdog.service_classes).to eq([TestService, MockService])
   end
 
   it 'handles process command message' do
-    watchdog.send(:register)
+    watchdog.send(:register_services)
 
     msg = Karma::Messages::ProcessCommandMessage.new(
       service: 'TestService',
@@ -28,7 +28,7 @@ describe Karma::Watchdog do
   end
 
   it 'handles process config update message' do
-    watchdog.send(:register)
+    watchdog.send(:register_services)
 
     msg = Karma::Messages::ProcessConfigUpdateMessage.new(
       service: 'TestService',

@@ -43,12 +43,14 @@ module Karma
       @@service_classes
     end
 
+    # used by rake task :start_all
     def self.start_all_services
       # only call register on each service. Karma server will then push a ProcessConfigUpdateMessage that
       # will trigger the starting of instances.
       self.service_classes.each{|s| s.register}
     end
 
+    # used by rake task ::stop_all
     def self.stop_all_services
       status = Karma.engine_instance.show_all_services
       status.reject!{|k,v| v.name == Karma::Watchdog.full_name}
@@ -57,6 +59,7 @@ module Karma
       end
     end
 
+    # used by rake task ::stop_all
     def self.restart_all_services
       status = Karma.engine_instance.show_all_services
       status.reject!{|k,v| v.name == Karma::Watchdog.full_name}
@@ -72,7 +75,10 @@ module Karma
 
     def run
       Karma.logger.info{ "#{__method__}: enter" }
-      register
+      # startup instructions
+      register_services # register all services to karma
+      deregister_services # de-register all service no more present into the config
+      
       @poller = ::Thread.new do
         loop do
           poll_queue
@@ -151,15 +157,21 @@ module Karma
     end
 
     # Notifies the Karma server about the current host and all Karma::Service subclasses
-    def register
-      Karma.logger.info{ "#{__method__}: registering services..." }
-      Karma.logger.info{ "#{__method__}: #{self.class.service_classes.count} services found" }
+    def register_services
+      Karma.logger.info{ "#{__method__}: registering services... #{self.class.service_classes.count} services found" }
       Karma::Watchdog.service_classes.each do |cls|
-        Karma.logger.info{ "#{__method__}: exporting #{cls.name}..." }
+        Karma.logger.info{ "#{__method__}: registering #{cls.name}..." }
         Karma.engine_instance.export_service(cls)
         cls.register
       end
       Karma.logger.info{ "#{__method__}: done registering services" }
+    end
+    
+    def deregister_services
+      to_be_cleaned_classes = (Karma.engine_instance.show_all_services.map{|k, v| v['name']}.uniq - [self.full_name]).map{|name| service_class_from_name(name)} - Karma::Watchdog.service_classes
+      to_be_cleaned_classes.each do |service_class|
+        Karma.engine_instance.remove_service(service_class)
+      end
     end
 
     def handle_message(message)
@@ -206,7 +218,12 @@ module Karma
     end
 
     def self.config_engine_class
-      ConfigEngine::SimpleTcp
+      case Karma.config_engine
+        when 'tcp'
+          Karma::ConfigEngine::SimpleTcp
+        when 'file'
+          Karma::ConfigEngine::File
+      end
     end
     
     def handle_process_config_update(msg)

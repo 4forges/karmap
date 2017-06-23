@@ -25,7 +25,7 @@ describe Karma::Engine::Systemd do
     end
 
     it 'discovers and exports service' do
-      watchdog.send(:register)
+      watchdog.send(:register_services)
 
       expect(File.file?("#{Karma.engine_instance.location}/karma-spec-test-service.target")).to be_truthy
       expect(File.file?("#{Karma.engine_instance.location}/karma-spec-test-service@.service")).to be_truthy
