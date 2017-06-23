@@ -30,6 +30,11 @@ module Karma::Engine
     def show_all_services
       # abstract
     end
+    
+    def show_enabled_services
+      # abstract
+      nil
+    end
 
     def show_service_log(service)
       # abstract

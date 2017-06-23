@@ -29,6 +29,10 @@ module Karma::Engine
     def enable_service(service)
       `systemctl --user enable #{service.full_name}`
     end
+    
+    def show_enabled_services
+      `systemctl --user list-unit-files |grep enabled`.split("\n").map{|s| s.split('@')[0]}
+    end
 
     def start_service(service)
       # get first stopped instance name and start it

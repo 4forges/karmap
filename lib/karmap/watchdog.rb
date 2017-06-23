@@ -168,9 +168,21 @@ module Karma
     end
     
     def deregister_services
-      to_be_cleaned_classes = (Karma.engine_instance.show_all_services.map{|k, v| v['name']}.uniq - [self.full_name]).map{|name| service_class_from_name(name)} - Karma::Watchdog.service_classes
-      to_be_cleaned_classes.each do |service_class|
-        Karma.engine_instance.remove_service(service_class)
+      enabled_services_names = Karma.engine_instance.show_enabled_services
+      if enabled_services_names.present?
+        to_be_cleaned_classes = ( enabled_services_names - [self.full_name]).map{|name| service_class_from_name(name)} - Karma::Watchdog.service_classes
+        to_be_cleaned_classes.each do |service_class|
+          Karma.logger.info{ "#{__method__} deregister #{service_class}" }
+          service_name = service_class.full_name
+          Karma.engine_instance.show_all_services.select{|k, v| v['name'] == service_name}.values.map do |s|
+            Karma.logger.info{ "#{__method__} stopping pid #{s['pid']}" }
+            Karma.engine_instance.stop_service(s['pid'])
+          end
+          Karma.logger.info{ "sleep 5 seconds" }
+          sleep 5
+          Karma.logger.info{ "remove instance" }
+          Karma.engine_instance.remove_service(service_class)
+        end
       end
     end
 
