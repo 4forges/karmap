@@ -78,7 +78,7 @@ module Karma
       # startup instructions
       register_services # register all services to karma
       deregister_services # de-register all service no more present into the config
-      
+
       @poller = ::Thread.new do
         loop do
           poll_queue
@@ -166,23 +166,23 @@ module Karma
       end
       Karma.logger.info{ "#{__method__}: done registering services" }
     end
-    
+
     def deregister_services
+      Karma.logger.info{ "#{__method__}: deregistering services..." }
       enabled_services_names = Karma.engine_instance.show_enabled_services
       if enabled_services_names.present?
         to_be_cleaned_classes = ( enabled_services_names - [self.full_name]).map{|name| service_class_from_name(name)} - Karma::Watchdog.service_classes
         to_be_cleaned_classes.each do |service_class|
-          Karma.logger.info{ "#{__method__} deregister #{service_class}" }
-          service_name = service_class.full_name
-          Karma.engine_instance.show_all_services.select{|k, v| v['name'] == service_name}.values.map do |s|
-            Karma.logger.info{ "#{__method__} stopping pid #{s['pid']}" }
+          Karma.logger.info{ "#{__method__}: removing #{service_class}..." }
+          Karma.engine_instance.show_service(service_class).values.map do |s|
+            Karma.logger.info{ "#{__method__}: stopping pid #{s['pid']}..." }
             Karma.engine_instance.stop_service(s['pid'])
           end
-          Karma.logger.info{ "sleep 5 seconds" }
-          sleep 5
-          Karma.logger.info{ "remove instance" }
+          sleep(1) until Karma.engine_instance.show_service(service_class).empty?
           Karma.engine_instance.remove_service(service_class)
         end
+      else
+        Karma.logger.info{ "#{__method__}: no services to remove" }
       end
     end
 
@@ -237,7 +237,7 @@ module Karma
           Karma::ConfigEngine::File
       end
     end
-    
+
     def handle_process_config_update(msg)
       cls = Karma::Helpers::constantize(msg.service)
       new_config = msg.to_config

@@ -29,9 +29,9 @@ module Karma::Engine
     def enable_service(service)
       `systemctl --user enable #{service.full_name}`
     end
-    
+
     def show_enabled_services
-      `systemctl --user list-unit-files |grep enabled`.split("\n").map{|s| s.split('@')[0]}
+      `systemctl --user list-unit-files | grep enabled`.split("\n").map{|s| s.split('@')[0]}
     end
 
     def start_service(service)
@@ -131,16 +131,16 @@ module Karma::Engine
       Karma.logger.info { "#{__method__}: end systemd export for service #{service.name}" }
     end
 
-    def remove_service(service_class)
-      Dir["#{location}/#{service_class.full_name}*.service"]
-          .concat(Dir["#{location}/#{service_class.full_name}.config"])
-          .concat(Dir["#{location}/#{service_class.full_name}.target"])
-          .concat(Dir["#{location}/#{service_class.full_name}*.target.wants/*"])
+    def remove_service(service)
+      Dir["#{location}/#{service.full_name}*.service"]
+          .concat(Dir["#{location}/#{service.full_name}.config"])
+          .concat(Dir["#{location}/#{service.full_name}.target"])
+          .concat(Dir["#{location}/#{service.full_name}*.target.wants/*"])
           .each do |file|
         clean file
       end
 
-      Dir["#{location}/#{service_class.full_name}*.target.wants"].each do |file|
+      Dir["#{location}/#{service.full_name}*.target.wants"].each do |file|
         clean_dir file
       end
     end
