@@ -24,7 +24,9 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+To prevent Karma services from being killed on SSH session disconnect, run this command:
+
+    $ sudo loginctl enable-linger ubuntu
 
 ## Development
 
@@ -60,10 +62,19 @@ The gem is available as open source under the terms of the [MIT License](http://
 
 ## Systemd
 
-enabled services 
-systemctl --user list-unit-files | grep enabled
-journalctl -f #logs
-systemctl --user start managed-sources-facebookfetcher@33000.service
+Enabled services 
 
+    $ systemctl --user list-unit-files | grep enabled
+    
+Log
 
-sudo loginctl enable-linger ubuntu
+    $ journalctl -f
+    
+Manual start
+    
+    $ systemctl --user start managed-sources-facebookfetcher@33000.service
+
+Avoid service kill on SSH disconnect
+
+    $ sudo loginctl enable-linger ubuntu
+
