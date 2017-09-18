@@ -86,7 +86,7 @@ module Karma
             f = File.open(Karma.version_file_path)
             return f.gets
           ensure
-            f.close
+            f.close unless f.nil?
           end
         else
           'file does not exists'
