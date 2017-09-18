@@ -21,7 +21,7 @@ module Karma
         Karma::ConfigEngine::File.new(default_config: self.get_process_config, options: { service_class: self, poll_intervall: 2.seconds })
       end
     end
-    
+
     def initialize
       @running = false
       @run_sleep_seconds = 1
@@ -33,7 +33,7 @@ module Karma
 
       Karma::ConfigEngine::ConfigImporterExporter.safe_init_config(self.class)
     end
-    
+
     def performance
       # override this with custom performance calculation.
       # return a value between 0-100, where 100 is good and 0 is bad.
@@ -82,9 +82,14 @@ module Karma
     def self.version
       if Karma.version_file_path.present?
         if File.exists?(Karma.version_file_path)
-          File.read(Karma.version_file_path)
+          begin
+            f = File.open(Karma.version_file_path)
+            return f.gets
+          ensure
+            f.close
+          end
         else
-          'file not exists'
+          'file does not exists'
         end
       else
         'no version set'
