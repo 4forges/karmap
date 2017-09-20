@@ -179,7 +179,7 @@ module Karma
         pid = instance[:pid]
         memory_usage = `ps -o rss= -p #{pid}`.to_i / 1024 # in megabytes
         Karma.logger.info { "instance #{k}: used memory: #{memory_usage}MB, allowed: #{service.config_memory_max}" }
-        if service.config_memory_max.present? && memory_usage > service.config_memory_max
+        if ((service.config_memory_max.present? && memory_usage > service.config_memory_max) rescue false)
           `kill #{pid}`
           Karma.logger.info { "instance #{k} KILLED" }
         else
