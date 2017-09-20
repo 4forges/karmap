@@ -178,8 +178,8 @@ module Karma
       Karma.engine_instance.running_instances_for_service(service).each do |k, instance|
         pid = instance[:pid]
         memory_usage = `ps -o rss= -p #{pid}`.to_i / 1024 # in megabytes
-        Karma.logger.info { "instance #{k}: used memory: #{memory_usage}MB, allowed: #{service.config_memory_max}" }
-        if ((service.config_memory_max.present? && memory_usage > service.config_memory_max) rescue false)
+        Karma.logger.info { "instance #{k}: used memory: #{memory_usage}MB, allowed: #{service.config_memory_max}MB" }
+        if ((service.config_memory_max.present? && memory_usage > service.config_memory_max.to_i) rescue false)
           `kill #{pid}`
           Karma.logger.info { "instance #{k} KILLED" }
         else
@@ -264,15 +264,6 @@ module Karma
       @config_engine ||= self.class.new
     end
 
-    def self.config_engine_class
-      case Karma.config_engine
-      when 'tcp'
-        Karma::ConfigEngine::SimpleTcp
-      when 'file'
-        Karma::ConfigEngine::File
-      end
-    end
-
     def handle_process_config_update(msg)
       cls = Karma::Helpers.constantize(msg.service)
       new_config = msg.to_config
@@ -287,7 +278,7 @@ module Karma
         Karma::ConfigEngine::ConfigImporterExporter.export_config(cls, new_config)
         Karma.engine_instance.export_service(cls)
         ensure_service_instances_count(cls)
-        config_engine_class.send_config(cls)
+        Karma.config_engine_class.send_config(cls)
       end
     end
 
