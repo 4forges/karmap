@@ -8,6 +8,10 @@ module Karma::Engine
     def location
       "#{Karma.home_path}/.config/systemd/user"
     end
+    
+    def instance_full_name(service, port)
+      "#{service.full_name}@#{port}.service"
+    end
 
     def show_service(service)
       # note: does not show dead units
@@ -34,20 +38,21 @@ module Karma::Engine
       `systemctl --user list-unit-files | grep enabled`.split("\n").map{|s| s.split('@')[0]}
     end
 
+    # starts the first available not running instance
     def start_service(service)
-      # get first stopped instance name and start it
       Karma.logger.debug{ "#{__method__}: starting #{service.full_name}" }
       `systemctl --user reset-failed`
-      status = show_service(service)
-      (1..service.config_max_running).each do |i|
-        instance_name = "#{service.full_name}@#{service.config_port+(i-1)}.service"
-        if status[instance_name].nil?
-          Karma.logger.info{ "#{__method__}: starting instance #{instance_name}" }
-          `systemctl --user start #{instance_name}`
-          return instance_name
-        end
+      running_instances = show_service(service).keys
+      should_running_instances = (1..service.config_max_running).map { |p| instance_full_name(service, service.config_port + (p - 1)) }
+      to_be_started_instance = (should_running_instances - running_instances).first
+      if to_be_started_instance
+        Karma.logger.info{ "#{__method__}: starting instance #{to_be_started_instance}" }
+        `systemctl --user start #{to_be_started_instance}`
+        ret = to_be_started_instance
+      else
+        ret = false
       end
-      return false
+      return ret
     end
 
     def stop_service(pid, params = {})
@@ -107,7 +112,7 @@ module Karma::Engine
       # check if there are less instances than max, and create if needed
       elsif instances.size < max
         (instances.size+1..max)
-          .map{ |num| "#{service.full_name}@#{service.config_port+(num-1)}.service" }
+          .map{ |num| instance_full_name(service, service.config_port + (num - 1)) }
           .each do |instance_name|
           create_symlink("#{instances_dir}/#{instance_name}", "../#{service_fn}") rescue Errno::EEXIST
         end
@@ -124,7 +129,7 @@ module Karma::Engine
       reload
 
       if service == Karma::Watchdog
-        instance_name = "#{service.full_name}@#{Karma.watchdog_port}.service"
+        instance_name =  instance_full_name(Karma::Watchdog, Karma.watchdog_port)
         `systemctl enable --user #{instance_name}`
       end
 

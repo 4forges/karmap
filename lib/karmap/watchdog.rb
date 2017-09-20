@@ -157,13 +157,7 @@ module Karma
 
     def ensure_service_instances_count(service)
       Karma::ConfigEngine::ConfigImporterExporter.safe_init_config(service)
-
-      # stop instances
-      Karma.engine_instance.to_be_stopped_instances(service).each do |instance|
-        Karma.logger.debug { "#{__method__}: stop instance #{instance.name}" }
-        Karma.engine_instance.stop_service(instance.pid)
-      end
-
+      
       # start instances
       if service.config_auto_start
         Karma.engine_instance.to_be_started_ports(service).each do |port|
@@ -173,6 +167,26 @@ module Karma
       else
         Karma.logger.debug { "#{__method__}: autostart for service #{service.name} is false" }
       end
+
+      # stop instances
+      Karma.engine_instance.to_be_stopped_instances(service).each do |instance|
+        Karma.logger.debug { "#{__method__}: stop instance #{instance.name}" }
+        Karma.engine_instance.stop_service(instance.pid)
+      end
+
+      # kill by memory usage
+      Karma.engine_instance.running_instances_for_service(service).each do |_k, instance|
+        pid = instance[:pid]
+        memory_usage = `ps -o rss= -p #{pid}`.to_i / 1024 # in megabytes
+        Karma.logger.info { "instance #{k}: used memory: #{memory_usage}MB, allowed: #{service.config_memory_max}" }
+        if service.config_memory_max.present? && memory_usage > service.config_memory_max
+          `kill #{pid}`
+          Karma.logger.info { "instance #{k} KILLED" }
+        else
+          Karma.logger.info { "OK" }
+        end
+      end
+
     end
 
     include Karma::Helpers
