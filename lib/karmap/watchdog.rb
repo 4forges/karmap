@@ -175,7 +175,7 @@ module Karma
       end
 
       # kill by memory usage
-      Karma.engine_instance.running_instances_for_service(service).each do |_k, instance|
+      Karma.engine_instance.running_instances_for_service(service).each do |k, instance|
         pid = instance[:pid]
         memory_usage = `ps -o rss= -p #{pid}`.to_i / 1024 # in megabytes
         Karma.logger.info { "instance #{k}: used memory: #{memory_usage}MB, allowed: #{service.config_memory_max}" }
