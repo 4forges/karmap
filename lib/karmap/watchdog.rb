@@ -17,6 +17,10 @@ module Karma
       File.join(Karma.home_path, '.config', Karma.project_name)
     end
 
+    def self.config_filename
+      "#{self.full_name}.config"
+    end
+
     def self.command
       "bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\""
     end

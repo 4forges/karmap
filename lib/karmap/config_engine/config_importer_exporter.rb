@@ -4,15 +4,17 @@ module Karma::ConfigEngine
 
   module ConfigImporterExporter
 
+    # sets class config reading it from the file ( exports it before reading if the config file doesn't exist )
     def self.safe_init_config(service_class)
       if !exists_config?(service_class)
-        config = service_class.get_process_config
-        export_config(service_class, config)
+        config = service_class.get_process_config # compiles config hash from Class configuration
+        export_config(service_class, config) # exports config to file
       end
-      config = import_config(service_class)
-      service_class.set_process_config(config)
+      config = import_config(service_class) # read config from file
+      service_class.set_process_config(config) # passes config to service class
     end
-
+    
+    # reads the config from the file and returns it as hash
     def self.import_config(service_class)
       config = {}
       begin
@@ -37,14 +39,13 @@ module Karma::ConfigEngine
     end
 
     def self.exists_config?(service_class)
-      config = {}
       file_path = config_filepath(service_class)
       file_data = ::File.read(file_path) rescue {}
       return file_data.present?
     end
 
     def self.config_filepath(service_class)
-      filepath = ::File.join(service_class.config_location, "#{service_class.full_name}.config")
+      ::File.join(service_class.config_location, service_class.config_filename)
     end
 
   end

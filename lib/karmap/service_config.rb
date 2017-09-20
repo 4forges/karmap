@@ -93,6 +93,9 @@ module Karma
       #################################################
       # update config methods
       #################################################
+      
+      # sets process class config passing an hash ( can be partial )
+      # returns an hash with the complete class config hash
       def set_process_config(config)
         # note: port does not change
         [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart, :push_notifications, :num_threads, :log_level].each do |k|
@@ -101,6 +104,7 @@ module Karma
         get_process_config
       end
 
+      # returns an hash with the complete class config hash
       def get_process_config
         Hash.new.tap do |h|
           [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart, :push_notifications, :num_threads, :log_level].each do |k|
@@ -112,12 +116,15 @@ module Karma
       #################################################
       # convenience methods
       #################################################
+      
+      # returns an array with the numbers of ports util the max
       def max_ports
         start_port = self.config_port
         end_port = start_port + self.config_max_running - 1
         (start_port..end_port).to_a
       end
 
+      # returns an array with the numbers of ports util the min
       def min_ports
         start_port = self.config_port
         end_port = start_port + self.config_min_running - 1

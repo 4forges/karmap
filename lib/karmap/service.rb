@@ -100,6 +100,10 @@ module Karma
       File.join(Karma.home_path, '.config', Karma.project_name)
     end
 
+    def self.config_filename
+      "#{self.full_name}.config"
+    end
+
     def self.register
       begin
         # this version is the last version of the repo
