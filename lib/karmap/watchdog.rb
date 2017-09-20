@@ -84,26 +84,16 @@ module Karma
       # startup instructions
       register_services # register all services to karma
       deregister_services # de-register all service no more present into the config
+      init_and_start_poller
+      init_traps
 
-      @poller = ::Thread.new do
-        loop do
-          poll_queue
-          Karma.logger.error { "#{__method__}: error during polling" }
-          sleep 10
-        end
-      end
-      Karma.logger.info { "#{__method__}: poller started" }
-      Signal.trap('INT') do
-        @trapped_signal = 'INT'
-        @running = false
-      end
-      Signal.trap('TERM') do
-        @trapped_signal = 'TERM'
-        @running = false
-      end
+      # main loop:
+      # check services status every 10 seconds
+      # print 'alive message' every 60 seconds
+      # exit from loop if a signal is trapped
       @running = true
       i = 0
-      while @running do
+      while @running
         sleep 1
         i += 1
         check_services_status if (i % 10).zero?
@@ -112,18 +102,53 @@ module Karma
           i = 0
         end
       end
+
+      handle_traps
+      shutdown_poller
+      shutdown_karma
+    end
+
+    private ##############################
+
+    def init_and_start_poller
+      @poller = ::Thread.new do
+        loop do
+          poll_queue
+          Karma.logger.error { "#{__method__}: error during polling" }
+          sleep 10
+        end
+      end
+      Karma.logger.info { "#{__method__}: poller started" }
+    end
+
+    def shutdown_poller
+      @poller.kill
+    end
+
+    def init_traps
+      Signal.trap('INT') do
+        @trapped_signal = 'INT'
+        @running = false
+      end
+      Signal.trap('TERM') do
+        @trapped_signal = 'TERM'
+        @running = false
+      end
+    end
+
+    def handle_traps
       if @trapped_signal
         Karma.logger.info { "#{__method__}: got signal #{@trapped_signal}" }
         sleep 0.5
       end
-      @poller.kill
+    end
+
+    def shutdown_karma
       (0..Karma::Watchdog::SHUTDOWN_SEC - 1).each do |k|
         Karma.logger.info { "#{__method__}: shutting down... #{Karma::Watchdog::SHUTDOWN_SEC - k}" }
         sleep 1
       end
     end
-
-    private ##############################
 
     def ensure_service_instances_count(service)
       Karma::ConfigEngine::ConfigImporterExporter.safe_init_config(service)
