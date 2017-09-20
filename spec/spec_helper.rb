@@ -25,6 +25,8 @@ RSpec.configure do |config|
 
   config.color = true
   config.order = 'rand'
+  
+  config.wait_timeout = 15 # seconds
 
   config.before(:each) do
     Karma.logger = Logger.new(STDOUT)
