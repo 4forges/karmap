@@ -12,6 +12,8 @@ module Karma
     timeout_stop 30
 
     SHUTDOWN_SEC = 0
+    CHECK_SERVICE_STATUS_EVERY_SEC = 10
+    ONE_SECOND = 1
 
     attr_accessor :service_statuses
 
@@ -84,44 +86,47 @@ module Karma
       # startup instructions
       register_services # register all services to karma
       deregister_services # de-register all service no more present into the config
-      init_and_start_poller
+      start_queue_poller
       init_traps
 
       # main loop:
-      # check services status every 10 seconds
+      # check services status every CHECK_SERVICE_STATUS_EVERY_SEC (10) seconds
       # print 'alive message' every 60 seconds
       # exit from loop if a signal is trapped
       @running = true
-      i = 0
+      i = 1 # start from 1 to check services after 10 seconds, the first time we enter the loop
       while @running
-        sleep 1
-        i += 1
-        check_services_status if (i % 10).zero?
-        if (i % 60).zero?
-          Karma.logger.info { "#{__method__}: alive" }
-          i = 0
-        end
+        check_services_status if (i % CHECK_SERVICE_STATUS_EVERY_SEC).zero?
+        Karma.logger.info { "#{__method__}: alive" } if i.zero?
+        i = (i + 1) % 60
+        sleep ONE_SECOND
       end
 
       handle_traps
-      shutdown_poller
+      shutdown_queue_poller
       shutdown_karma
     end
 
     private ##############################
 
-    def init_and_start_poller
+    def start_queue_poller
       @poller = ::Thread.new do
         loop do
-          poll_queue
-          Karma.logger.error { "#{__method__}: error during polling" }
+          Karma.logger.info { "#{__method__}: started polling queue #{Karma::Queue.incoming_queue_url}" }
+          queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
+            body = JSON.parse(msg.body).deep_symbolize_keys
+            handle_message(body)
+          end
+          # if we are here, we are exited from the queue_client poll loop
+          # in this case, we wait 10 seconds and restart the loop
+          Karma.logger.error { "#{__method__}: error during polling... Wait 10 seconds and restart" }
           sleep 10
         end
       end
       Karma.logger.info { "#{__method__}: poller started" }
     end
 
-    def shutdown_poller
+    def shutdown_queue_poller
       @poller.kill
     end
 
@@ -175,14 +180,6 @@ module Karma
     def queue_client
       @@queue_client = Karma::Queue::Client.new if !defined?(@@queue_client)
       @@queue_client
-    end
-
-    def poll_queue
-      Karma.logger.info { "#{__method__}: started polling queue #{Karma::Queue.incoming_queue_url}" }
-      queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
-        body = JSON.parse(msg.body).deep_symbolize_keys
-        handle_message(body)
-      end
     end
 
     # Notifies the Karma server about the current host and all Karma::Service subclasses
