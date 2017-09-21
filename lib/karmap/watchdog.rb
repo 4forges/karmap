@@ -181,11 +181,11 @@ module Karma
       end
 
       # kill by cpu usage
+      @cpu_timelines ||= {}
       Karma.engine_instance.running_instances_for_service(service).each do |k, instance|
         pid = instance[:pid]
         process = Karma::System::Process.new(pid)
         percent_cpu = process.percent_cpu
-        @cpu_timelines ||= {}
         @cpu_timelines[k] ||= []
         @cpu_timelines[k].push(percent_cpu)
         @cpu_timelines[k] = @cpu_timelines[k][0..9]
