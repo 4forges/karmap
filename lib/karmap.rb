@@ -60,6 +60,17 @@ module Karma
       ENV['KARMA_IDENTIFIER']
     end
 
+    def service_classes
+      if !defined?(@@service_classes)
+        @@service_classes = Karma.services.map do |c|
+          klass = (Karma::Helpers.constantize(c) rescue nil)
+          klass.present? && klass <= Karma::Service ? klass : nil
+        end.compact
+        @@service_classes ||= []
+      end
+      @@service_classes
+    end
+    
     def init_logger
       ret_logger = nil
       if instance_identifier
@@ -155,6 +166,7 @@ module Karma
 end
 
 require 'karmap/engine'
+require 'karmap/system'
 require 'karmap/service'
 require 'karmap/watchdog'
 require 'karmap/version'

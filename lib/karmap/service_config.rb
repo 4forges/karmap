@@ -63,11 +63,11 @@ module Karma
       end
 
       def memory_max(val)
-        self.config_memory_max = val
+        self.config_memory_max = val.to_i rescue 0
       end
 
       def cpu_quota(val)
-        self.config_cpu_quota = val
+        self.config_cpu_quota = val.to_i rescue 0
       end
 
       def auto_start(val)
