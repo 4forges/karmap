@@ -182,15 +182,17 @@ module Karma
       end
 
       # kill by cpu usage
+      @cpu_timelines[service.to_s] ||= {}
+      service_cpu_timelines = {}
       Karma.engine_instance.running_instances_for_service(service).each do |k, instance|
         pid = instance[:pid]
         process = Karma::System::Process.new(pid)
         percent_cpu = process.percent_cpu
-        @cpu_timelines[k] ||= []
-        @cpu_timelines[k].unshift(percent_cpu)
-        @cpu_timelines[k] = @cpu_timelines[k][0..9]
-        cpu_test = service.config_cpu_quota > 0 && @cpu_timelines[k].select { |v| v > service.config_cpu_quota }.size > 5
-        history = "[" + @cpu_timelines[k].map { |x| "#{(service.config_cpu_quota > 0 && x > service.config_cpu_quota) ? '*' : ''}#{x.round(2)}%" }.join(", ") + "]"
+        service_cpu_timelines[pid] = @cpu_timelines[service.to_s][pid] || []
+        service_cpu_timelines[pid].unshift(percent_cpu)
+        service_cpu_timelines[pid] = service_cpu_timelines[pid][0..9]
+        cpu_test = service.config_cpu_quota > 0 && service_cpu_timelines[pid].select { |v| v > service.config_cpu_quota }.size > 5
+        history = "[" + service_cpu_timelines[pid].map { |x| "#{(service.config_cpu_quota > 0 && x > service.config_cpu_quota) ? '*' : ''}#{x.round(2)}%" }.join(", ") + "]"
         Karma.logger.info { "cpu out of bounds #{history}" }
         if cpu_test
           process.gracefully_stop
@@ -199,7 +201,7 @@ module Karma
           Karma.logger.info { "OK" }
         end
       end
-      @cpu_timelines = @cpu_timelines.slice(*Karma.engine_instance.running_instances_for_service(service).keys)
+      @cpu_timelines[service.to_s] = service_cpu_timelines
 
     end
 
