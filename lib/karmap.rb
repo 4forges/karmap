@@ -166,6 +166,13 @@ module Karma
 
 end
 
+class Logger
+  def format_message(severity, timestamp, progname, msg)
+    method_name = (caller[3][/`.*'/][1..-2] rescue 'method_name').truncate(15).ljust(15) 
+    "#{severity[0]}, [#{timestamp.strftime('%Y-%m-%d %H:%M:%S.%6N')} ##{Process.pid}], #{method_name}: #{msg}\n"
+  end
+end
+
 require 'karmap/engine'
 require 'karmap/system'
 require 'karmap/service'

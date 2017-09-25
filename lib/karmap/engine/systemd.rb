@@ -19,7 +19,8 @@ module Karma::Engine
     end
 
     def show_service_by_pid(pid)
-      service_status(service: pid)
+      #service_status(service: pid)
+      show_all_services.select{ |k, status| status.pid == pid}
     end
 
     def show_all_services
@@ -37,10 +38,49 @@ module Karma::Engine
     def show_enabled_services
       `systemctl --user list-unit-files | grep enabled`.split("\n").map{|s| s.split('@')[0]}
     end
+    
+    def wait_started(service, key, timeout)
+      Karma.logger.debug{ "#{__method__}: Enter" }
+      wait_test = false
+      ret = false
+      while wait_test == false
+        service_status = show_service(service)
+        wait_test = service_status[key].present? && service_status[key].status == 'running'
+        if !wait_test
+          Karma.logger.debug{ "#{__method__}: false -> #{service_status}" }
+          sleep 1
+        else
+          Karma.logger.debug{ "#{__method__}: true -> #{service_status}" }
+          ret = true
+        end
+      end
+      Karma.logger.debug{ "#{__method__}: Exit" }
+      ret
+    end
+
+    def wait_stopped(pid, key, timeout)
+      Karma.logger.debug{ "#{__method__}: Enter" }
+      wait_test = false
+      ret = false
+      while wait_test == false
+        service_status = show_service_by_pid(pid)
+        wait_test = service_status.empty?
+        if !wait_test
+          Karma.logger.debug{ "#{__method__}: false -> #{service_status}" }
+          sleep 1
+        else
+          Karma.logger.debug{ "#{__method__}: true -> #{service_status}" }
+          ret = true
+        end
+      end
+      Karma.logger.debug{ "#{__method__}: Exit" }
+      ret
+    end
 
     # starts the first available not running instance
-    def start_service(service)
-      Karma.logger.debug{ "#{__method__}: starting #{service.full_name}" }
+    def start_service(service, params = {})
+      params[:check] = true if params[:check].nil?
+      Karma.logger.debug{ "#{__method__}: starting #{service.full_name} with params: #{params.inspect}" }
       `systemctl --user reset-failed`
       running_instances = show_service(service).keys
       should_running_instances = (1..service.config_max_running).map { |p| instance_full_name(service, service.config_port + (p - 1)) }
@@ -48,7 +88,11 @@ module Karma::Engine
       if to_be_started_instance
         Karma.logger.info{ "#{__method__}: starting instance #{to_be_started_instance}" }
         `systemctl --user start #{to_be_started_instance}`
-        ret = to_be_started_instance
+        if params[:check]
+          ret = wait_started(service, to_be_started_instance, 5) ? to_be_started_instance : false
+        else
+          ret = to_be_started_instance
+        end
       else
         ret = false
       end
@@ -56,13 +100,25 @@ module Karma::Engine
     end
 
     def stop_service(pid, params = {})
-      # get instance by pid and stop it
+      params[:check] = true if params[:check].nil?
       Karma.logger.debug{ "#{__method__}: stopping #{pid}" }
-      `systemctl --user reset-failed`
-      status = show_service_by_pid(pid)
-      instance_name = status.keys[0]
-      Karma.logger.info{ "#{__method__}: stopping instance #{instance_name}" }
-      `systemctl --user stop #{instance_name}`
+      ret = false
+      begin
+        # get instance by pid and stop it
+        `systemctl --user reset-failed`
+        status = show_service_by_pid(pid)
+        to_be_stopped_instance = status.keys[0]
+        Karma.logger.info{ "#{__method__}: stopping instance #{to_be_stopped_instance} - #{status}" }
+        `systemctl --user stop #{to_be_stopped_instance}`
+        if params[:check]
+          ret = wait_stopped(pid, to_be_stopped_instance, 5) ? to_be_stopped_instance : false
+        else
+          ret = to_be_stopped_instance
+        end
+      rescue Exception => e
+        Karma.logger.error{ "#{__method__}: ERRORE!!!! #{e.message}" }
+      end
+      ret
     end
 
     def restart_service(pid, params = {})

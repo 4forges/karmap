@@ -10,6 +10,7 @@ describe Karma::Thread::ThreadPool do
       Karma.reset_engine_instance
       Karma.engine = 'systemd'
       Karma.config_engine = config_engine
+      allow(Karma.engine_instance).to receive(:running_instances_for_service).and_return({ "karma-spec-test-service@8899.service" => Karma::Engine::ServiceStatus.new(nil, 8899, nil, $$) })
       new_config = TestService.set_process_config({num_threads: 2})
       Karma::ConfigEngine::ConfigImporterExporter.export_config(TestService, new_config)
     end
@@ -22,6 +23,7 @@ describe Karma::Thread::ThreadPool do
 
     it 'spawns 2 threads and change at runtime' do
       service = TestService.new
+      allow(service).to receive(:notify_status).and_return(true)
       ::Thread.new do
         service.run
       end
