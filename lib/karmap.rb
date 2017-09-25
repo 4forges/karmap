@@ -155,12 +155,13 @@ module Karma
       # Reset the singleton class. Used in tests.
       @engine_instance = nil
     end
+
+    def error(message)
+      raise Karma::Exception.new(message)
+    end
   end
 
-  class Exception < ::Exception; end
-
-  def self.error(message)
-    raise Karma::Exception.new(message)
+  class Exception < ::Exception
   end
 
 end
