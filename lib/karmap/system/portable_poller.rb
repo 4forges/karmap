@@ -22,7 +22,6 @@ module Karma
       private
 
       def ps_int(keyword)
-        puts "ps -o #{keyword}= -p #{@pid}"
         `ps -o #{keyword}= -p #{@pid}`.to_i
       end
 

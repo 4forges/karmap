@@ -29,7 +29,13 @@ RSpec.configure do |config|
   config.wait_timeout = 15 # seconds
 
   config.before(:each) do
-    Karma.logger = Logger.new(STDOUT)
+    Karma.logger = Logger.new(
+      'spec/log/test.log',
+      Karma::LOGGER_SHIFT_AGE,
+      Karma::LOGGER_SHIFT_SIZE,
+      level: Logger::DEBUG,
+      progname: 'karma-spec'
+    )
     Karma.configuration do |config|
       config.env =                    'test'
       config.home_path =              ENV['TRAVIS_BUILD_DIR'] || '/home/extendi'
@@ -44,9 +50,11 @@ RSpec.configure do |config|
     end
   end
 
-  config.before(:each) do
-    FileUtils.rm_r(Karma.log_folder) rescue false
-    FileUtils.mkdir_p(Karma.log_folder)
+  config.before(:suite) do
+    puts "Clean log dir #{'spec/log'}"
+    FileUtils.rm_r('spec/log') rescue false
+    FileUtils.mkdir_p('spec/log')
+    sleep 1
   end
 
 end

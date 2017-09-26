@@ -41,40 +41,34 @@ module Karma::Engine
     
     def wait_started(service, key, timeout)
       Karma.logger.debug{ "#{__method__}: Enter" }
-      wait_test = false
-      ret = false
-      while wait_test == false
+      is_started = false
+      is_timedout = false
+      enter_time = Time.now
+      while !is_started && !is_timedout
         service_status = show_service(service)
-        wait_test = service_status[key].present? && service_status[key].status == 'running'
-        if !wait_test
-          Karma.logger.debug{ "#{__method__}: false -> #{service_status}" }
-          sleep 1
-        else
-          Karma.logger.debug{ "#{__method__}: true -> #{service_status}" }
-          ret = true
-        end
+        is_started = service_status[key].present? && service_status[key].status == 'running'
+        Karma.logger.debug{ "#{__method__}: is_started #{is_started} -> #{service_status}" }
+        sleep 1 if !is_started
+        is_timedout = (Time.now - enter_time) > timeout
       end
       Karma.logger.debug{ "#{__method__}: Exit" }
-      ret
+      is_started
     end
 
     def wait_stopped(pid, key, timeout)
       Karma.logger.debug{ "#{__method__}: Enter" }
-      wait_test = false
-      ret = false
-      while wait_test == false
+      is_stopped = false
+      is_timedout = false
+      enter_time = Time.now
+      while !is_stopped && !is_timedout
         service_status = show_service_by_pid(pid)
-        wait_test = service_status.empty?
-        if !wait_test
-          Karma.logger.debug{ "#{__method__}: false -> #{service_status}" }
-          sleep 1
-        else
-          Karma.logger.debug{ "#{__method__}: true -> #{service_status}" }
-          ret = true
-        end
+        is_stopped = service_status.empty?
+        Karma.logger.debug{ "#{__method__}: is_stopped #{is_stopped} -> #{service_status}" }
+        sleep 1 if !is_stopped
+        is_timedout = (Time.now - enter_time) > timeout
       end
       Karma.logger.debug{ "#{__method__}: Exit" }
-      ret
+      is_stopped
     end
 
     # starts the first available not running instance
@@ -204,6 +198,7 @@ module Karma::Engine
       Dir["#{location}/#{service.full_name}*.target.wants"].each do |file|
         clean_dir file
       end
+      reload
     end
 
     private ####################
@@ -227,6 +222,11 @@ module Karma::Engine
           v['Memory'],
           v['CPU'],
         )
+        if v['Memory'].nil? || v['CPU'].nil?
+          process = Karma::System::Process.new(v['Main PID'].to_i)
+          ret[k][5] = process.memory if v['Memory'].nil?
+          ret[k][6] = process.percent_cpu if v['CPU'].nil?
+        end
       end
       return ret
     end

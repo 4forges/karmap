@@ -36,13 +36,6 @@ module Karma
     end
     ##############################
 
-    # Utility method for getting a service class from an instance name
-    # ie. project-name-dummy-service -> DummyService
-    def self.service_class_from_name(name)
-      service_name = Karma::Helpers.classify(name.sub("#{Karma.project_name}-", ''))
-      return Karma::Helpers.constantize(service_name)
-    end
-
     def self.command
       "bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\""
     end
@@ -204,7 +197,7 @@ module Karma
         memory_usage = process.memory / 1.kilobyte # in megabytes
         Watchdog.logger.info { "instance #{k}: used memory: #{memory_usage}MB, allowed: #{service.config_memory_max}MB" }
         if service.config_memory_max.present? && memory_usage > service.config_memory_max
-          process.gracefully_stop
+          Watchdog.engine_instance.restart_service(pid, { service: service })
           Watchdog.logger.info { "instance #{k} STOPPED" }
         else
           Watchdog.logger.info { 'OK' }
@@ -229,7 +222,7 @@ module Karma
         history = service_cpu_timelines[pid].map { |x| t = service.config_cpu_quota > 0 && x > service.config_cpu_quota; "#{t ? '*' : ''}#{x.round(2)}%" }.join(", ")
         Watchdog.logger.info { "cpu out of bounds [#{history}]" }
         if cpu_test
-          process.gracefully_stop
+          Watchdog.engine_instance.restart_service(pid, { service: service })
           Watchdog.logger.info { "instance #{k} STOPPED" }
         else
           Watchdog.logger.info { 'OK' }
@@ -254,7 +247,7 @@ module Karma
       Watchdog.logger.info { "deregistering services..." }
       enabled_services_names = Watchdog.engine_instance.show_enabled_services.reject! { |name| name == Watchdog.full_name }
       if enabled_services_names.present?
-        to_be_cleaned_classes = enabled_services_names.map { |name| Watchdog.service_class_from_name(name) } - Karma.service_classes
+        to_be_cleaned_classes = enabled_services_names.map { |name| Karma::Helpers.service_class_from_name(name) } - Karma.service_classes
         to_be_cleaned_classes.each do |service_class|
           Watchdog.logger.info { "removing #{service_class}..." }
           Watchdog.engine_instance.show_service(service_class).values.map do |s|
@@ -341,7 +334,7 @@ module Karma
 
       service_statuses.each do |instance, status|
         if new_service_statuses[instance].present?
-          cls = Watchdog.service_class_from_name(status.name)
+          cls = Karma::Helpers.service_class_from_name(status.name)
           if new_service_statuses[instance].pid != status.pid
             # same service instance but different pid: notify server
             Watchdog.logger.info { "found restarted instance (#{instance}, old pid: #{status.pid}, new pid: #{new_service_statuses[instance].pid})" }

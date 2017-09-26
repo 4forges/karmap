@@ -1,6 +1,12 @@
 require './spec/karmap/models/test_service'
 
-Karma.logger = Logger.new(STDOUT)
+Karma.logger = Logger.new(
+  'spec/log/test.log',
+  Karma::LOGGER_SHIFT_AGE,
+  Karma::LOGGER_SHIFT_SIZE,
+  level: Logger::DEBUG,
+  progname: 'karma-spec'
+)
 Karma.configuration do |config|
   config.home_path =              ENV['TRAVIS_BUILD_DIR'] || '/home/extendi'
   config.project_name =           'karma-spec'

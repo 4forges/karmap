@@ -38,14 +38,23 @@ module Karma
 
   class << self
 
-    attr_writer :logger
+    def logger=(val)
+      @overridden = val
+      @instance_logger = val
+      Karma::Messages.logger = val
+      ::Thread.current[:logger] = val
+    end
 
     def logger
-      if ::Thread.current[:thread_index].present?
-        ::Thread.current[:logger] ||= init_thread_logger
-      else
-        instance_logger
-      end
+      (@overridden.present? rescue false) ? @overridden : (is_thread? ? thread_logger : instance_logger)
+    end
+    
+    def is_thread?
+      ::Thread.current[:thread_index].present?
+    end
+    
+    def thread_logger
+      ::Thread.current[:logger] ||= init_thread_logger
     end
 
     def instance_logger
@@ -159,6 +168,7 @@ module Karma
     def error(message)
       raise Karma::Exception.new(message)
     end
+
   end
 
   class Exception < ::Exception

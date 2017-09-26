@@ -4,21 +4,17 @@ require 'spec_helper'
 
 shared_examples 'messages' do |type|
   before(:each) do
-    puts "START BEFORE EACH"
     Karma.reset_engine_instance
     Karma.engine = type
     Karma.engine_instance.export_service(TestService)
-    puts "END BEFORE EACH"
   end
 
   after(:each) do
-    puts "START AFTER EACH"
     status = Karma.engine_instance.show_all_services
     status.values.each do |s|
       Karma.engine_instance.stop_service(s.pid)
     end
     Karma.engine_instance.remove_service(TestService)
-    puts "END AFTER EACH"
   end
 
   it 'check engine instance' do
