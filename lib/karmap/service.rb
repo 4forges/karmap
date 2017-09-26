@@ -80,20 +80,23 @@ module Karma
     end
 
     def self.version
+      ret = nil
       if Karma.version_file_path.present?
         if File.exists?(Karma.version_file_path)
           begin
             f = File.open(Karma.version_file_path)
-            return f.gets
+            ret =  f.gets
           ensure
+            ret = 'error reading file'
             f.close unless f.nil?
           end
         else
-          'file does not exists'
+          ret = 'file does not exists'
         end
       else
-        'no version set'
+        ret = 'no version set'
       end
+      return ret
     end
 
     def self.config_location
@@ -155,8 +158,8 @@ module Karma
       last_notified_at = nil
       while @running do
 
-        # notify queue each 5 sec
-        if last_notified_at.nil? || (Time.now - last_notified_at) > 5
+        # notify queue each 'self.class.notify_interval' sec (default 5 sec)
+        if last_notified_at.nil? || (Time.now - last_notified_at) > self.class.config_notify_interval
           notify_status
           last_notified_at = Time.now
         end

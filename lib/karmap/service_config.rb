@@ -3,7 +3,7 @@ module Karma
 
     def self.included(base)
 
-      base.class_attribute :config_min_running, :config_max_running, :config_memory_max, :config_cpu_quota, :config_auto_start, :config_auto_restart, :config_port, :config_num_threads, :config_log_level, :config_timeout_stop, :config_push_notifications
+      base.class_attribute :config_min_running, :config_max_running, :config_memory_max, :config_cpu_quota, :config_auto_start, :config_auto_restart, :config_port, :config_num_threads, :config_log_level, :config_timeout_stop, :config_push_notifications, :config_notify_interval
       base.extend(ClassMethods)
 
       ################################################
@@ -18,6 +18,7 @@ module Karma
       base.push_notifications(false)
       base.num_threads(1)
       base.log_level(:info)
+      base.notify_interval(5)
 
     end
 
@@ -89,6 +90,10 @@ module Karma
       def log_level(val)
         self.config_log_level = val
       end
+      
+      def notify_interval(val)
+        self.config_notify_interval = val.to_i
+      end
 
       #################################################
       # update config methods
@@ -98,7 +103,7 @@ module Karma
       # returns an hash with the complete class config hash
       def set_process_config(config)
         # note: port does not change
-        [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart, :push_notifications, :num_threads, :log_level].each do |k|
+        [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart, :push_notifications, :num_threads, :log_level, :notify_interval].each do |k|
           send(k, config[k]) if config.key?(k)
         end
         get_process_config
@@ -107,7 +112,7 @@ module Karma
       # returns an hash with the complete class config hash
       def get_process_config
         Hash.new.tap do |h|
-          [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart, :push_notifications, :num_threads, :log_level].each do |k|
+          [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart, :push_notifications, :num_threads, :log_level, :notify_interval].each do |k|
             h[k] = send("config_#{k}")
           end
         end
