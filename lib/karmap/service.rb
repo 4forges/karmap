@@ -86,8 +86,9 @@ module Karma
           begin
             f = File.open(Karma.version_file_path)
             ret =  f.gets
-          ensure
+          rescue ::Exception => e
             ret = 'error reading file'
+          ensure
             f.close unless f.nil?
           end
         else
