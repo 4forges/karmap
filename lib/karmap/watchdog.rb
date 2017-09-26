@@ -317,7 +317,7 @@ module Karma
     def check_services
       check_cpu = Time.now - @last_cpu_checked_at > CHECK_CPU_EVERY_SEC
       Karma.service_classes.each do |service_class|
-        Karma::ConfigEngine::ConfigImporterExporter.safe_init_config(service)
+        Karma::ConfigEngine::ConfigImporterExporter.safe_init_config(service_class)
         check_running_count_for_service(service_class)
         check_memory_usage_for_service(service_class)
         check_cpu_usage_for_service(service_class) if check_cpu
