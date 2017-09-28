@@ -34,7 +34,7 @@ module Karma
       Karma::ConfigEngine::ConfigImporterExporter.safe_init_config(self.class)
     end
     
-    def is_cpu_over_quota?(val)
+    def self.is_cpu_over_quota?(val)
       config_cpu_accounting? && val > config_cpu_quota
     end
 

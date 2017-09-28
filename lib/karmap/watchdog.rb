@@ -222,10 +222,10 @@ module Karma
         service_cpu_timelines[pid] = @cpu_timelines[service.to_s][pid] || []
         service_cpu_timelines[pid].unshift(percent_cpu)
         service_cpu_timelines[pid] = service_cpu_timelines[pid][0..4]
-        history = service_cpu_timelines[pid].map { |v| "#{is_cpu_over_quota?(v) ? '*' : ''}#{v.round(2)}%" }.join(", ")
+        history = service_cpu_timelines[pid].map { |v| "#{service.is_cpu_over_quota?(v) ? '*' : ''}#{v.round(2)}%" }.join(", ")
         Watchdog.logger.info { "cpu history: [#{history}]" }
         if service.config_cpu_accounting?
-          cpu_test = service_cpu_timelines[pid].map { |v| is_cpu_over_quota?(v) }.all?
+          cpu_test = service_cpu_timelines[pid].map { |v| service.is_cpu_over_quota?(v) }.all?
           if cpu_test
             Watchdog.logger.info { "instance #{k} will be restarted because CPU is over quota" }
             Watchdog.engine_instance.restart_service(pid, { service: service })
