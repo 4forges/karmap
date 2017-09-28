@@ -8,7 +8,7 @@ class MockService < Karma::Service
   max_running  1
   port         33100
   auto_restart false
-  memory_max   512
+  memory_max   '512M'
   cpu_quota    25
 
   def perform

@@ -77,7 +77,23 @@ module Karma
       end
 
       def memory_max(val)
-        safe_assign_val(__method__, val) { |val| val.nil? || (val.is_a?(Integer) && val > 0) }
+        safe_assign_val(__method__, val) do |val|
+          ret = false
+          if val.nil? || val.is_a?(Integer) && val > 0
+            ret = true
+          elsif val.is_a?(String)
+            segments = val.scan(/\A(\d+)(M|G)?\z/)[0]
+            if segments.nil?
+              ret = false
+            else
+              val = segments[0].to_i * (segments[1] == 'M' || segments[1].nil? ? 1 : 1.kilobyte)
+              ret = true
+            end
+          else
+            ret = false
+          end
+          [ret, val]
+        end
       end
 
       def cpu_quota(val)
@@ -112,9 +128,10 @@ module Karma
         begin
           method_name = 'config_' + property_name.to_s
           is_valid = true
-          is_valid = block.call(val) if block_given?
+          is_valid, new_val = block.call(val) if block_given?
+          new_val = val if new_val.nil?
           raise Exception.new("#{val.inspect} not permitted") if !is_valid
-          send(method_name + '=', val)
+          send(method_name + '=', new_val)
         rescue Exception => e
           Karma.logger.error { e.message }
           Karma.logger.error { "Unable to assign '#{val.inspect}' to #{property_name} -> #{send(method_name).inspect} used" }
