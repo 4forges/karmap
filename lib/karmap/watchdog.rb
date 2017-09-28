@@ -191,17 +191,21 @@ module Karma
     # checks memory usage for all running services and instances.
     # Kills instances that are over limit
     def check_memory_usage_for_service(service)
-      Watchdog.engine_instance.running_instances_for_service(service).each do |k, instance|
-        pid = instance[:pid]
-        process = Karma::System::Process.new(pid)
-        memory_usage = process.memory / 1.kilobyte # in megabytes
-        Watchdog.logger.info { "instance #{k}: used memory: #{memory_usage}MB, allowed: #{service.config_memory_max}MB" }
-        if service.config_memory_max.present? && memory_usage > service.config_memory_max
-          Watchdog.engine_instance.restart_service(pid, { service: service })
-          Watchdog.logger.info { "instance #{k} STOPPED" }
-        else
-          Watchdog.logger.info { 'OK' }
+      if service.config_memory_accounting?
+        Watchdog.engine_instance.running_instances_for_service(service).each do |k, instance|
+          pid = instance[:pid]
+          process = Karma::System::Process.new(pid)
+          memory_usage = process.memory.to_f * 1.kilobyte / 1.megabyte # in megabytes
+          Watchdog.logger.info { "instance #{k}: used memory: #{memory_usage}MB, allowed: #{service.config_memory_max}MB" }
+          if memory_usage > service.config_memory_max
+            Watchdog.logger.info { "instance #{k} will be restarted because MEM is over quota" }
+            Watchdog.engine_instance.restart_service(pid, { service: service })
+          else
+            Watchdog.logger.info { "instance #{k} is OK" }
+          end
         end
+      else
+        Watchdog.logger.info { "memory accounting disabled for service #{service}" }
       end
     end
 
@@ -218,14 +222,18 @@ module Karma
         service_cpu_timelines[pid] = @cpu_timelines[service.to_s][pid] || []
         service_cpu_timelines[pid].unshift(percent_cpu)
         service_cpu_timelines[pid] = service_cpu_timelines[pid][0..4]
-        cpu_test = service.config_cpu_quota > 0 && service_cpu_timelines[pid].map { |v| v > service.config_cpu_quota }.all?
-        history = service_cpu_timelines[pid].map { |x| t = service.config_cpu_quota > 0 && x > service.config_cpu_quota; "#{t ? '*' : ''}#{x.round(2)}%" }.join(", ")
-        Watchdog.logger.info { "cpu out of bounds [#{history}]" }
-        if cpu_test
-          Watchdog.engine_instance.restart_service(pid, { service: service })
-          Watchdog.logger.info { "instance #{k} STOPPED" }
+        history = service_cpu_timelines[pid].map { |v| "#{is_cpu_over_quota?(v) ? '*' : ''}#{v.round(2)}%" }.join(", ")
+        Watchdog.logger.info { "cpu history: [#{history}]" }
+        if service.config_cpu_accounting?
+          cpu_test = service_cpu_timelines[pid].map { |v| is_cpu_over_quota?(v) }.all?
+          if cpu_test
+            Watchdog.logger.info { "instance #{k} will be restarted because CPU is over quota" }
+            Watchdog.engine_instance.restart_service(pid, { service: service })
+          else
+            Watchdog.logger.info { "instance #{k} is OK" }
+          end
         else
-          Watchdog.logger.info { 'OK' }
+          Watchdog.logger.info { "CPU accounting disabled for service #{service}" }
         end
       end
       @cpu_timelines[service.to_s] = service_cpu_timelines

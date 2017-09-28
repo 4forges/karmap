@@ -21,7 +21,7 @@ StandardError=syslog
 SyslogIdentifier=%n
 KillMode=mixed
 TimeoutStopSec=<%= service.config_timeout_stop %>
-<% if service.config_cpu_quota > 0 %>CPUAccounting=true<% end %>
-<% if service.config_cpu_quota > 0 %>CPUQuota=<%= service.config_cpu_quota %>%<% end %>
-<% if service.config_memory_max > 0 %>MemoryAccounting=true<% end %>
-<% if service.config_memory_max > 0 %>MemoryLimit=<%= service.config_memory_max %>M<% end %>
+<% if service.config_cpu_accounting? %>CPUAccounting=true<% end %>
+<% if service.config_cpu_accounting? %>CPUQuota=<%= service.config_cpu_quota %>%<% end %>
+<% if service.config_memory_accounting? %>MemoryAccounting=true<% end %>
+<% if service.config_memory_accounting? %>MemoryLimit=<%= service.config_memory_max %>M<% end %>
