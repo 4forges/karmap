@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'aws-sdk', '~> 3'
+  spec.add_dependency 'aws-sdk'
   spec.add_dependency 'activesupport',  '~> 5.0'
   spec.add_dependency 'karma_messages', '~> 0.1'
   spec.add_dependency 'sys-proctable',  '~> 1.1'
