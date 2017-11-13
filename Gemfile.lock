@@ -3,7 +3,7 @@ PATH
   specs:
     karmap (0.9.1)
       activesupport (~> 5.0)
-      aws-sdk
+      aws-sdk (~> 3)
       karma_messages (~> 0.1)
       sys-proctable (~> 1.1)
 
