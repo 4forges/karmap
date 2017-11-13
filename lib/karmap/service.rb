@@ -21,7 +21,7 @@ module Karma
         Karma::ConfigEngine::File.new(default_config: self.get_process_config, options: { service_class: self, poll_intervall: 2.seconds })
       end
     end
-    
+
     def initialize
       @running = false
       @run_sleep_seconds = 1
@@ -34,6 +34,10 @@ module Karma
       Karma::ConfigEngine::ConfigImporterExporter.safe_init_config(self.class)
     end
     
+    def self.is_cpu_over_quota?(val)
+      config_cpu_accounting? && val > config_cpu_quota
+    end
+
     def performance
       # override this with custom performance calculation.
       # return a value between 0-100, where 100 is good and 0 is bad.
@@ -80,19 +84,32 @@ module Karma
     end
 
     def self.version
+      ret = nil
       if Karma.version_file_path.present?
         if File.exists?(Karma.version_file_path)
-          File.read(Karma.version_file_path)
+          begin
+            f = File.open(Karma.version_file_path)
+            ret =  f.gets
+          rescue ::Exception => e
+            ret = 'error reading file'
+          ensure
+            f.close unless f.nil?
+          end
         else
-          'file not exists'
+          ret = 'file does not exists'
         end
       else
-        'no version set'
+        ret = 'no version set'
       end
+      return ret
     end
 
     def self.config_location
       File.join(Karma.home_path, '.config', Karma.project_name)
+    end
+
+    def self.config_filename
+      "#{self.full_name}.config"
     end
 
     def self.register
@@ -146,8 +163,8 @@ module Karma
       last_notified_at = nil
       while @running do
 
-        # notify queue each 5 sec
-        if last_notified_at.nil? || (Time.now - last_notified_at) > 5
+        # notify queue each 'self.class.notify_interval' sec (default 5 sec)
+        if last_notified_at.nil? || (Time.now - last_notified_at) > self.class.config_notify_interval
           notify_status
           last_notified_at = Time.now
         end

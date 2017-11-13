@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 require 'karmap'
 require 'karmap/service_config'
 
 module Karma
-
+  # Watchdog class check running services
   class Watchdog
     include Karma::ServiceConfig
 
@@ -10,12 +12,29 @@ module Karma
     timeout_stop 30
 
     SHUTDOWN_SEC = 0
+    CHECK_SERVICE_STATUS_EVERY_SEC = 10
+    CHECK_CPU_EVERY_SEC = 60
+    ONE_SECOND = 1
 
-    attr_accessor :service_statuses
+    attr_accessor :service_statuses, :cpu_timelines
 
+    ### class attr accessors ###
     def self.config_location
-      File.join(Karma.home_path, '.config', Karma.project_name)
+      @@config_location ||= File.join(Karma.home_path, '.config', Karma.project_name)
     end
+    
+    def self.config_filename
+      @@config_filename ||= "#{full_name}.config"
+    end
+
+    def self.engine_instance
+      @@engine_instance ||= Karma.engine_instance
+    end
+
+    def self.logger
+      @@logger ||= Karma.logger
+    end
+    ##############################
 
     def self.command
       "bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\""
@@ -26,67 +45,106 @@ module Karma
     end
 
     def self.export
-      Karma.engine_instance.export_service(Karma::Watchdog)
-      status = Karma.engine_instance.show_service(Karma::Watchdog)
+      Watchdog.engine_instance.export_service(Watchdog)
+      status = Watchdog.engine_instance.show_service(Watchdog)
       if status.empty?
-        Karma.engine_instance.start_service(Karma::Watchdog)
+        Watchdog.engine_instance.start_service(Watchdog)
       else
-        Karma.engine_instance.restart_service(status.values[0].pid, { service: Karma::Watchdog })
+        Watchdog.engine_instance.restart_service(status.values[0].pid, { service: Watchdog })
       end
-    end
-
-    def self.service_classes
-      @@service_classes = (Karma.services.map do |c|
-        klass = (Karma::Helpers::constantize(c) rescue nil)
-        klass.present? && klass <= Karma::Service ? klass : nil
-      end.compact||[]) if !defined?(@@service_classes)
-      @@service_classes
     end
 
     # used by rake task :start_all
     def self.start_all_services
       # only call register on each service. Karma server will then push a ProcessConfigUpdateMessage that
       # will trigger the starting of instances.
-      self.service_classes.each{|s| s.register}
+      Karma.service_classes.each(&:register)
     end
 
     # used by rake task ::stop_all
     def self.stop_all_services
-      status = Karma.engine_instance.show_all_services
-      status.reject!{|k,v| v.name == Karma::Watchdog.full_name}
+      status = Watchdog.engine_instance.show_all_services
+      status.reject! { |_k, v| v.name == Watchdog.full_name }
       status.values.map(&:pid).each do |pid|
-        Karma.engine_instance.stop_service(pid)
+        Watchdog.engine_instance.stop_service(pid)
       end
     end
 
     # used by rake task ::stop_all
     def self.restart_all_services
-      status = Karma.engine_instance.show_all_services
-      status.reject!{|k,v| v.name == Karma::Watchdog.full_name}
+      status = Watchdog.engine_instance.show_all_services
+      status.reject! { |_k, v| v.name == Watchdog.full_name }
       status.values.map(&:pid).each do |pid|
-        Karma.engine_instance.restart_service(pid)
+        Watchdog.engine_instance.restart_service(pid)
       end
     end
 
     def initialize
-      Karma.logger.info{ "#{__method__}: environment is #{Karma.env}" }
+      Watchdog.logger.info { "environment is #{Karma.env}" }
       @service_statuses = {}
+      @cpu_timelines = {}
+      @last_cpu_checked_at = Time.now
+      @queue_client = Karma::Queue::Client.new
     end
 
     def run
-      Karma.logger.info{ "#{__method__}: enter" }
+      Watchdog.logger.info { "enter" }
       # startup instructions
       register_services # register all services to karma
       deregister_services # de-register all service no more present into the config
+      start_queue_poller
+      init_traps
 
+      # main loop:
+      # check services status every CHECK_SERVICE_STATUS_EVERY_SEC (10) seconds
+      # print 'alive message' every 60 seconds
+      # exit from loop if a signal is trapped
+      @running = true
+      while @running
+        limited_do(:check_services, CHECK_SERVICE_STATUS_EVERY_SEC) { check_services }
+        limited_do(:log_alive, CHECK_SERVICE_STATUS_EVERY_SEC) { Watchdog.logger.info { "alive" } }
+        sleep ONE_SECOND
+      end
+
+      handle_traps
+      shutdown_queue_poller
+      shutdown_karma
+    end
+
+    private ##############################
+
+    def limited_do(key, interval, &block)
+      @limited_procs_last_executions ||= {}
+      if @limited_procs_last_executions[key].nil? || ( Time.now - @limited_procs_last_executions[key] >= interval)
+        block.call
+        @limited_procs_last_executions[key] = Time.now
+      end
+    end
+
+    # Starts the queue poller loop
+    # The loop runs in a separated Thread
+    def start_queue_poller
       @poller = ::Thread.new do
         loop do
-          poll_queue
-          Karma.logger.error{ "#{__method__}: error during polling" }
+          Watchdog.logger.info { "started polling queue #{Karma::Queue.incoming_queue_url}" }
+          @queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
+            body = JSON.parse(msg.body).deep_symbolize_keys
+            handle_message(body)
+          end
+          # if we are here, we are exited from the queue_client poll loop
+          # in this case, we wait 10 seconds and restart the loop
+          Watchdog.logger.error { "error during polling... Wait 10 seconds and restart" }
           sleep 10
         end
       end
-      Karma.logger.info{ "#{__method__}: poller started" }
+      Watchdog.logger.info { "poller started" }
+    end
+
+    def shutdown_queue_poller
+      @poller.kill
+    end
+
+    def init_traps
       Signal.trap('INT') do
         @trapped_signal = 'INT'
         @running = false
@@ -95,210 +153,212 @@ module Karma
         @trapped_signal = 'TERM'
         @running = false
       end
-      @running = true
-      i = 0
-      while @running do
-        sleep 1
-        i += 1
-        if (i%10).zero?
-          check_services_status
-        end
-        if (i%60).zero?
-          Karma.logger.info{ "#{__method__}: alive" }
-          i = 0
-        end
-      end
+    end
+
+    def handle_traps
       if @trapped_signal
-        Karma.logger.info{ "#{__method__}: got signal #{@trapped_signal}" }
+        Watchdog.logger.info { "got signal #{@trapped_signal}" }
         sleep 0.5
       end
-      @poller.kill
-      (0..Karma::Watchdog::SHUTDOWN_SEC-1).each do |i|
-        Karma.logger.info{ "#{__method__}: shutting down... #{Karma::Watchdog::SHUTDOWN_SEC-i}" }
+    end
+
+    def shutdown_karma
+      (0..Watchdog::SHUTDOWN_SEC - 1).each do |k|
+        Watchdog.logger.info { "shutting down... #{Watchdog::SHUTDOWN_SEC - k}" }
         sleep 1
       end
     end
 
-    private ##############################
-
-    def ensure_service_instances_count(service)
-      Karma::ConfigEngine::ConfigImporterExporter.safe_init_config(service)
-
-      # stop instances
-      Karma.engine_instance.to_be_stopped_instances(service).each do |instance|
-        Karma.logger.debug{ "#{__method__}: stop instance #{instance.name}" }
-        Karma.engine_instance.stop_service(instance.pid)
-      end
-
+    # Checks running instances number and starts/stops instances if needed
+    def check_running_count_for_service(service)
       # start instances
       if service.config_auto_start
-        Karma.engine_instance.to_be_started_ports(service).each do |port|
-          Karma.logger.debug{ "#{__method__}: start new instance of #{service.name} on port #{port}" }
-          Karma.engine_instance.start_service(service)
+        Watchdog.engine_instance.to_be_started_ports(service).each do |port|
+          Watchdog.logger.debug { "start new instance of #{service.name} on port #{port}" }
+          Watchdog.engine_instance.start_service(service)
         end
       else
-        Karma.logger.debug{ "#{__method__}: autostart for service #{service.name} is false" }
+        Watchdog.logger.debug { "autostart for service #{service.name} is false" }
+      end
+
+      # stop instances
+      Watchdog.engine_instance.to_be_stopped_instances(service).each do |instance|
+        Watchdog.logger.debug { "stop instance #{instance.name}" }
+        Watchdog.engine_instance.stop_service(instance.pid)
       end
     end
 
-    include Karma::Helpers
-
-    def queue_client
-      @@queue_client = Karma::Queue::Client.new if !defined?(@@queue_client)
-      @@queue_client
+    # checks memory usage for all running services and instances.
+    # Kills instances that are over limit
+    def check_memory_usage_for_service(service)
+      if service.config_memory_accounting?
+        Watchdog.engine_instance.running_instances_for_service(service).each do |k, instance|
+          pid = instance[:pid]
+          process = Karma::System::Process.new(pid)
+          memory_usage = process.memory.to_f * 1.kilobyte / 1.megabyte # in megabytes
+          Watchdog.logger.info { "instance #{k}: used memory: #{memory_usage}MB, allowed: #{service.config_memory_max}MB" }
+          if memory_usage > service.config_memory_max
+            Watchdog.logger.info { "instance #{k} will be restarted because MEM is over quota" }
+            Watchdog.engine_instance.restart_service(pid, { service: service })
+          else
+            Watchdog.logger.info { "instance #{k} is OK" }
+          end
+        end
+      else
+        Watchdog.logger.info { "memory accounting disabled for service #{service}" }
+      end
     end
 
-    def poll_queue
-      Karma.logger.info{ "#{__method__}: started polling queue #{Karma::Queue.incoming_queue_url}" }
-      queue_client.poll(queue_url: Karma::Queue.incoming_queue_url) do |msg|
-        body = JSON.parse(msg.body).deep_symbolize_keys
-        handle_message(body)
+    # checks cpu usage for all running services and instances.
+    # Kills instances that are over limit for the last 5 times
+    def check_cpu_usage_for_service(service)
+      # kill by cpu usage
+      @cpu_timelines[service.to_s] ||= {}
+      service_cpu_timelines = {}
+      Watchdog.engine_instance.running_instances_for_service(service).each do |k, instance|
+        pid = instance[:pid]
+        process = Karma::System::Process.new(pid)
+        percent_cpu = process.percent_cpu
+        service_cpu_timelines[pid] = @cpu_timelines[service.to_s][pid] || []
+        service_cpu_timelines[pid].unshift(percent_cpu)
+        service_cpu_timelines[pid] = service_cpu_timelines[pid][0..4]
+        history = service_cpu_timelines[pid].map { |v| "#{service.is_cpu_over_quota?(v) ? '*' : ''}#{v.round(2)}%" }.join(", ")
+        Watchdog.logger.info { "cpu history: [#{history}]" }
+        if service.config_cpu_accounting?
+          cpu_test = service_cpu_timelines[pid].map { |v| service.is_cpu_over_quota?(v) }.all?
+          if cpu_test
+            Watchdog.logger.info { "instance #{k} will be restarted because CPU is over quota" }
+            Watchdog.engine_instance.restart_service(pid, { service: service })
+          else
+            Watchdog.logger.info { "instance #{k} is OK" }
+          end
+        else
+          Watchdog.logger.info { "CPU accounting disabled for service #{service}" }
+        end
       end
+      @cpu_timelines[service.to_s] = service_cpu_timelines
     end
 
     # Notifies the Karma server about the current host and all Karma::Service subclasses
     def register_services
-      Karma.logger.info{ "#{__method__}: registering services... #{self.class.service_classes.count} services found" }
-      Karma::Watchdog.service_classes.each do |cls|
-        Karma.logger.info{ "#{__method__}: registering #{cls.name}..." }
-        Karma.engine_instance.export_service(cls)
+      Watchdog.logger.info { "registering services... #{Karma.service_classes.count} services found" }
+      Karma.service_classes.each do |cls|
+        Watchdog.logger.info { "registering #{cls.name}..." }
+        Watchdog.engine_instance.export_service(cls)
         cls.register
       end
-      Karma.logger.info{ "#{__method__}: done registering services" }
+      Watchdog.logger.info { "done registering services" }
     end
 
+    # Checks enabled services, and deregister services that are not present anymore into the gemma config
     def deregister_services
-      Karma.logger.info{ "#{__method__}: deregistering services..." }
-      enabled_services_names = Karma.engine_instance.show_enabled_services
+      Watchdog.logger.info { "deregistering services..." }
+      enabled_services_names = Watchdog.engine_instance.show_enabled_services.reject! { |name| name == Watchdog.full_name }
       if enabled_services_names.present?
-        to_be_cleaned_classes = ( enabled_services_names - [self.full_name]).map{|name| service_class_from_name(name)} - Karma::Watchdog.service_classes
+        to_be_cleaned_classes = enabled_services_names.map { |name| Karma::Helpers.service_class_from_name(name) } - Karma.service_classes
         to_be_cleaned_classes.each do |service_class|
-          Karma.logger.info{ "#{__method__}: removing #{service_class}..." }
-          Karma.engine_instance.show_service(service_class).values.map do |s|
-            Karma.logger.info{ "#{__method__}: stopping pid #{s['pid']}..." }
-            Karma.engine_instance.stop_service(s['pid'])
+          Watchdog.logger.info { "removing #{service_class}..." }
+          Watchdog.engine_instance.show_service(service_class).values.map do |s|
+            Watchdog.logger.info { "stopping pid #{s['pid']}..." }
+            Watchdog.engine_instance.stop_service(s['pid'])
           end
-          sleep(1) until Karma.engine_instance.show_service(service_class).empty?
-          Karma.engine_instance.remove_service(service_class)
+          sleep(1) until Watchdog.engine_instance.show_service(service_class).empty?
+          Watchdog.engine_instance.remove_service(service_class)
         end
       else
-        Karma.logger.info{ "#{__method__}: no services to remove" }
+        Watchdog.logger.info { "no services to remove" }
       end
     end
 
     def handle_message(message)
-      begin
-        Karma.logger.info{ "#{__method__} INCOMING MESSAGE: #{message}" }
-        case message[:type]
-
-          when Karma::Messages::ProcessCommandMessage.name
-            # set the array of discovered services for validation
-            Karma::Messages::ProcessCommandMessage.services = Karma::Watchdog.service_classes.map(&:to_s)
-            msg = Karma::Messages::ProcessCommandMessage.new(message)
-            Karma.error(msg.errors) unless msg.valid?
-            handle_process_command(msg)
-
-          when Karma::Messages::ProcessConfigUpdateMessage.name
-            msg = Karma::Messages::ProcessConfigUpdateMessage.new(message)
-            Karma.error(msg.errors) unless msg.valid?
-            handle_process_config_update(msg)
-
-          else
-            Karma.error("Invalid message type: #{message[:type]}")
-        end
-      rescue ::Exception => e
-        Karma.logger.error{ "#{__method__}: error processing message - #{e.message}" }
+      Watchdog.logger.info { "#{__method__} INCOMING MESSAGE: #{message}" }
+      case message[:type]
+      when Karma::Messages::ProcessCommandMessage.name
+        # set the array of discovered services for validation
+        Karma::Messages::ProcessCommandMessage.services = Karma.service_classes.map(&:to_s)
+        msg = Karma::Messages::ProcessCommandMessage.new(message)
+        Karma.error(msg.errors) unless msg.valid?
+        handle_process_command(msg)
+      when Karma::Messages::ProcessConfigUpdateMessage.name
+        msg = Karma::Messages::ProcessConfigUpdateMessage.new(message)
+        Karma.error(msg.errors) unless msg.valid?
+        handle_process_config_update(msg)
+      else
+        Karma.error("Invalid message type: #{message[:type]}")
       end
+    rescue ::Exception => e
+      Watchdog.logger.error { "error processing message - #{e.message}" }
     end
 
     def handle_process_command(msg)
       case msg.command
-        when Karma::Messages::ProcessCommandMessage::COMMANDS[:start]
-          cls = Karma::Helpers::constantize(msg.service)
-          Karma.engine_instance.start_service(cls)
-        when Karma::Messages::ProcessCommandMessage::COMMANDS[:stop]
-          Karma.engine_instance.stop_service(msg.pid)
-        when Karma::Messages::ProcessCommandMessage::COMMANDS[:restart]
-          Karma.engine_instance.restart_service(msg.pid)
-        else
-          Karma.logger.warn{ "#{__method__}: invalid process command: #{msg.command} - #{msg.inspect}" }
-      end
-    end
-
-    def config_engine
-      @config_engine ||= self.class.new
-    end
-
-    def self.config_engine_class
-      case Karma.config_engine
-        when 'tcp'
-          Karma::ConfigEngine::SimpleTcp
-        when 'file'
-          Karma::ConfigEngine::File
+      when Karma::Messages::ProcessCommandMessage::COMMANDS[:start]
+        cls = Karma::Helpers.constantize(msg.service)
+        Watchdog.engine_instance.start_service(cls)
+      when Karma::Messages::ProcessCommandMessage::COMMANDS[:stop]
+        Watchdog.engine_instance.stop_service(msg.pid)
+      when Karma::Messages::ProcessCommandMessage::COMMANDS[:restart]
+        Watchdog.engine_instance.restart_service(msg.pid)
+      else
+        Watchdog.logger.warn { "invalid process command: #{msg.command} - #{msg.inspect}" }
       end
     end
 
     def handle_process_config_update(msg)
-      cls = Karma::Helpers::constantize(msg.service)
-      new_config = msg.to_config
+      cls = Karma::Helpers.constantize(msg.service)
       old_config = cls.read_config
+      new_config = msg.to_config
 
       if new_config == old_config
         # no changes in configuration
-        Karma.logger.info{ "#{__method__}: config not changed" }
+        Watchdog.logger.info { "config not changed" }
 
       else
         # export new configuration
         Karma::ConfigEngine::ConfigImporterExporter.export_config(cls, new_config)
-        Karma.engine_instance.export_service(cls)
-        ensure_service_instances_count(cls)
-        self.config_engine_class.send_config(cls)
+        Watchdog.engine_instance.export_service(cls)
+        check_running_count_for_service(cls)
+        Karma.config_engine_class.send_config(cls)
       end
     end
 
-    def check_services_status
-      new_service_statuses = Karma.engine_instance.show_all_services
-      new_service_statuses.reject!{|k,v| v.name == self.full_name}
-
-      Karma::Watchdog.service_classes.each do |service_class|
-        ensure_service_instances_count(service_class)
+    def check_services
+      check_cpu = Time.now - @last_cpu_checked_at > CHECK_CPU_EVERY_SEC
+      Karma.service_classes.each do |service_class|
+        Karma::ConfigEngine::ConfigImporterExporter.safe_init_config(service_class)
+        check_running_count_for_service(service_class)
+        check_memory_usage_for_service(service_class)
+        check_cpu_usage_for_service(service_class) if check_cpu
       end
-      sleep 1
+      @last_cpu_checked_at = Time.now if check_cpu # updates last_cpu_checked_at
+      sync_services_statuses
+    end
 
-      new_running_instances = new_service_statuses.select{|i,s| s.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}
-      Karma.logger.debug{ "#{__method__}: currently #{new_running_instances.size} running instances" }
-      Karma.logger.debug{ "#{__method__}: #{new_running_instances.group_by{|i,s| s.name}.map{|i,g| "#{i}: #{g.size}"}.join(', ')}"}
+    def sync_services_statuses
+      new_service_statuses = Watchdog.engine_instance.show_all_services.reject! { |_k, v| v.name == Watchdog.full_name }
+      new_running_instances = new_service_statuses.select { |_i, s| s.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running] }
+      Watchdog.logger.debug { "currently #{new_running_instances.size} running instances" }
+      Watchdog.logger.debug { "#{new_running_instances.group_by { |_i, s| s.name }.map { |i, g| "#{i}: #{g.size}" }.join(', ')}" }
 
       service_statuses.each do |instance, status|
         if new_service_statuses[instance].present?
+          cls = Karma::Helpers.service_class_from_name(status.name)
           if new_service_statuses[instance].pid != status.pid
             # same service instance but different pid: notify server
-            Karma.logger.info{ "#{__method__}: found restarted instance (#{instance}, old pid: #{status.pid}, new pid: #{new_service_statuses[instance].pid})" }
-            cls = service_class_from_name(status.name)
-            cls.notify_status(pid: status.pid, params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]})
+            Watchdog.logger.info { "found restarted instance (#{instance}, old pid: #{status.pid}, new pid: #{new_service_statuses[instance].pid})" }
+            cls.notify_status(pid: status.pid, params: { status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead] })
           elsif new_service_statuses[instance].status != status.status
             # service instance with changed status: notify server
-            Karma.logger.info{ "#{__method__}: found instance with changed state (#{instance}, was: #{status.status}, now: #{new_service_statuses[instance].status})" }
-            cls = service_class_from_name(status.name)
+            Watchdog.logger.info { "found instance with changed state (#{instance}, was: #{status.status}, now: #{new_service_statuses[instance].status})" }
             cls.notify_status(pid: status.pid)
           end
         else
           # service instance disappeared for some reason: notify server
-          Karma.logger.info{ "#{__method__}: found missing instance (#{instance})" }
-          cls = service_class_from_name(status.name)
-          cls.notify_status(pid: status.pid, params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]})
+          Watchdog.logger.info { "found missing instance (#{instance})" }
+          cls.notify_status(pid: status.pid, params: { status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead] })
         end
       end
       @service_statuses = new_service_statuses
     end
-
-    # Utility method for getting a service class from an instance name
-    # ie. project-name-dummy-service -> DummyService
-    def service_class_from_name(name)
-      service_name = Karma::Helpers::classify(name.sub("#{Karma.project_name}-", ''))
-      return Karma::Helpers::constantize(service_name)
-    end
-
   end
-
 end

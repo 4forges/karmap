@@ -38,14 +38,23 @@ module Karma
 
   class << self
 
-    attr_writer :logger
+    def logger=(val)
+      @overridden = val
+      @instance_logger = val
+      Karma::Messages.logger = val
+      ::Thread.current[:logger] = val
+    end
 
     def logger
-      if ::Thread.current[:thread_index].present?
-        ::Thread.current[:logger] ||= init_thread_logger
-      else
-        instance_logger
-      end
+      (@overridden.present? rescue false) ? @overridden : (is_thread? ? thread_logger : instance_logger)
+    end
+    
+    def is_thread?
+      ::Thread.current[:thread_index].present?
+    end
+    
+    def thread_logger
+      ::Thread.current[:logger] ||= init_thread_logger
     end
 
     def instance_logger
@@ -60,6 +69,17 @@ module Karma
       ENV['KARMA_IDENTIFIER']
     end
 
+    def service_classes
+      if !defined?(@@service_classes)
+        @@service_classes = Karma.services.map do |c|
+          klass = (Karma::Helpers.constantize(c) rescue nil)
+          klass.present? && klass <= Karma::Service ? klass : nil
+        end.compact
+        @@service_classes ||= []
+      end
+      @@service_classes
+    end
+    
     def init_logger
       ret_logger = nil
       if instance_identifier
@@ -144,17 +164,27 @@ module Karma
       # Reset the singleton class. Used in tests.
       @engine_instance = nil
     end
+
+    def error(message)
+      raise Karma::Exception.new(message)
+    end
+
   end
 
-  class Exception < ::Exception; end
-
-  def self.error(message)
-    raise Karma::Exception.new(message)
+  class Exception < ::Exception
   end
 
 end
 
+class Logger
+  def format_message(severity, timestamp, progname, msg)
+    method_name = (caller[3][/`.*'/][1..-2] rescue 'method_name').truncate(15).ljust(15) 
+    "#{severity[0]}, [#{timestamp.strftime('%Y-%m-%d %H:%M:%S.%6N')} ##{Process.pid}], #{method_name}: #{msg}\n"
+  end
+end
+
 require 'karmap/engine'
+require 'karmap/system'
 require 'karmap/service'
 require 'karmap/watchdog'
 require 'karmap/version'

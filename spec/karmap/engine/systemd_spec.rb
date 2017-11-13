@@ -137,7 +137,6 @@ describe Karma::Engine::Systemd do
       status = Karma.engine_instance.show_all_services
       status.values.each do |s|
         Karma.engine_instance.stop_service(s.pid)
-        sleep(2)
       end
     end
     after(:each) { Karma.engine_instance.remove_service(TestService) }
@@ -148,7 +147,6 @@ describe Karma::Engine::Systemd do
 
     it 'engine starts service instance' do
       Karma.engine_instance.start_service(TestService)
-      wait_for {Karma.engine_instance.show_service(TestService)}.to_not be_empty
       status = Karma.engine_instance.show_service(TestService)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karma-spec-test-service@33000.service')
@@ -161,7 +159,6 @@ describe Karma::Engine::Systemd do
 
     it 'engine stops service instance' do
       Karma.engine_instance.start_service(TestService)
-      wait_for {Karma.engine_instance.show_service(TestService)}.to_not be_empty
       status = Karma.engine_instance.show_service(TestService)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karma-spec-test-service@33000.service')
@@ -171,7 +168,6 @@ describe Karma::Engine::Systemd do
       pid = status.values[0].pid
 
       Karma.engine_instance.stop_service(pid)
-      wait_for{Karma.engine_instance.show_service(TestService)}.to be_empty
       status = Karma.engine_instance.show_service(TestService)
       expect(status.size).to eq(0)
       expect(TestService.running_instances_count).to eq(0)
@@ -179,7 +175,6 @@ describe Karma::Engine::Systemd do
 
     it 'engine restarts service instance' do
       Karma.engine_instance.start_service(TestService)
-      wait_for {Karma.engine_instance.show_service(TestService)}.to_not be_empty
       status = Karma.engine_instance.show_service(TestService)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karma-spec-test-service@33000.service')
@@ -189,7 +184,6 @@ describe Karma::Engine::Systemd do
       old_pid = status.values[0].pid
 
       Karma.engine_instance.restart_service(old_pid)
-      wait_for {Karma.engine_instance.show_service(TestService)}.to_not be_empty
       status = Karma.engine_instance.show_service(TestService)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karma-spec-test-service@33000.service')
@@ -203,7 +197,6 @@ describe Karma::Engine::Systemd do
 
     it 'engine shows service log' do
       Karma.engine_instance.start_service(TestService)
-      wait_for {Karma.engine_instance.show_service(TestService)}.to_not be_empty
       log = Karma.engine_instance.show_service_log(TestService)
       expect(log.size).to be > 1
     end

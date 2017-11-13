@@ -82,6 +82,8 @@ module Karma::Engine
           service: service.demodulized_name,
           pid: status.values[0].pid,
           status: status.values[0].status,
+          cpu: status.values[0].cpu,
+          memory: status.values[0].memory,
           active_threads: params[:active_threads],
           execution_time: params[:execution_time],
           performance_execution_time: params[:performance_execution_time],

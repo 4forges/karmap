@@ -8,6 +8,10 @@ module Karma::Engine
     def location
       "#{Karma.home_path}/.config/systemd/user"
     end
+    
+    def instance_full_name(service, port)
+      "#{service.full_name}@#{port}.service"
+    end
 
     def show_service(service)
       # note: does not show dead units
@@ -15,7 +19,8 @@ module Karma::Engine
     end
 
     def show_service_by_pid(pid)
-      service_status(service: pid)
+      #service_status(service: pid)
+      show_all_services.select{ |k, status| status.pid == pid}
     end
 
     def show_all_services
@@ -33,31 +38,81 @@ module Karma::Engine
     def show_enabled_services
       `systemctl --user list-unit-files | grep enabled`.split("\n").map{|s| s.split('@')[0]}
     end
-
-    def start_service(service)
-      # get first stopped instance name and start it
-      Karma.logger.debug{ "#{__method__}: starting #{service.full_name}" }
-      `systemctl --user reset-failed`
-      status = show_service(service)
-      (1..service.config_max_running).each do |i|
-        instance_name = "#{service.full_name}@#{service.config_port+(i-1)}.service"
-        if status[instance_name].nil?
-          Karma.logger.info{ "#{__method__}: starting instance #{instance_name}" }
-          `systemctl --user start #{instance_name}`
-          return instance_name
-        end
+    
+    def wait_started(service, key, timeout)
+      Karma.logger.debug{ "#{__method__}: Enter" }
+      is_started = false
+      is_timedout = false
+      enter_time = Time.now
+      while !is_started && !is_timedout
+        service_status = show_service(service)
+        is_started = service_status[key].present? && service_status[key].status == 'running'
+        Karma.logger.debug{ "#{__method__}: is_started #{is_started} -> #{service_status}" }
+        sleep 1 if !is_started
+        is_timedout = (Time.now - enter_time) > timeout
       end
-      return false
+      Karma.logger.debug{ "#{__method__}: Exit" }
+      is_started
+    end
+
+    def wait_stopped(pid, key, timeout)
+      Karma.logger.debug{ "#{__method__}: Enter" }
+      is_stopped = false
+      is_timedout = false
+      enter_time = Time.now
+      while !is_stopped && !is_timedout
+        service_status = show_service_by_pid(pid)
+        is_stopped = service_status.empty?
+        Karma.logger.debug{ "#{__method__}: is_stopped #{is_stopped} -> #{service_status}" }
+        sleep 1 if !is_stopped
+        is_timedout = (Time.now - enter_time) > timeout
+      end
+      Karma.logger.debug{ "#{__method__}: Exit" }
+      is_stopped
+    end
+
+    # starts the first available not running instance
+    def start_service(service, params = {})
+      params[:check] = true if params[:check].nil?
+      Karma.logger.debug{ "#{__method__}: starting #{service.full_name} with params: #{params.inspect}" }
+      `systemctl --user reset-failed`
+      running_instances = show_service(service).keys
+      should_running_instances = (1..service.config_max_running).map { |p| instance_full_name(service, service.config_port + (p - 1)) }
+      to_be_started_instance = (should_running_instances - running_instances).first
+      if to_be_started_instance
+        Karma.logger.info{ "#{__method__}: starting instance #{to_be_started_instance}" }
+        `systemctl --user start #{to_be_started_instance}`
+        if params[:check]
+          ret = wait_started(service, to_be_started_instance, 5) ? to_be_started_instance : false
+        else
+          ret = to_be_started_instance
+        end
+      else
+        ret = false
+      end
+      return ret
     end
 
     def stop_service(pid, params = {})
-      # get instance by pid and stop it
+      params[:check] = true if params[:check].nil?
       Karma.logger.debug{ "#{__method__}: stopping #{pid}" }
-      `systemctl --user reset-failed`
-      status = show_service_by_pid(pid)
-      instance_name = status.keys[0]
-      Karma.logger.info{ "#{__method__}: stopping instance #{instance_name}" }
-      `systemctl --user stop #{instance_name}`
+      ret = false
+      begin
+        # get instance by pid and stop it
+        `systemctl --user reset-failed`
+        status = show_service_by_pid(pid)
+        to_be_stopped_instance = status.keys[0]
+        Karma.logger.info{ "#{__method__}: stopping instance #{to_be_stopped_instance} - #{status}" }
+        `systemctl --user stop #{to_be_stopped_instance}`
+        if params[:check]
+          ret = wait_stopped(pid, to_be_stopped_instance, 5) ? to_be_stopped_instance : false
+        else
+          ret = to_be_stopped_instance
+        end
+      rescue Exception => e
+        Karma.logger.error{ "#{__method__}: ERRORE!!!! #{e.message}" }
+      end
+      ret
     end
 
     def restart_service(pid, params = {})
@@ -107,7 +162,7 @@ module Karma::Engine
       # check if there are less instances than max, and create if needed
       elsif instances.size < max
         (instances.size+1..max)
-          .map{ |num| "#{service.full_name}@#{service.config_port+(num-1)}.service" }
+          .map{ |num| instance_full_name(service, service.config_port + (num - 1)) }
           .each do |instance_name|
           create_symlink("#{instances_dir}/#{instance_name}", "../#{service_fn}") rescue Errno::EEXIST
         end
@@ -124,7 +179,7 @@ module Karma::Engine
       reload
 
       if service == Karma::Watchdog
-        instance_name = "#{service.full_name}@#{Karma.watchdog_port}.service"
+        instance_name =  instance_full_name(Karma::Watchdog, Karma.watchdog_port)
         `systemctl enable --user #{instance_name}`
       end
 
@@ -143,6 +198,7 @@ module Karma::Engine
       Dir["#{location}/#{service.full_name}*.target.wants"].each do |file|
         clean_dir file
       end
+      reload
     end
 
     private ####################
@@ -166,6 +222,11 @@ module Karma::Engine
           v['Memory'],
           v['CPU'],
         )
+        if v['Memory'].nil? || v['CPU'].nil?
+          process = Karma::System::Process.new(v['Main PID'].to_i)
+          ret[k][5] = process.memory if v['Memory'].nil?
+          ret[k][6] = process.percent_cpu if v['CPU'].nil?
+        end
       end
       return ret
     end

@@ -51,4 +51,12 @@ module Karma::Helpers
     end
     constant
   end
+
+  # Utility method for getting a service class from an instance name
+  # ie. project-name-dummy-service -> DummyService
+  def self.service_class_from_name(name)
+    service_name = classify(name.sub("#{Karma.project_name}-", ''))
+    return constantize(service_name)
+  end
+
 end
