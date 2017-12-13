@@ -53,6 +53,9 @@ vboxmanage startvm KarmaP --type headless
 ssh -p 2222 extendi@localhost
 (password: extendi1)
 cd /media/sf_shared
+
+(after running tests)
+vboxmanage controlvm KarmaP poweroff 
 ```
 
 ## License

@@ -1,5 +1,5 @@
 require 'socket'
-require 'aws-sdk'
+require 'aws-sdk-sqs'
 require 'karmap/queue'
 
 module Karma::Queue
