@@ -29,12 +29,11 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_runtime_dependency 'aws-sdk-sqs', '~> 1'
-  spec.add_runtime_dependency 'activesupport',  '~> 5.0'
+  spec.add_runtime_dependency 'activesupport', '>= 5'
   spec.add_runtime_dependency 'karma_messages', '~> 0.1'
   spec.add_runtime_dependency 'sys-proctable',  '~> 1.1'
 
 
-  spec.add_development_dependency 'bundler', '~> 1.13'
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'rspec-wait'
