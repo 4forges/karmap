@@ -22,7 +22,7 @@ module Karma
     def self.config_location
       @@config_location ||= File.join(Karma.home_path, '.config', Karma.project_name)
     end
-    
+
     def self.config_filename
       @@config_filename ||= "#{full_name}.config"
     end
@@ -50,7 +50,7 @@ module Karma
       if status.empty?
         Watchdog.engine_instance.start_service(Watchdog)
       else
-        Watchdog.engine_instance.restart_service(status.values[0].pid, { service: Watchdog })
+        Watchdog.engine_instance.restart_service(status.values[0].pid, service: Watchdog)
       end
     end
 
@@ -88,7 +88,7 @@ module Karma
     end
 
     def run
-      Watchdog.logger.info { "enter" }
+      Watchdog.logger.info { 'enter' }
       # startup instructions
       register_services # register all services to karma
       deregister_services # de-register all service no more present into the config
@@ -102,7 +102,7 @@ module Karma
       @running = true
       while @running
         limited_do(:check_services, CHECK_SERVICE_STATUS_EVERY_SEC) { check_services }
-        limited_do(:log_alive, CHECK_SERVICE_STATUS_EVERY_SEC) { Watchdog.logger.info { "alive" } }
+        limited_do(:log_alive, CHECK_SERVICE_STATUS_EVERY_SEC) { Watchdog.logger.info { 'alive' } }
         sleep ONE_SECOND
       end
 
@@ -115,7 +115,7 @@ module Karma
 
     def limited_do(key, interval, &block)
       @limited_procs_last_executions ||= {}
-      if @limited_procs_last_executions[key].nil? || ( Time.now - @limited_procs_last_executions[key] >= interval)
+      if @limited_procs_last_executions[key].nil? || (Time.now - @limited_procs_last_executions[key] >= interval)
         block.call
         @limited_procs_last_executions[key] = Time.now
       end
@@ -133,11 +133,11 @@ module Karma
           end
           # if we are here, we are exited from the queue_client poll loop
           # in this case, we wait 10 seconds and restart the loop
-          Watchdog.logger.error { "error during polling... Wait 10 seconds and restart" }
+          Watchdog.logger.error { 'error during polling... Wait 10 seconds and restart' }
           sleep 10
         end
       end
-      Watchdog.logger.info { "poller started" }
+      Watchdog.logger.info { 'poller started' }
     end
 
     def shutdown_queue_poller
@@ -199,7 +199,7 @@ module Karma
           Watchdog.logger.info { "instance #{k}: used memory: #{memory_usage}MB, allowed: #{service.config_memory_max}MB" }
           if memory_usage > service.config_memory_max
             Watchdog.logger.info { "instance #{k} will be restarted because MEM is over quota" }
-            Watchdog.engine_instance.restart_service(pid, { service: service })
+            Watchdog.engine_instance.restart_service(pid, service: service)
           else
             Watchdog.logger.info { "instance #{k} is OK" }
           end
@@ -253,7 +253,7 @@ module Karma
     # Checks enabled services, and deregister services that are not present anymore into the gemma config
     def deregister_services
       Watchdog.logger.info { "deregistering services..." }
-      enabled_services_names = Watchdog.engine_instance.show_enabled_services.reject! { |name| name == Watchdog.full_name }
+      enabled_services_names = Watchdog.engine_instance.show_enabled_services&.reject! { |name| name == Watchdog.full_name }
       if enabled_services_names.present?
         to_be_cleaned_classes = enabled_services_names.map { |name| Karma::Helpers.service_class_from_name(name) } - Karma.service_classes
         to_be_cleaned_classes.each do |service_class|
@@ -311,7 +311,7 @@ module Karma
 
       if new_config == old_config
         # no changes in configuration
-        Watchdog.logger.info { "config not changed" }
+        Watchdog.logger.info { 'config not changed' }
 
       else
         # export new configuration
@@ -335,7 +335,8 @@ module Karma
     end
 
     def sync_services_statuses
-      new_service_statuses = Watchdog.engine_instance.show_all_services.reject! { |_k, v| v.name == Watchdog.full_name }
+      Watchdog.logger.debug { 'sync_services_statuses' }
+      new_service_statuses = Watchdog.engine_instance.show_all_services.reject! { |_k, v| v.name == Watchdog.full_name } || []
       new_running_instances = new_service_statuses.select { |_i, s| s.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running] }
       Watchdog.logger.debug { "currently #{new_running_instances.size} running instances" }
       Watchdog.logger.debug { "#{new_running_instances.group_by { |_i, s| s.name }.map { |i, g| "#{i}: #{g.size}" }.join(', ')}" }

@@ -10,7 +10,7 @@ module Karma::Engine
     def location
       nil # override (engine dependant)
     end
-    
+
     def project_name
       Karma.project_name
     end
@@ -30,7 +30,7 @@ module Karma::Engine
     def show_all_services
       # abstract
     end
-    
+
     def show_enabled_services
       # abstract
       nil
@@ -92,7 +92,7 @@ module Karma::Engine
         attrs[:status] = params[:status] if params[:status].present?
         attrs[:current_version] = params[:current_version] if params[:current_version].present?
       else
-        Karma.logger.warn{ "#{__method__}: cannot find status for service #{service.name} (#{pid})" }
+        Karma.logger.warn { "#{__method__}: cannot find status for service #{service.name} (#{pid})" }
         attrs = {
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
@@ -101,20 +101,22 @@ module Karma::Engine
           status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]
         }
       end
-      return Karma::Messages::ProcessStatusUpdateMessage.new(attrs)
+      Karma::Messages::ProcessStatusUpdateMessage.new(attrs)
     end
 
     def running_instances_for_service(service)
-      show_service(service).select{|k, v| v.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]}
+      show_service(service).select do |_k, v|
+        v.status == Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]
+      end
     end
 
     def to_be_stopped_instances(service)
-      running_instances = running_instances_for_service(service) #keys: [:pid, :full_name, :port]
-      running_ports = running_instances.values.map{ |i| i.port.to_i }
-      Karma.logger.debug{ "#{__method__}: #{running_ports.size} running instances of #{service.name}" }
+      running_instances = running_instances_for_service(service) # keys: [:pid, :full_name, :port]
+      running_ports = running_instances.values.map { |i| i.port.to_i }
+      Karma.logger.debug { "#{__method__}: #{running_ports.size} running instances of #{service.name}" }
 
       to_be_stopped_ports = running_ports - service.max_ports
-      Karma.logger.debug{ "#{__method__}: #{to_be_stopped_ports.size} to be stopped" }
+      Karma.logger.debug { "#{__method__}: #{to_be_stopped_ports.size} to be stopped" }
       running_instances.values.select do |i|
         to_be_stopped_ports.include?(i.port)
       end
@@ -132,11 +134,11 @@ module Karma::Engine
 
     def free_ports(service)
       running_instances = running_instances_for_service(service) #keys: [:pid, :full_name, :port]
-      running_ports = running_instances.values.map{ |i| i.port.to_i }
-      Karma.logger.debug{ "#{__method__}: #{running_ports.size} running instances of #{service.name}" }
+      running_ports = running_instances.values.map { |i| i.port.to_i }
+      Karma.logger.debug { "#{__method__}: #{running_ports.size} running instances of #{service.name}" }
 
       free_ports = service.max_ports - running_ports
-      Karma.logger.debug{ "#{__method__}: #{free_ports.size} free ports" }
+      Karma.logger.debug { "#{__method__}: #{free_ports.size} free ports" }
       free_ports
     end
 
@@ -194,15 +196,13 @@ module Karma::Engine
 
     def write_file(filename, contents)
       filename = File.join(location, filename) unless Pathname.new(filename).absolute?
-      Karma::FileHelper::write_file(filename, contents)
+      Karma::FileHelper.write_file(filename, contents)
     end
 
     def read_file(filename)
-      Karma.logger.debug{ "reading: #{filename}" }
+      Karma.logger.debug { "reading: #{filename}" }
       filename = File.join(location, filename) unless Pathname.new(filename).absolute?
-      return File.read(filename)
+      File.read(filename)
     end
-
   end
-
 end

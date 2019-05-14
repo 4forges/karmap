@@ -4,11 +4,10 @@ require 'karmap/engine/parser/systemd_parser'
 module Karma::Engine
 
   class Systemd < Base
-
     def location
       "#{Karma.home_path}/.config/systemd/user"
     end
-    
+
     def instance_full_name(service, port)
       "#{service.full_name}@#{port}.service"
     end
@@ -19,8 +18,8 @@ module Karma::Engine
     end
 
     def show_service_by_pid(pid)
-      #service_status(service: pid)
-      show_all_services.select{ |k, status| status.pid == pid}
+      # service_status(service: pid)
+      show_all_services.select { |_k, status| status.pid == pid}
     end
 
     def show_all_services
@@ -38,7 +37,7 @@ module Karma::Engine
     def show_enabled_services
       `systemctl --user list-unit-files | grep enabled`.split("\n").map{|s| s.split('@')[0]}
     end
-    
+
     def wait_started(service, key, timeout)
       Karma.logger.debug{ "#{__method__}: Enter" }
       is_started = false
@@ -47,11 +46,11 @@ module Karma::Engine
       while !is_started && !is_timedout
         service_status = show_service(service)
         is_started = service_status[key].present? && service_status[key].status == 'running'
-        Karma.logger.debug{ "#{__method__}: is_started #{is_started} -> #{service_status}" }
+        Karma.logger.debug { "#{__method__}: is_started #{is_started} -> #{service_status}" }
         sleep 1 if !is_started
         is_timedout = (Time.now - enter_time) > timeout
       end
-      Karma.logger.debug{ "#{__method__}: Exit" }
+      Karma.logger.debug { "#{__method__}: Exit" }
       is_started
     end
 
@@ -63,7 +62,7 @@ module Karma::Engine
       while !is_stopped && !is_timedout
         service_status = show_service_by_pid(pid)
         is_stopped = service_status.empty?
-        Karma.logger.debug{ "#{__method__}: is_stopped #{is_stopped} -> #{service_status}" }
+        Karma.logger.debug { "#{__method__}: is_stopped #{is_stopped} -> #{service_status}" }
         sleep 1 if !is_stopped
         is_timedout = (Time.now - enter_time) > timeout
       end
@@ -74,7 +73,7 @@ module Karma::Engine
     # starts the first available not running instance
     def start_service(service, params = {})
       params[:check] = true if params[:check].nil?
-      Karma.logger.debug{ "#{__method__}: starting #{service.full_name} with params: #{params.inspect}" }
+      Karma.logger.debug { "#{__method__}: starting #{service.full_name} with params: #{params.inspect}" }
       `systemctl --user reset-failed`
       running_instances = show_service(service).keys
       should_running_instances = (1..service.config_max_running).map { |p| instance_full_name(service, service.config_port + (p - 1)) }
@@ -90,12 +89,12 @@ module Karma::Engine
       else
         ret = false
       end
-      return ret
+      ret
     end
 
     def stop_service(pid, params = {})
       params[:check] = true if params[:check].nil?
-      Karma.logger.debug{ "#{__method__}: stopping #{pid}" }
+      Karma.logger.debug { "#{__method__}: stopping #{pid}" }
       ret = false
       begin
         # get instance by pid and stop it
@@ -110,7 +109,7 @@ module Karma::Engine
           ret = to_be_stopped_instance
         end
       rescue Exception => e
-        Karma.logger.error{ "#{__method__}: ERRORE!!!! #{e.message}" }
+        Karma.logger.error { "#{__method__}: ERRORE!!!! #{e.message}" }
       end
       ret
     end
@@ -126,7 +125,6 @@ module Karma::Engine
     end
 
     def export_service(service)
-
       # REFERENCE
       # https://www.digitalocean.com/community/tutorials/how-to-use-systemctl-to-manage-systemd-services-and-units
       # https://www.digitalocean.com/community/tutorials/understanding-systemd-units-and-unit-files
@@ -136,8 +134,7 @@ module Karma::Engine
       # https://www.freedesktop.org/software/systemd/man/systemctl.html
       # https://www.freedesktop.org/software/systemd/man/systemd.unit.html#Specifiers
 
-      Karma.logger.info{ "#{__method__}: started systemd export for service #{service.name}" }
-
+      Karma.logger.info { "#{__method__}: started systemd export for service #{service.name}" }
       super
 
       service_fn = "#{service.full_name}@.service"
@@ -161,12 +158,11 @@ module Karma::Engine
 
       # check if there are less instances than max, and create if needed
       elsif instances.size < max
-        (instances.size+1..max)
-          .map{ |num| instance_full_name(service, service.config_port + (num - 1)) }
+        ((instances.size + 1)..max)
+          .map { |num| instance_full_name(service, service.config_port + (num - 1)) }
           .each do |instance_name|
-          create_symlink("#{instances_dir}/#{instance_name}", "../#{service_fn}") rescue Errno::EEXIST
-        end
-
+            create_symlink("#{instances_dir}/#{instance_name}", "../#{service_fn}") rescue Errno::EEXIST
+          end
       end
 
       target_fn = "#{service.full_name}.target"
@@ -175,12 +171,11 @@ module Karma::Engine
       # process_master_names = ["#{project_name}-#{service.name}.target"]
 
       write_template 'systemd/master.target.erb', "#{project_name}.target", binding
-
       reload
 
       if service == Karma::Watchdog
-        instance_name =  instance_full_name(Karma::Watchdog, Karma.watchdog_port)
-        `systemctl enable --user #{instance_name}`
+        instance =  instance_full_name(Karma::Watchdog, Karma.watchdog_port)
+        `systemctl enable --user #{instance}`
       end
 
       Karma.logger.info { "#{__method__}: end systemd export for service #{service.name}" }
@@ -188,16 +183,12 @@ module Karma::Engine
 
     def remove_service(service)
       Dir["#{location}/#{service.full_name}*.service"]
-          .concat(Dir["#{location}/#{service.full_name}.config"])
-          .concat(Dir["#{location}/#{service.full_name}.target"])
-          .concat(Dir["#{location}/#{service.full_name}*.target.wants/*"])
-          .each do |file|
-        clean file
-      end
+        .concat(Dir["#{location}/#{service.full_name}.config"])
+        .concat(Dir["#{location}/#{service.full_name}.target"])
+        .concat(Dir["#{location}/#{service.full_name}*.target.wants/*"])
+        .each { |file| clean file }
 
-      Dir["#{location}/#{service.full_name}*.target.wants"].each do |file|
-        clean_dir file
-      end
+      Dir["#{location}/#{service.full_name}*.target.wants"].each { |file| clean_dir(file) }
       reload
     end
 
