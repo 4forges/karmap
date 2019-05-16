@@ -1,16 +1,40 @@
 dist: xenial
-# sudo: required
-language: ruby
+sudo: required
+language: generic
 
-rvm:
-  - 2.6.3
+#rvm:
+# - 2.6.3
 
-before_install:
+env:
+  - TRAVIS_HOME_DIR=/home/travis PATH=$PATH:/home/travis/.rbenv/shims
+
+install:
+  - sudo apt-get update -qq
+  - sudo apt-get install curl build-essential libsystemd-dev zlib1g-dev autotools-dev automake autoconf libtool libdbus-1-dev libcap-dev libblkid-dev libpam-dev libcryptsetup-dev libaudit-dev libacl1-dev libattr1-dev libselinux-dev liblzma-dev libgcrypt-dev libqrencode-dev libmicrohttpd-dev gtk-doc-tools gperf python2.7-dev libxml2-dev ruby-dev libxslt-dev
+  - sudo usermod -a -G systemd-journal,adm travis
+  - sudo cat /etc/machine-id
+  - rm -rf /home/travis/.phpenv
+  - echo 'export PATH="/home/travis/.rbenv/bin:$PATH"' >> /home/travis/.bashrc
+  - echo 'eval "$(rbenv init -)"' >> /home/travis/.bash_profile
+  - export PATH="/home/travis/.rbenv/bin:$PATH"
+  - curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
+  - /home/travis/.rbenv/bin/rbenv install 2.6.3
+  - gem update --system
   - gem install bundler
+  - gem install rails
+  - pushd $TRAVIS_BUILD_DIR
+  - bundle install
+  - popd
 
 before_script:
-  - export PREV_DIR=$(pwd)
-  - sudo apt-get update -qq
-  - sudo apt-get install libsystemd-dev
-  - >
-      [ -f /etc/machine-id ] || cat /dev/urandom | tr -cd 'a-f0-9' | head -c 32 | awk '{ print $1 }' | sudo tee /etc/machine-id
+  - mkdir -p /var/tmp/travis-run.d
+  - chown -R travis:travis /var/tmp/travis-run.d
+  - sudo mkdir -p /var/log/journal
+  - sudo systemd-tmpfiles --create --prefix /var/log/journal
+  - sudo systemctl restart systemd-journald
+  - sudo chown -R travis:travis /var/log
+  - bundle exec rake
+
+after_script:
+  - cat $TRAVIS_HOME_DIR/build/4forges/karmap/spec/log/test.log
+  - sudo journalctl -n 1000

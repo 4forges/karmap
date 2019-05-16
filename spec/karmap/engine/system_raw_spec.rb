@@ -1,9 +1,8 @@
-# encoding: UTF-8
+# frozen_string_literal: true
 
 require 'spec_helper'
 
 describe Karma::Engine::SystemRaw do
-
   let(:watchdog) { Karma::Watchdog.new }
 
   before(:each) do
@@ -52,7 +51,7 @@ describe Karma::Engine::SystemRaw do
       expect(status.values[0].status).to eq('running')
       old_pid = status.values[0].pid
 
-      Karma.engine_instance.restart_service(old_pid, { service: TestService })
+      Karma.engine_instance.restart_service(old_pid, service: TestService)
       status = Karma.engine_instance.show_service(TestService)
       expect(status.size).to eq(1)
       expect(status.keys[0]).to eq('karma-spec-test-service@33000')
@@ -62,7 +61,5 @@ describe Karma::Engine::SystemRaw do
       expect(new_pid).to_not eq(old_pid)
       stop_process(status.values[0].pid)
     end
-
   end
-
 end

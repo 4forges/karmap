@@ -1,7 +1,6 @@
 require 'karmap/engine'
 
 module Karma::Engine
-
   ServiceStatus = Struct.new(:name, :port, :status, :pid, :threads, :memory, :cpu)
 
   class Base
@@ -125,10 +124,10 @@ module Karma::Engine
     def to_be_started_ports(service)
       running_instances = running_instances_for_service(service) #keys: [:pid, :full_name, :port]
       running_ports = running_instances.values.map{ |i| i.port.to_i }
-      Karma.logger.debug{ "#{__method__}: #{running_ports.size} running instances of #{service.name}" }
+      Karma.logger.debug { "#{__method__}: #{running_ports.size} running instances of #{service.name}" }
 
       to_be_started_ports = service.min_ports - running_ports
-      Karma.logger.debug{ "#{__method__}: #{to_be_started_ports.size} to be started" }
+      Karma.logger.debug { "#{__method__}: #{to_be_started_ports.size} to be started" }
       to_be_started_ports
     end
 
@@ -145,14 +144,16 @@ module Karma::Engine
     private ######################################################################
 
     def clean(filename)
-      return unless File.exists?(filename)
-      Karma.logger.debug{ "cleaning up: #{filename}" }
+      return unless File.exist?(filename)
+
+      Karma.logger.debug { "cleaning up: #{filename}" }
       FileUtils.rm(filename)
     end
 
     def clean_dir(dirname)
-      return unless File.exists?(dirname)
-      Karma.logger.debug{ "cleaning up directory: #{dirname}" }
+      return unless File.exist?(dirname)
+
+      Karma.logger.debug { "cleaning up directory: #{dirname}" }
       FileUtils.rm_r(dirname)
     end
 
@@ -165,7 +166,7 @@ module Karma::Engine
       matchers << File.expand_path(Karma.template_folder) if Karma.template_folder
       matchers << File.expand_path("~/.karma/templates/#{name}")
       matchers << File.expand_path("../../../../data/export/#{name}", __FILE__)
-      File.read(matchers.detect { |m| File.exists?(m) })
+      File.read(matchers.detect { |m| File.exist?(m) })
     end
 
     def write_template(name, target, binding)
@@ -181,16 +182,16 @@ module Karma::Engine
     def chown(user, dir)
       FileUtils.chown user, nil, dir
     rescue
-      Karma::Engine.error("Could not chown #{dir} to #{user}") unless File.writable?(dir) || !File.exists?(dir)
+      Karma::Engine.error("Could not chown #{dir} to #{user}") unless File.writable?(dir) || !File.exist?(dir)
     end
 
     def create_directory(dir)
-      Karma.logger.debug{ "creating: #{dir}" }
+      Karma.logger.debug { "creating: #{dir}" }
       FileUtils.mkdir_p(File.join(location, dir))
     end
 
     def create_symlink(link, target)
-      Karma.logger.debug{ "symlinking: #{link} -> #{target}" }
+      Karma.logger.debug { "symlinking: #{link} -> #{target}" }
       FileUtils.symlink(target, File.join(location, link))
     end
 

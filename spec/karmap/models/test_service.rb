@@ -1,16 +1,21 @@
-# encoding: UTF-8
+# frozen_string_literal: true
 
 require 'karmap'
 
 class TestService < Karma::Service
-
+  port         33000
   min_running  1
   max_running  1
-  port         33000
   num_threads  2
 
   def self.command
-    "bundle exec ruby spec/scripts/run_test_service_#{Karma.engine}.rb"
+    travis_build_dir = ENV['TRAVIS_BUILD_DIR'] || '.'
+    File.open('./test_service.run', 'w') do |file|
+      file.write("cd #{travis_build_dir}\n")
+      file.write("bundle exec ruby spec/scripts/run_test_service_#{Karma.engine}.rb")
+    end
+    File.chmod(0o755, './test_service.run')
+    './test_service.run'
   end
 
   def perform
@@ -40,5 +45,4 @@ class TestService < Karma::Service
   def folder
     Karma.log_folder
   end
-
 end

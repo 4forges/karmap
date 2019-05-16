@@ -1,11 +1,11 @@
+# frozen_string_literal: true
+
 require 'karmap/engine'
 
 module Karma::Engine
-
   class Logger < Base
-
     def location
-      "#{Karma.log_folder}"
+      Karma.log_folder.to_s
     end
 
     def show_service(service)

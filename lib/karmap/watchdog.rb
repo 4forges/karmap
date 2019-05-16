@@ -37,11 +37,17 @@ module Karma
     ##############################
 
     def self.command
-      "bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\""
+      travis_build_dir = ENV['TRAVIS_BUILD_DIR'] || '.'
+      File.open('./watchdog.run', 'w') do |file|
+        file.write("cd #{travis_build_dir}\n")
+        file.write("bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\"")
+      end
+      File.chmod(0o755, './watchdog.run')
+      './watchdog.run'
     end
 
     def self.run
-      (@@instance = self.new).run if !defined?(@@instance)
+      (@@instance = self.new).run unless defined?(@@instance)
     end
 
     def self.export

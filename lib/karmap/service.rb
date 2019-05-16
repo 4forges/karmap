@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 require 'karmap'
 require 'karmap/service_config'
 
 module Karma
-
   class Service
     include Karma::ServiceConfig
     include Karma::Helpers
@@ -27,7 +28,12 @@ module Karma
       @run_sleep_seconds = 1
 
       # init thread pool
-      @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new{ ::Thread.current[:performance] = performance }, custom_inspect: Proc.new { custom_inspect } )
+      @thread_pool = Karma::Thread::ThreadPool.new(
+        running: proc { perform },
+        performance: proc { ::Thread.current[:performance] = performance },
+        custom_inspect: proc { custom_inspect }
+      )
+
       # init config reader
       @config_reader = self.class.init_config_reader_for_instance(self)
 
@@ -162,7 +168,6 @@ module Karma
 
       last_notified_at = nil
       while @running do
-
         # notify queue each 'self.class.notify_interval' sec (default 5 sec)
         if last_notified_at.nil? || (Time.now - last_notified_at) > self.class.config_notify_interval
           notify_status

@@ -2,7 +2,6 @@ require 'karmap/engine'
 require 'karmap/engine/parser/systemd_parser'
 
 module Karma::Engine
-
   class Systemd < Base
     def location
       "#{Karma.home_path}/.config/systemd/user"
@@ -35,11 +34,11 @@ module Karma::Engine
     end
 
     def show_enabled_services
-      `systemctl --user list-unit-files | grep enabled`.split("\n").map{|s| s.split('@')[0]}
+      `systemctl --user list-unit-files | grep enabled`.split("\n").map { |s| s.split('@')[0] }
     end
 
     def wait_started(service, key, timeout)
-      Karma.logger.debug{ "#{__method__}: Enter" }
+      Karma.logger.debug { "#{__method__}: Enter" }
       is_started = false
       is_timedout = false
       enter_time = Time.now
@@ -47,7 +46,7 @@ module Karma::Engine
         service_status = show_service(service)
         is_started = service_status[key].present? && service_status[key].status == 'running'
         Karma.logger.debug { "#{__method__}: is_started #{is_started} -> #{service_status}" }
-        sleep 1 if !is_started
+        sleep 1 unless is_started
         is_timedout = (Time.now - enter_time) > timeout
       end
       Karma.logger.debug { "#{__method__}: Exit" }
@@ -55,7 +54,7 @@ module Karma::Engine
     end
 
     def wait_stopped(pid, key, timeout)
-      Karma.logger.debug{ "#{__method__}: Enter" }
+      Karma.logger.debug { "#{__method__}: Enter" }
       is_stopped = false
       is_timedout = false
       enter_time = Time.now
@@ -63,10 +62,10 @@ module Karma::Engine
         service_status = show_service_by_pid(pid)
         is_stopped = service_status.empty?
         Karma.logger.debug { "#{__method__}: is_stopped #{is_stopped} -> #{service_status}" }
-        sleep 1 if !is_stopped
+        sleep 1 unless is_stopped
         is_timedout = (Time.now - enter_time) > timeout
       end
-      Karma.logger.debug{ "#{__method__}: Exit" }
+      Karma.logger.debug { "#{__method__}: Exit" }
       is_stopped
     end
 
@@ -79,7 +78,7 @@ module Karma::Engine
       should_running_instances = (1..service.config_max_running).map { |p| instance_full_name(service, service.config_port + (p - 1)) }
       to_be_started_instance = (should_running_instances - running_instances).first
       if to_be_started_instance
-        Karma.logger.info{ "#{__method__}: starting instance #{to_be_started_instance}" }
+        Karma.logger.info { "#{__method__}: starting instance #{to_be_started_instance}" }
         `systemctl --user start #{to_be_started_instance}`
         if params[:check]
           ret = wait_started(service, to_be_started_instance, 5) ? to_be_started_instance : false
@@ -101,14 +100,14 @@ module Karma::Engine
         `systemctl --user reset-failed`
         status = show_service_by_pid(pid)
         to_be_stopped_instance = status.keys[0]
-        Karma.logger.info{ "#{__method__}: stopping instance #{to_be_stopped_instance} - #{status}" }
+        Karma.logger.info { "#{__method__}: stopping instance #{to_be_stopped_instance} - #{status}" }
         `systemctl --user stop #{to_be_stopped_instance}`
         if params[:check]
           ret = wait_stopped(pid, to_be_stopped_instance, 5) ? to_be_stopped_instance : false
         else
           ret = to_be_stopped_instance
         end
-      rescue Exception => e
+      rescue StandardError => e
         Karma.logger.error { "#{__method__}: ERRORE!!!! #{e.message}" }
       end
       ret
@@ -201,7 +200,7 @@ module Karma::Engine
     def service_status(service:)
       status = SystemdParser.systemctl_status(service: service, user: true)
       ret = {}
-      status.each do |k,v|
+      status.each do |k, v|
         # :name, :port, :status, :pid, :threads, :memory, :cpu
         data = /(.*)@(.*)\.(.*)/.match(k)
         ret[k] = Karma::Engine::ServiceStatus.new(
@@ -211,32 +210,31 @@ module Karma::Engine
           v['Main PID'].to_i,
           v['Tasks'].to_i, # TODO should return actual thread count
           v['Memory'],
-          v['CPU'],
+          v['CPU']
         )
+
         if v['Memory'].nil? || v['CPU'].nil?
           process = Karma::System::Process.new(v['Main PID'].to_i)
           ret[k][5] = process.memory if v['Memory'].nil?
           ret[k][6] = process.percent_cpu if v['CPU'].nil?
         end
       end
-      return ret
+      ret
     end
 
     def service_log(service:)
-      return SystemdParser.journalctl(service: service, user: true, lines: 100)
+      SystemdParser.journalctl(service: service, user: true, lines: 100)
     end
 
     def to_karma_status(process_status)
       case process_status
-        when 'active', 'deactivating'
-          Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]
-        when 'inactive', 'activating'
-          Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]
-        else
-          Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]
+      when 'active', 'deactivating'
+        Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:running]
+      when 'inactive', 'activating'
+        Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]
+      else
+        Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]
       end
     end
-
   end
-
 end
