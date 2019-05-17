@@ -18,7 +18,7 @@ describe Karma::Service do
 
   it 'service calls lifecycle callbacks' do
     Karma.engine_instance.start_service(TestService)
-    sleep 0.5
+    sleep 1
     wait_for { File.exist?('spec/log/TestService-before_start.log') }.to be_truthy
     wait_for { File.exist?('spec/log/TestService-after_start.log') }.to be_truthy
     wait_for { File.exist?('spec/log/TestService-perform.log') }.to be_truthy

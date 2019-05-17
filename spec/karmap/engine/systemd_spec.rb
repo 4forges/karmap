@@ -42,7 +42,7 @@ describe Karma::Engine::Systemd do
 
       expect(File.read("#{Karma.engine_instance.location}/karma-spec.target").strip).to                 eq(example_export_file("systemd/karma-spec.target").strip)
       expect(File.read("#{Karma.engine_instance.location}/karma-spec-test-service.target").strip).to    eq(example_export_file("systemd/karma-spec-test-service.target").strip)
-      # expect(File.read("#{Karma.engine_instance.location}/karma-spec-test-service@.service").strip).to  eq(example_export_file("systemd/karma-spec-test-service@.service").strip)
+      expect(File.read("#{Karma.engine_instance.location}/karma-spec-test-service@.service").strip).to  eq(example_export_file("systemd/karma-spec-test-service@.service").strip)
 
       expect(File.directory?("#{Karma.engine_instance.location}/karma-spec-test-service.target.wants")).to be_truthy
       expect(File.symlink?("#{Karma.engine_instance.location}/karma-spec-test-service.target.wants/karma-spec-test-service@33000.service")).to be_truthy
@@ -53,7 +53,7 @@ describe Karma::Engine::Systemd do
 
       expect(File.read("#{Karma.engine_instance.location}/karma-spec.target").strip).to                eq(example_export_file("systemd/karma-spec.target").strip)
       expect(File.read("#{Karma.engine_instance.location}/karma-spec-mock-service.target").strip).to    eq(example_export_file("systemd/karma-spec-mock-service.target").strip)
-      # expect(File.read("#{Karma.engine_instance.location}/karma-spec-mock-service@.service").strip).to  eq(example_export_file("systemd/karma-spec-mock-service@.service").strip)
+      expect(File.read("#{Karma.engine_instance.location}/karma-spec-mock-service@.service").strip).to  eq(example_export_file("systemd/karma-spec-mock-service@.service").strip)
 
       expect(File.directory?("#{Karma.engine_instance.location}/karma-spec-mock-service.target.wants")).to be_truthy
       expect(File.symlink?("#{Karma.engine_instance.location}/karma-spec-mock-service.target.wants/karma-spec-mock-service@33100.service")).to be_truthy
@@ -189,7 +189,6 @@ describe Karma::Engine::Systemd do
       expect(new_pid).to_not eq(old_pid)
     end
 
-    # we are waiting to have more luck!
     it 'engine shows service log' do
       Karma.engine_instance.start_service(TestService)
       log = Karma.engine_instance.show_service_log(TestService)

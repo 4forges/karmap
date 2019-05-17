@@ -164,7 +164,7 @@ module Karma::Engine
       filename = File.join(location, identifier.to_s + '.pid')
     end
 
-    def clean_old_file(service: , port:)
+    def clean_old_file(service:, port:)
       instance_identifier = service.generate_instance_identifier(port: port)
       file_path = pid_filename(identifier: instance_identifier)
       if File.exists?(file_path)
@@ -174,6 +174,5 @@ module Karma::Engine
         Karma.logger.debug{ "#{__method__}: no old file to remove" }
       end
     end
-
   end
 end

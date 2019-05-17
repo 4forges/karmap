@@ -40,7 +40,7 @@ RSpec.configure do |config|
 
     Karma.configuration do |config|
       config.env =                    'test'
-      config.home_path =              ENV['TRAVIS_HOME_DIR'] || '/home/meox'
+      config.home_path =              ENV['TRAVIS_HOME_DIR'] || File.expand_path('~')
       config.project_name =           'karma-spec'
       config.karma_project_id =       'fake'
       config.karma_user_id =          'fake'
