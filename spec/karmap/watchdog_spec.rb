@@ -4,7 +4,15 @@ require 'spec_helper'
 
 describe Karma::Watchdog do
   let(:watchdog) do
-    allow(Karma::Watchdog).to receive(:command).and_return(Karma::Watchdog.command_test)
+    allow(Karma::Watchdog).to receive(:command) do
+      travis_build_dir = ENV['TRAVIS_BUILD_DIR'] || '.'
+      File.open('./watchdog.run', 'w') do |file|
+        file.write("cd #{travis_build_dir}\n")
+        file.write("bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\"")
+      end
+      File.chmod(0o755, './watchdog.run')
+      './watchdog.run'
+    end
     Karma::Watchdog.new
   end
 
@@ -41,7 +49,7 @@ describe Karma::Watchdog do
       auto_restart: 'foo',
       auto_start: 'foo',
       log_level: 'foo',
-      num_threads: 'foo',
+      num_threads: 'foo'
     )
     expect(watchdog).to receive(:handle_process_config_update).with(an_instance_of(Karma::Messages::ProcessConfigUpdateMessage))
     watchdog.send(:handle_message, msg.to_message)

@@ -113,16 +113,6 @@ module Karma
 
     private ##############################
 
-    def self.command_test
-      travis_build_dir = ENV['TRAVIS_BUILD_DIR'] || '.'
-      File.open('./watchdog.run', 'w') do |file|
-        file.write("cd #{travis_build_dir}\n")
-        file.write("bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\"")
-      end
-      File.chmod(0o755, './watchdog.run')
-      './watchdog.run'
-    end
-
     def limited_do(key, interval, &block)
       @limited_procs_last_executions ||= {}
       if @limited_procs_last_executions[key].nil? || (Time.now - @limited_procs_last_executions[key] >= interval)
