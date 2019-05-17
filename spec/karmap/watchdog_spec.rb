@@ -3,18 +3,7 @@
 require 'spec_helper'
 
 describe Karma::Watchdog do
-  let(:watchdog) do
-    allow(Karma::Watchdog).to receive(:command) do
-      travis_build_dir = ENV['TRAVIS_BUILD_DIR'] || '.'
-      File.open('./watchdog.run', 'w') do |file|
-        file.write("cd #{travis_build_dir}\n")
-        file.write("bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\"")
-      end
-      File.chmod(0o755, './watchdog.run')
-      './watchdog.run'
-    end
-    Karma::Watchdog.new
-  end
+  let(:watchdog) { Karma::Watchdog.new }
 
   before(:each) do
     Karma.reset_engine_instance

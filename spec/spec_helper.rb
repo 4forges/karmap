@@ -64,7 +64,7 @@ RSpec.configure do |config|
   end
 
   config.after(:suite) do
-    File.delete('watchdog.run')
-    File.delete('test_service.run')
+    File.delete('watchdog.run') if File.exist?('watchdog.run')
+    File.delete('test_service.run') if File.exist?('test_service.run')
   end
 end
