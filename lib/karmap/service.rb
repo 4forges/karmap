@@ -151,12 +151,8 @@ module Karma
       Karma.logger.info{ "#{__method__}: enter" }
       Karma.engine_instance.after_start_service(self)
 
-      Signal.trap('INT') do
-        stop
-      end
-      Signal.trap('TERM') do
-        stop
-      end
+      Signal.trap('INT') { stop }
+      Signal.trap('TERM') { stop }
 
       before_start
       @config_reader.start
