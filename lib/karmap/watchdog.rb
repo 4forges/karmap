@@ -37,7 +37,7 @@ module Karma
     ##############################
 
     def self.command
-      if Rails.env.test?
+      if Rails.env == 'test'
         command_test
       else
         "bundle exec rails runner -e #{Karma.env} \"Karma::Watchdog.run\""

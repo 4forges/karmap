@@ -9,9 +9,16 @@ require 'rspec'
 require 'rspec/wait'
 
 module Rails
-  # simulate rails environment
   def self.env
-    'test'
+    Class.new do
+      def test?
+        true
+      end
+
+      def to_s
+        'test'
+      end
+    end.new
   end
 end
 
