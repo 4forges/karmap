@@ -188,16 +188,16 @@ module Karma
       # start instances
       if service.config_auto_start
         Watchdog.engine_instance.to_be_started_ports(service).each do |port|
-          Watchdog.logger.debug { "start new instance of #{service.name} on port #{port}" }
+          Watchdog.logger.info { "start new instance of #{service.name} on port #{port}" }
           Watchdog.engine_instance.start_service(service)
         end
       else
-        Watchdog.logger.debug { "autostart for service #{service.name} is false" }
+        Watchdog.logger.info { "autostart for service #{service.name} is disabled" }
       end
 
       # stop instances
       Watchdog.engine_instance.to_be_stopped_instances(service).each do |instance|
-        Watchdog.logger.debug { "stop instance #{instance.name}" }
+        Watchdog.logger.info { "stop instance #{instance.name}" }
         Watchdog.engine_instance.stop_service(instance.pid)
       end
     end

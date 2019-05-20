@@ -122,8 +122,8 @@ module Karma::Engine
     end
 
     def to_be_started_ports(service)
-      running_instances = running_instances_for_service(service) #keys: [:pid, :full_name, :port]
-      running_ports = running_instances.values.map{ |i| i.port.to_i }
+      running_instances = running_instances_for_service(service) # keys: [:pid, :full_name, :port]
+      running_ports = running_instances.values.map { |i| i.port.to_i }
       Karma.logger.debug { "#{__method__}: #{running_ports.size} running instances of #{service.name}" }
 
       to_be_started_ports = service.min_ports - running_ports
@@ -132,7 +132,7 @@ module Karma::Engine
     end
 
     def free_ports(service)
-      running_instances = running_instances_for_service(service) #keys: [:pid, :full_name, :port]
+      running_instances = running_instances_for_service(service) # keys: [:pid, :full_name, :port]
       running_ports = running_instances.values.map { |i| i.port.to_i }
       Karma.logger.debug { "#{__method__}: #{running_ports.size} running instances of #{service.name}" }
 
