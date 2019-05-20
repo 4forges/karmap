@@ -8,17 +8,20 @@ require 'karmap/models/mock_service'
 require 'rspec'
 require 'rspec/wait'
 
-module Rails
-  def self.env
-    Class.new do
-      def test?
-        true
-      end
+# define fake Rails.env in case of needed
+unless defined?(Rails.env)
+  module Rails
+    def self.env
+      Class.new do
+        def test?
+          true
+        end
 
-      def to_s
-        'test'
-      end
-    end.new
+        def to_s
+          'test'
+        end
+      end.new
+    end
   end
 end
 
