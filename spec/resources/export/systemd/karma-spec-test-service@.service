@@ -13,7 +13,7 @@ Environment=KARMA_PROJECT_ID=fake
 Environment=KARMA_USER_ID=fake
 Environment=KARMA_AWS_USER_ACCESS_KEY=fake
 Environment=KARMA_AWS_USER_SECRET_ACCESS_KEY=fake
-ExecStart=/bin/bash -lc 'bundle exec ruby spec/scripts/run_test_service_systemd.rb'
+ExecStart=/bin/bash -lc 'PATH=%h/.rbenv/shims:$PATH ./test_service.run'
 Restart=always
 StandardInput=null
 StandardOutput=syslog

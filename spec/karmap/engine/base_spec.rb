@@ -37,7 +37,6 @@ shared_examples 'messages' do |type|
 end
 
 describe Karma::Engine::Base do
-
   describe 'using systemd' do
     include_examples 'messages', 'systemd'
   end
@@ -45,5 +44,4 @@ describe Karma::Engine::Base do
   describe 'using system_raw' do
     include_examples 'messages', 'system_raw'
   end
-
 end

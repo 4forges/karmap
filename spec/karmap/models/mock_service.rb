@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 class MockService < Karma::Service
-
   min_running  1
   max_running  1
   port         33100
@@ -36,5 +35,4 @@ class MockService < Karma::Service
   def folder
     'log'
   end
-
 end

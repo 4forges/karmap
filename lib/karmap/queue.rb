@@ -3,7 +3,6 @@ require 'socket'
 require 'digest'
 
 module Karma::Queue
-
   class Exception < ::Exception; end
 
   def self.error(message)
@@ -26,7 +25,6 @@ module Karma::Queue
     s = "#{Karma.karma_user_id}-#{Karma.karma_project_id}-#{host_name}"
     "#{base_queue_url}/#{::Digest::MD5.hexdigest(s)}"
   end
-
 end
 
 require 'karmap/queue/client'

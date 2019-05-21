@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 require 'karmap'
 require 'karmap/service_config'
 
 module Karma
-
   class Service
     include Karma::ServiceConfig
     include Karma::Helpers
@@ -27,13 +28,18 @@ module Karma
       @run_sleep_seconds = 1
 
       # init thread pool
-      @thread_pool = Karma::Thread::ThreadPool.new( running: Proc.new { perform }, performance: Proc.new{ ::Thread.current[:performance] = performance }, custom_inspect: Proc.new { custom_inspect } )
+      @thread_pool = Karma::Thread::ThreadPool.new(
+        running: proc { perform },
+        performance: proc { ::Thread.current[:performance] = performance },
+        custom_inspect: proc { custom_inspect }
+      )
+
       # init config reader
       @config_reader = self.class.init_config_reader_for_instance(self)
 
       Karma::ConfigEngine::ConfigImporterExporter.safe_init_config(self.class)
     end
-    
+
     def self.is_cpu_over_quota?(val)
       config_cpu_accounting? && val > config_cpu_quota
     end
@@ -46,7 +52,7 @@ module Karma
 
     def custom_inspect
       # override this with custom inspect_info
-      "custom_inspect"
+      'custom_inspect'
     end
 
     def perform
@@ -76,7 +82,7 @@ module Karma
 
     def self.command
       # override this with custom run command
-      "bin/rails runner -e #{Karma.env} \"#{self.name}.run\""
+      "bin/rails runner -e #{Karma.env} \"#{name}.run\""
     end
 
     def self.run
@@ -89,7 +95,7 @@ module Karma
         if File.exists?(Karma.version_file_path)
           begin
             f = File.open(Karma.version_file_path)
-            ret =  f.gets
+            ret = f.gets
           rescue ::Exception => e
             ret = 'error reading file'
           ensure
@@ -101,7 +107,7 @@ module Karma
       else
         ret = 'no version set'
       end
-      return ret
+      ret
     end
 
     def self.config_location
@@ -109,7 +115,7 @@ module Karma
     end
 
     def self.config_filename
-      "#{self.full_name}.config"
+      "#{full_name}.config"
     end
 
     def self.register
@@ -118,21 +124,21 @@ module Karma
         message = Karma::Messages::ProcessRegisterMessage.new(
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
-          service: self.demodulized_name,
-          memory_max: self.config_memory_max,
-          cpu_quota: self.config_cpu_quota,
-          min_running: self.config_min_running,
-          max_running: self.config_max_running,
-          auto_restart: self.config_auto_restart,
-          auto_start: self.config_auto_start,
-          push_notifications: self.config_push_notifications,
+          service: demodulized_name,
+          memory_max: config_memory_max,
+          cpu_quota: config_cpu_quota,
+          min_running: config_min_running,
+          max_running: config_max_running,
+          auto_restart: config_auto_restart,
+          auto_start: config_auto_start,
+          push_notifications: config_push_notifications,
           log_level: Karma.logger.level,
-          num_threads: self.config_num_threads,
-          version: self.version
+          num_threads: config_num_threads,
+          version: version
         )
         Karma.notifier_instance.notify(message)
       rescue ::Exception => e
-        Karma.logger.error{ e }
+        Karma.logger.error { e }
       end
     end
 
@@ -145,12 +151,8 @@ module Karma
       Karma.logger.info{ "#{__method__}: enter" }
       Karma.engine_instance.after_start_service(self)
 
-      Signal.trap('INT') do
-        stop
-      end
-      Signal.trap('TERM') do
-        stop
-      end
+      Signal.trap('INT') { stop }
+      Signal.trap('TERM') { stop }
 
       before_start
       @config_reader.start
@@ -162,7 +164,6 @@ module Karma
 
       last_notified_at = nil
       while @running do
-
         # notify queue each 'self.class.notify_interval' sec (default 5 sec)
         if last_notified_at.nil? || (Time.now - last_notified_at) > self.class.config_notify_interval
           notify_status
@@ -173,7 +174,7 @@ module Karma
         self.class.set_process_config(@config_reader.runtime_config) if @config_reader.runtime_config.present?
         @thread_pool.manage(self.class.get_process_config)
 
-        Karma.logger.debug{ "#{__method__}: alive" }
+        Karma.logger.debug { "#{__method__}: alive" }
         sleep(@run_sleep_seconds)
       end
 
@@ -184,7 +185,7 @@ module Karma
       after_stop
 
       # notify queue after stop
-      notify_status(params: {status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped]})
+      notify_status(params: { status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:stopped] })
       Karma.engine_instance.after_stop_service(self)
     end
 
@@ -216,10 +217,7 @@ module Karma
 
     def self.notify_status(pid:, params: {})
       message = Karma.engine_instance.get_process_status_message(self, pid, params)
-      if message.present? && message.valid?
-        Karma.notifier_instance.notify(message)
-      end
+      Karma.notifier_instance.notify(message) if message.present? && message.valid?
     end
-
   end
 end

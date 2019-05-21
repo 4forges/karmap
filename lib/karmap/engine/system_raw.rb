@@ -3,24 +3,23 @@ require 'sys/proctable'
 include Sys
 
 module Karma::Engine
-
   class SystemRaw < Base
     START_TIMEOUT_SECONDS = 20.seconds
 
     def location
-      "#{Karma.home_path}"
+      Karma.home_path.to_s
     end
 
     def show_service(service)
-      service_status(service_key_or_pid: "#{service.full_name}@")
+      service_status(service_key_or_pid: "#{service.full_name}@") || []
     end
 
     def show_service_by_pid(pid)
-      service_status(service_key_or_pid: pid.to_i)
+      service_status(service_key_or_pid: pid.to_i) || []
     end
 
     def show_all_services
-      service_status(service_key_or_pid: "#{project_name}-")
+      service_status(service_key_or_pid: "#{project_name}-") || []
     end
 
     def start_service(service, params = {})
@@ -29,17 +28,17 @@ module Karma::Engine
       if free_ports.count > 0
         params[:port] = free_ports[0]
         clean_old_file(service: service, port: params[:port])
-        Karma.logger.debug{ "#{__method__}: starting '#{service.command}', port: #{params[:port]}" }
-        environment_vars = Hash.new.tap do |h|
-          h['PORT'] = params[:port].to_s
-          h['KARMA_IDENTIFIER'] = service.generate_instance_identifier(port: params[:port])
-          h['KARMA_ENV'] = Karma.env
-          h['KARMA_PROJECT_ID'] = Karma.karma_project_id
-          h['KARMA_USER_ID'] = Karma.karma_user_id
-          h['KARMA_AWS_USER_ACCESS_KEY'] = Karma.aws_access_key_id
-          h['KARMA_AWS_USER_SECRET_ACCESS_KEY'] = Karma.aws_secret_access_key
-          h['KARMA_ENGINE'] = Karma.engine #'system_raw'
-        end
+        Karma.logger.debug { "#{__method__}: starting '#{service.command}', port: #{params[:port]}" }
+        environment_vars = {
+          'PORT' => params[:port].to_s,
+          'KARMA_IDENTIFIER' => service.generate_instance_identifier(port: params[:port]),
+          'KARMA_ENV' => Karma.env,
+          'KARMA_PROJECT_ID' => Karma.karma_project_id,
+          'KARMA_USER_ID' => Karma.karma_user_id,
+          'KARMA_AWS_USER_ACCESS_KEY' => Karma.aws_access_key_id,
+          'KARMA_AWS_USER_SECRET_ACCESS_KEY' => Karma.aws_secret_access_key,
+          'KARMA_ENGINE' => Karma.engine # 'system_raw'
+        }
         pid = spawn(environment_vars, service.command)
         Process.detach(pid)
         started_at = Time.now
@@ -49,12 +48,12 @@ module Karma::Engine
           Karma.logger.debug { "Waiting starting pid #{pid} - file #{filename}" }
           sleep 1
           if (Time.now - started_at) > START_TIMEOUT_SECONDS
-            `kill #{pid}` rescue '' #TODO kill process only if running
+            `kill #{pid}` rescue '' # TODO kill process only if running
             message = "Unable to start service #{instance_identifier}"
             raise message
           end
         end
-        Karma.logger.debug{ "#{__method__}: started" }
+        Karma.logger.debug { "#{__method__}: started" }
       end
       pid
     end
@@ -74,7 +73,7 @@ module Karma::Engine
           raise message
         end
       end
-      Karma.logger.debug{ "#{__method__}: kill result #{res}" }
+      Karma.logger.debug { "#{__method__}: kill result #{res}" }
     end
 
     def restart_service(pid, params = {})
@@ -83,26 +82,29 @@ module Karma::Engine
     end
 
     # after start callback to create pid file
-    def after_start_service(service_instance, params = {})
+    def after_start_service(service_instance, _params = {})
       instance_identifier = service_instance.instance_identifier
       filename = pid_filename(identifier: instance_identifier)
       File.write(filename, Process.pid)
     end
 
     # after stop callback to remove pid file
-    def after_stop_service(service_instance, params = {})
+    def after_stop_service(service_instance, _params = {})
       instance_identifier = service_instance.instance_identifier
       filename = pid_filename(identifier: instance_identifier)
       FileUtils.rm_r(filename) rescue ''
     end
 
-    private ####################
+    private
 
     def service_status(service_key_or_pid:)
       if service_key_or_pid.is_a?(String)
-        status = ProcTable.ps.select{ |p| identifier = p.environ['KARMA_IDENTIFIER']; identifier.present? && identifier.start_with?(service_key_or_pid) }
+        status = ProcTable.ps.select do |p|
+          identifier = p.environ['KARMA_IDENTIFIER']
+          identifier.present? && identifier.start_with?(service_key_or_pid)
+        end
       else
-        status = ProcTable.ps.select{ |p| p.pid == service_key_or_pid.to_i }
+        status = ProcTable.ps.select { |p| p.pid == service_key_or_pid.to_i }
       end
       ret = {}
       status.each do |p|
@@ -114,12 +116,12 @@ module Karma::Engine
           p.environ['PORT'].to_i,
           to_karma_status(p.state),
           p.pid,
-          -1, #tasks
+          -1, # tasks
           process.memory,
           process.percent_cpu
         )
       end
-      return ret
+      ret
     end
 
     # see: https://unix.stackexchange.com/questions/18474/what-does-this-process-stat-indicates
@@ -162,7 +164,7 @@ module Karma::Engine
       filename = File.join(location, identifier.to_s + '.pid')
     end
 
-    def clean_old_file(service: , port:)
+    def clean_old_file(service:, port:)
       instance_identifier = service.generate_instance_identifier(port: port)
       file_path = pid_filename(identifier: instance_identifier)
       if File.exists?(file_path)
@@ -172,6 +174,5 @@ module Karma::Engine
         Karma.logger.debug{ "#{__method__}: no old file to remove" }
       end
     end
-
   end
 end

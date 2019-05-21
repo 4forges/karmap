@@ -13,7 +13,7 @@ Environment=KARMA_PROJECT_ID=fake
 Environment=KARMA_USER_ID=fake
 Environment=KARMA_AWS_USER_ACCESS_KEY=fake
 Environment=KARMA_AWS_USER_SECRET_ACCESS_KEY=fake
-ExecStart=/bin/bash -lc 'bin/rails runner -e test "MockService.run"'
+ExecStart=/bin/bash -lc 'PATH=%h/.rbenv/shims:$PATH bin/rails runner -e test "MockService.run"'
 Restart=no
 StandardInput=null
 StandardOutput=syslog

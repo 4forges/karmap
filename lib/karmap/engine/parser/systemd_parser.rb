@@ -1,7 +1,6 @@
-# encoding: UTF-8
+# frozen_string_literal: true
 
 class SystemdParser
-
   SHOW_PROPERTIES = ['LoadState', 'ActiveState', 'SubState', 'MainPID', 'ExecMainStartTimestamp']
 
   # Calls systemctl show and returns a properties hash.
@@ -13,7 +12,7 @@ class SystemdParser
     user_param = user ? '--user' : ''
     property_param = properties.any? ? "--property=#{properties.join(',')}" : ''
     output = `systemctl #{user_param} show #{property_param} #{service}`
-    return output.split("\n").map{|l| l.split('=',2)}.to_h
+    output.split("\n").map { |l| l.split('=', 2) }.to_h
   end
 
   STATUS_PROPERTIES = ['Loaded', 'Active', 'Main PID', 'Tasks', 'Memory', 'CPU']
@@ -49,7 +48,7 @@ class SystemdParser
         end
       end
     end
-    return status
+    status
   end
 
   # Calls journalctl and returns an array of entries (strings).
@@ -57,10 +56,10 @@ class SystemdParser
   # @param user: set to true if the service is a user unit.
   # @param lines: max number of entries to return.
   def self.journalctl(service:, user: false, lines: 25)
+    # new: service_param = "#{user ? '--user -u ' : '-u '}'#{service}'"
     service_param = "#{user ? '--user-unit=' : '-u '}'#{service}'"
     output = `journalctl -n #{lines} #{service_param}`
-    output = output.split("\n")
-    return output
+    Karma.logger.info { "journalctl -n #{lines} #{service_param}" }
+    output.split("\n")
   end
-
 end

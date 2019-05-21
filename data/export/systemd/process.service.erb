@@ -13,7 +13,7 @@ Environment=KARMA_PROJECT_ID=<%= Karma.karma_project_id %>
 Environment=KARMA_USER_ID=<%= Karma.karma_user_id %>
 Environment=KARMA_AWS_USER_ACCESS_KEY=<%= Karma.aws_access_key_id %>
 Environment=KARMA_AWS_USER_SECRET_ACCESS_KEY=<%= Karma.aws_secret_access_key %>
-ExecStart=/bin/bash -lc '<%= service.command %>'
+ExecStart=/bin/bash -lc 'PATH=%h/.rbenv/shims:$PATH <%= service.command %>'
 Restart=<%= service.config_auto_restart ? 'always' : 'no' %>
 StandardInput=null
 StandardOutput=syslog
