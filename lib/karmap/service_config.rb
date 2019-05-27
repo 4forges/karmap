@@ -186,7 +186,7 @@ module Karma
       end
 
       def full_name
-        "#{Karma.project_name}-#{Karma::Helpers.dashify(name)}".downcase
+        "#{Karma.project_name}-#{Karma::Helpers.dashify(name.demodulize)}".downcase
       end
 
       def generate_instance_identifier(port:)
