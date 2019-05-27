@@ -10,7 +10,7 @@ module Karma::Queue
   end
 
   def self.base_queue_url
-    'https://sqs.eu-west-1.amazonaws.com/282806688548'
+    Karma.karma_base_queue_url
   end
 
   def self.outgoing_queue_url
