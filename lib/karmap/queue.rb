@@ -23,7 +23,7 @@ module Karma::Queue
 
   def self.incoming_queue_url
     s = "#{Karma.karma_user_id}-#{Karma.karma_project_id}-#{host_name}"
-    "#{base_queue_url}/#{::Digest::MD5.hexdigest(s)}"
+    "#{base_queue_url}/#{Karma.karma_user_id}_#{::Digest::MD5.hexdigest(s)}"
   end
 end
 
