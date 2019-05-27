@@ -1,9 +1,8 @@
-# encoding: UTF-8
+# frozen_string_literal: true
 
 require 'spec_helper'
 
 describe Karma::Engine::Systemd do
-
   let(:watchdog) { Karma::Watchdog.new }
 
   before(:each) do
@@ -12,7 +11,6 @@ describe Karma::Engine::Systemd do
   end
 
   context 'watchdog' do
-
     # before(:each) { allow_any_instance_of(Karma::Engine::Systemd).to receive(:start_service).and_return(true) }
 
     it 'exports self' do
@@ -32,11 +30,9 @@ describe Karma::Engine::Systemd do
       expect(File.directory?("#{Karma.engine_instance.location}/karma-spec-test-service.target.wants")).to be_truthy
       expect(File.symlink?("#{Karma.engine_instance.location}/karma-spec-test-service.target.wants/karma-spec-test-service@33000.service")).to be_truthy
     end
-
   end
 
   context 'template exports' do
-
     before(:each) { allow_any_instance_of(Karma::Engine::Systemd).to receive(:work_directory).and_return('/tmp/app') }
     before(:each) { Karma.engine_instance.remove_service(TestService) }
     before(:each) { Karma.engine_instance.remove_service(MockService) }
@@ -44,7 +40,7 @@ describe Karma::Engine::Systemd do
     it "exports TestService to filesystem" do
       Karma.engine_instance.export_service(TestService)
 
-      expect(File.read("#{Karma.engine_instance.location}/karma-spec.target").strip).to                eq(example_export_file("systemd/karma-spec.target").strip)
+      expect(File.read("#{Karma.engine_instance.location}/karma-spec.target").strip).to                 eq(example_export_file("systemd/karma-spec.target").strip)
       expect(File.read("#{Karma.engine_instance.location}/karma-spec-test-service.target").strip).to    eq(example_export_file("systemd/karma-spec-test-service.target").strip)
       expect(File.read("#{Karma.engine_instance.location}/karma-spec-test-service@.service").strip).to  eq(example_export_file("systemd/karma-spec-test-service@.service").strip)
 
@@ -127,11 +123,9 @@ describe Karma::Engine::Systemd do
       expect(File.directory?("#{Karma.engine_instance.location}/karma-spec-mock-service.target.wants")).to be_falsey
       expect(File.symlink?("#{Karma.engine_instance.location}/karma-spec-mock-service.target.wants/karma-spec-mock-service@33100.service")).to be_falsey
     end
-
   end
 
   context 'manage service instances' do
-
     before(:each) { Karma.engine_instance.export_service(TestService) }
     after(:each) do
       status = Karma.engine_instance.show_all_services
@@ -200,8 +194,5 @@ describe Karma::Engine::Systemd do
       log = Karma.engine_instance.show_service_log(TestService)
       expect(log.size).to be > 1
     end
-
   end
-
-
 end

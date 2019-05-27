@@ -14,7 +14,6 @@ module Karma
     DEFAULT_NOTIFY_INTERVAL = 5
 
     def self.included(base)
-
       base.class_attribute :config_port, :config_timeout_stop, :config_min_running, :config_max_running, :config_num_threads, :config_auto_start, :config_auto_restart, :config_memory_max, :config_cpu_quota, :config_log_level, :config_push_notifications, :config_notify_interval
       base.extend(ClassMethods)
 
@@ -56,7 +55,6 @@ module Karma
     end
 
     module ClassMethods
-
       ################################################
       # service configuration
       ################################################
@@ -119,11 +117,11 @@ module Karma
       def log_level(val)
         safe_assign_val(__method__, val)
       end
-      
+
       def notify_interval(val)
-        safe_assign_val(__method__, val){|val| val.is_a?(Integer) && val >= 1 }
+        safe_assign_val(__method__, val) { |val| val.is_a?(Integer) && val >= 1 }
       end
-      
+
       def safe_assign_val(property_name, val, &block)
         begin
           method_name = 'config_' + property_name.to_s
@@ -137,7 +135,7 @@ module Karma
           Karma.logger.error { "Unable to assign '#{val.inspect}' to #{property_name} -> #{send(method_name).inspect} used" }
         end
       end
-      
+
       def config_cpu_accounting?
         !config_cpu_quota.nil?
       end
@@ -149,7 +147,7 @@ module Karma
       #################################################
       # update config methods
       #################################################
-      
+
       # sets process class config passing an hash ( can be partial )
       # returns an hash with the complete class config hash
       def set_process_config(config)
@@ -172,23 +170,23 @@ module Karma
       #################################################
       # convenience methods
       #################################################
-      
+
       # returns an array with the numbers of ports util the max
       def max_ports
-        start_port = self.config_port
-        end_port = start_port + self.config_max_running - 1
+        start_port = config_port
+        end_port = start_port + config_max_running - 1
         (start_port..end_port).to_a
       end
 
       # returns an array with the numbers of ports util the min
       def min_ports
-        start_port = self.config_port
-        end_port = start_port + self.config_min_running - 1
+        start_port = config_port
+        end_port = start_port + config_min_running - 1
         (start_port..end_port).to_a
       end
 
       def demodulized_name
-        self.name.demodulize
+        name.demodulize
       end
 
       def full_name
@@ -198,8 +196,6 @@ module Karma
       def generate_instance_identifier(port:)
         "#{full_name}@#{port}"
       end
-
     end
-
   end
 end

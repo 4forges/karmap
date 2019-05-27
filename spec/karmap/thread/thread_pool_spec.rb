@@ -16,7 +16,7 @@ shared_examples 'threads' do |config_engine|
     new_config = service.class.set_process_config({num_threads: num})
     Karma::ConfigEngine::ConfigImporterExporter.export_config(service.class, new_config)
     Karma.config_engine_class.send_config(service.class)
-  end  
+  end
 
   it 'spawns 2 threads and change at runtime' do
     service = TestService.new
@@ -24,24 +24,22 @@ shared_examples 'threads' do |config_engine|
     ::Thread.new do
       service.run
     end
-    wait_for{File.exists?('spec/log/testservice-after_start.log')}.to be_truthy
-    wait_for{service.running_thread_count}.to eq(2)
+    wait_for { File.exists?('spec/log/TestService-after_start.log') }.to be_truthy
+    wait_for { service.running_thread_count }.to eq(2)
 
     set_num_threads(service, 3)
-    wait_for{service.running_thread_count}.to eq(3)
+    wait_for { service.running_thread_count }.to eq(3)
 
     set_num_threads(service, 1)
-    wait_for{service.running_thread_count}.to eq(1)
+    wait_for { service.running_thread_count }.to eq(1)
 
     service.stop
-    wait_for{service.running_thread_count}.to eq(0)
-    wait_for{File.exists?('spec/log/testservice-after_stop.log')}.to be_truthy
+    wait_for { service.running_thread_count }.to eq(0)
+    wait_for { File.exists?('spec/log/TestService-after_stop.log') }.to be_truthy
   end
 end
 
-
 describe Karma::Thread::ThreadPool do
-
   describe 'using file' do
     include_examples 'threads', 'file'
   end
@@ -49,5 +47,4 @@ describe Karma::Thread::ThreadPool do
   describe 'using tcp' do
     include_examples 'threads', 'tcp'
   end
-
 end

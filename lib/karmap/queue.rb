@@ -3,7 +3,6 @@ require 'socket'
 require 'digest'
 
 module Karma::Queue
-
   class Exception < ::Exception; end
 
   def self.error(message)
@@ -11,7 +10,7 @@ module Karma::Queue
   end
 
   def self.base_queue_url
-    'https://sqs.eu-west-1.amazonaws.com/282806688548'
+    Karma.karma_base_queue_url
   end
 
   def self.outgoing_queue_url
@@ -26,7 +25,6 @@ module Karma::Queue
     s = "#{Karma.karma_user_id}-#{Karma.karma_project_id}-#{host_name}"
     "#{base_queue_url}/#{::Digest::MD5.hexdigest(s)}"
   end
-
 end
 
 require 'karmap/queue/client'

@@ -1,7 +1,6 @@
 Encoding.default_internal = Encoding::UTF_8
 Encoding.default_external = Encoding::UTF_8
 
-
 require 'logger'
 require 'active_support'
 require 'active_support/core_ext'
@@ -10,15 +9,15 @@ require 'karmap/configuration'
 require 'karmap/helpers'
 
 module Karma
-
   extend Configuration
 
   LOGGER_SHIFT_AGE = 2
-  LOGGER_SHIFT_SIZE = 50*1024*1024
+  LOGGER_SHIFT_SIZE = 50 * 1024 * 1024
 
   define_setting :home_path # user home folder path without trailing slash, ie. /home/extendi (required)
   define_setting :project_name # project name as string (required)
   define_setting :services, [] # managed services classes (required)
+  define_setting :karma_base_queue_url # (required)
   define_setting :karma_user_id # (required)
   define_setting :karma_project_id # (required)
   define_setting :aws_access_key_id # (required)
@@ -37,7 +36,6 @@ module Karma
   define_setting :template_folder # custom engine templates folder
 
   class << self
-
     def logger=(val)
       @overridden = val
       @instance_logger = val
@@ -48,11 +46,11 @@ module Karma
     def logger
       (@overridden.present? rescue false) ? @overridden : (is_thread? ? thread_logger : instance_logger)
     end
-    
+
     def is_thread?
       ::Thread.current[:thread_index].present?
     end
-    
+
     def thread_logger
       ::Thread.current[:logger] ||= init_thread_logger
     end
@@ -79,7 +77,7 @@ module Karma
       end
       @@service_classes
     end
-    
+
     def init_logger
       ret_logger = nil
       if instance_identifier
@@ -134,12 +132,12 @@ module Karma
 
     def engine_class
       case Karma.engine
-        when 'systemd'
-          Karma::Engine::Systemd
-        when 'logger'
-          Karma::Engine::Logger
-        when 'system_raw'
-          Karma::Engine::SystemRaw
+      when 'systemd'
+        Karma::Engine::Systemd
+      when 'logger'
+        Karma::Engine::Logger
+      when 'system_raw'
+        Karma::Engine::SystemRaw
       end
     end
 
@@ -153,10 +151,10 @@ module Karma
 
     def config_engine_class
       case Karma.config_engine
-        when 'tcp'
-          Karma::ConfigEngine::SimpleTcp
-        when 'file'
-          Karma::ConfigEngine::File
+      when 'tcp'
+        Karma::ConfigEngine::SimpleTcp
+      when 'file'
+        Karma::ConfigEngine::File
       end
     end
 
@@ -168,17 +166,15 @@ module Karma
     def error(message)
       raise Karma::Exception.new(message)
     end
-
   end
 
   class Exception < ::Exception
   end
-
 end
 
 class Logger
   def format_message(severity, timestamp, progname, msg)
-    method_name = (caller[3][/`.*'/][1..-2] rescue 'method_name').truncate(15).ljust(15) 
+    method_name = (caller[3][/`.*'/][1..-2] rescue 'method_name').truncate(15).ljust(15)
     "#{severity[0]}, [#{timestamp.strftime('%Y-%m-%d %H:%M:%S.%6N')} ##{Process.pid}], #{method_name}: #{msg}\n"
   end
 end

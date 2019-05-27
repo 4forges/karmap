@@ -1,9 +1,8 @@
-# encoding: UTF-8
+# frozen_string_literal: true
 
 require 'spec_helper'
 
 describe Karma::Watchdog do
-
   let(:watchdog) { Karma::Watchdog.new }
 
   before(:each) do
@@ -39,10 +38,9 @@ describe Karma::Watchdog do
       auto_restart: 'foo',
       auto_start: 'foo',
       log_level: 'foo',
-      num_threads: 'foo',
+      num_threads: 'foo'
     )
     expect(watchdog).to receive(:handle_process_config_update).with(an_instance_of(Karma::Messages::ProcessConfigUpdateMessage))
     watchdog.send(:handle_message, msg.to_message)
   end
-
 end

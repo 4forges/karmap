@@ -1,13 +1,13 @@
+# frozen_string_literal: true
+
 require 'karmap'
 
 module Karma::System
-
   class Exception < ::Exception; end
 
   def self.error(message)
     raise Karma::Engine::Exception.new(message)
   end
-
 end
 
 require 'karmap/system/portable_poller'
