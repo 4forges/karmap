@@ -124,7 +124,7 @@ module Karma
         message = Karma::Messages::ProcessRegisterMessage.new(
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
-          service: demodulized_name,
+          service: name,
           memory_max: config_memory_max,
           cpu_quota: config_cpu_quota,
           min_running: config_min_running,
