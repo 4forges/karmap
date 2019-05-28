@@ -47,7 +47,5 @@ module Karma::Engine
     def remove_service(service)
       Karma.logger.debug { "Karma::Engine received #{__method__} for #{service.full_name}" }
     end
-
   end
-
 end

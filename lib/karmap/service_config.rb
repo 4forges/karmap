@@ -1,6 +1,6 @@
 module Karma
   module ServiceConfig
-    DEFAULT_PORT= 5000
+    DEFAULT_PORT = 5000
     DEFAULT_TIMEOUT_STOP = 5
     DEFAULT_MIN_RUNNING = 1
     DEFAULT_MAX_RUNNING = 1
@@ -47,7 +47,7 @@ module Karma
     end
 
     def name
-      self.class.demodulized_name
+      self.class.name
     end
 
     def full_name
@@ -185,12 +185,8 @@ module Karma
         (start_port..end_port).to_a
       end
 
-      def demodulized_name
-        name.demodulize
-      end
-
       def full_name
-        "#{Karma.project_name}-#{Karma::Helpers::dashify(demodulized_name)}".downcase
+        "#{Karma.project_name}-#{Karma::Helpers.dashify(name.demodulize)}".downcase
       end
 
       def generate_instance_identifier(port:)

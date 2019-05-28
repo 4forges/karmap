@@ -78,7 +78,7 @@ module Karma::Engine
         attrs = {
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
-          service: service.demodulized_name,
+          service: service.name,
           pid: status.values[0].pid,
           status: status.values[0].status,
           cpu: status.values[0].cpu,
@@ -95,7 +95,7 @@ module Karma::Engine
         attrs = {
           host: ::Socket.gethostname,
           project: Karma.karma_project_id,
-          service: service.demodulized_name,
+          service: service.name,
           pid: pid,
           status: Karma::Messages::ProcessStatusUpdateMessage::STATUSES[:dead]
         }
