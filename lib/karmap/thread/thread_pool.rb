@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Karma::Thread
   class ThreadPool
     attr_accessor :thread
@@ -24,7 +26,7 @@ module Karma::Thread
 
       Karma.logger.debug { 'Pruning stopped threads...' }
       num_pruned = prune_list
-      Karma.logger.debug { num_pruned > 0 ? "#{num_pruned} pruned" : 'Nothing to prune' }
+      Karma.logger.debug { num_pruned.positive? ? "#{num_pruned} pruned" : 'Nothing to prune' }
 
       Karma.logger.debug { "Active size: #{active.size} - max_workers: #{max_workers}" }
       while active.size < max_workers
@@ -95,8 +97,8 @@ module Karma::Thread
     end
 
     def get_first_thread_index
-      running_indexes = active.map{|managed_thread| managed_thread.thread_index}
-      Karma.logger.info{ "Running indexes: #{running_indexes}" }
+      running_indexes = active.map(&:thread_index)
+      Karma.logger.info { "Running indexes: #{running_indexes}" }
       ((0..1000).to_a - running_indexes).first
     end
 
@@ -135,7 +137,7 @@ module Karma::Thread
       running.each do |t|
         execution_times << t.execution_time if !t.execution_time.nil?
       end
-      execution_times.size > 0 ? execution_times.sum.to_f / execution_times.size.to_f : 0
+      execution_times.size.positive? ? execution_times.sum.to_f / execution_times.size.to_f : 0
     end
 
     def average_performance_execution_time

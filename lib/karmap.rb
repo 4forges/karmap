@@ -30,7 +30,7 @@ module Karma
   define_setting :engine, 'systemd'
   define_setting :config_engine, 'file'
   define_setting :notifier, 'queue'
-  define_setting :watchdog_port, 32000
+  define_setting :watchdog_port, 32_000
   define_setting :version_file_path # file to update for version check
   define_setting :log_folder, 'log' # custom log folder
   define_setting :template_folder # custom engine templates folder
@@ -87,11 +87,11 @@ module Karma
           Karma::LOGGER_SHIFT_AGE,
           Karma::LOGGER_SHIFT_SIZE,
           level: Logger::DEBUG,
-          progname: self.name
+          progname: name
         )
       else
         ret_logger = Logger.new($stdout).tap do |log|
-          log.progname = self.name
+          log.progname = name
         end
       end
       Karma::Messages.logger = ret_logger
@@ -109,11 +109,11 @@ module Karma
           Karma::LOGGER_SHIFT_AGE,
           Karma::LOGGER_SHIFT_SIZE,
           level: Logger::DEBUG,
-          progname: self.name
+          progname: name
         )
       else
         ret_logger = Logger.new($stdout).tap do |log|
-          log.progname = self.name
+          log.progname = name
         end
       end
       ret_logger.info { "#{__method__} done (#{ret_logger.object_id})" }

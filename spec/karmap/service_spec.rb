@@ -17,7 +17,7 @@ describe Karma::Service do
   after(:each) { Karma.engine_instance.remove_service(TestService) }
 
   it 'service calls lifecycle callbacks' do
-    Karma.engine_instance.start_service(TestService)
+    Karma.engine_instance.start_service(TestService, check: true)
     sleep 1
     wait_for { File.exist?('spec/log/TestService-before_start.log') }.to be_truthy
     wait_for { File.exist?('spec/log/TestService-after_start.log') }.to be_truthy

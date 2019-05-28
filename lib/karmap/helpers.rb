@@ -1,5 +1,6 @@
-module Karma::Helpers
+# frozen_string_literal: true
 
+module Karma::Helpers
   # Copied whole sale from, https://github.com/defunkt/resque/
 
   # Given a word with dashes, returns a camel cased version of it.
@@ -56,7 +57,6 @@ module Karma::Helpers
   # ie. project-name-dummy-service -> DummyService
   def self.service_class_from_name(name)
     service_name = classify(name.sub("#{Karma.project_name}-", ''))
-    return constantize(service_name)
+    constantize(service_name)
   end
-
 end

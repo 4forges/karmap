@@ -15,7 +15,7 @@ describe Karma::Engine::Systemd do
 
     it 'exports self' do
       Karma::Watchdog.export
-
+      sleep 1
       expect(File.file?("#{Karma.engine_instance.location}/karma-spec-watchdog.target")).to be_truthy
       expect(File.file?("#{Karma.engine_instance.location}/karma-spec-watchdog@.service")).to be_truthy
       expect(File.directory?("#{Karma.engine_instance.location}/karma-spec-watchdog.target.wants")).to be_truthy

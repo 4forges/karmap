@@ -8,7 +8,7 @@ module Karma::Thread
 
     def initialize(blocks = {}, options = {})
       @thread = nil
-      @running_sleep_time = options[:running_sleep_time]||1
+      @running_sleep_time = options[:running_sleep_time] || 1
       blocks[:starting] ||= proc { Karma.logger.debug { "#{$$}::#{Thread.current} starting" } }
       blocks[:finishing] ||= proc { Karma.logger.debug { "#{$$}::#{Thread.current} finishing" } }
       blocks[:running] ||= proc { Karma.logger.debug { "#{$$}::#{Thread.current} running" } }
