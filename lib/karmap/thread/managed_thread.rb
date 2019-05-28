@@ -41,6 +41,12 @@ module Karma::Thread
       "#{@thread.inspect} index:#{@thread[:thread_index]} status:#{@thread[:status]}, initing_at:#{@thread[:initing_at]}, last_running_at:#{@thread[:last_running_at]} (#{Time.now - @thread[:last_running_at]} secs ago)"
     end
 
+    def get_log_level
+      return 0 if @thread.nil?
+
+      @thread[:logger].level || 0
+    end
+
     def set_log_level(level)
       Karma.logger.level = level
       @thread[:logger].level = level if @thread[:logger].present?

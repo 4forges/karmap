@@ -38,7 +38,7 @@ module Karma::Thread
         stop
       end
 
-      Karma.logger.debug{ "Set log level to #{log_level}"}
+      Karma.logger.debug { "Set log level to #{log_level}" }
       set_log_level(log_level)
 
       Karma.logger.debug { 'Active threads:' }
@@ -103,9 +103,8 @@ module Karma::Thread
     end
 
     def add_and_start(options = {})
-      if options[:thread_index].nil?
-        options[:thread_index] = get_first_thread_index
-      end
+      options[:thread_index] = get_first_thread_index if options[:thread_index].nil?
+
       new_thread = Karma::Thread::ManagedThread.new(@blocks, options)
       @list << new_thread
       sleep 0.1 until new_thread.inited?
