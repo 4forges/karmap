@@ -17,9 +17,9 @@ module Karma
     def self.init_config_reader_for_instance(instance)
       case Karma.config_engine
       when 'tcp'
-        Karma::ConfigEngine::SimpleTcp.new(default_config: self.get_process_config, options: { port: instance.instance_port })
+        Karma::ConfigEngine::SimpleTcp.new(default_config: get_process_config, options: { port: instance.instance_port })
       when 'file'
-        Karma::ConfigEngine::File.new(default_config: self.get_process_config, options: { service_class: self, poll_intervall: 2.seconds })
+        Karma::ConfigEngine::File.new(default_config: get_process_config, options: { service_class: self, poll_intervall: 2.seconds })
       end
     end
 
@@ -132,7 +132,7 @@ module Karma
           auto_restart: config_auto_restart,
           auto_start: config_auto_start,
           push_notifications: config_push_notifications,
-          log_level: Karma.logger.level,
+          log_level: Karma.logger.level || :info,
           num_threads: config_num_threads,
           version: version
         )
