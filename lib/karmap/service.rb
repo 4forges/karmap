@@ -134,6 +134,7 @@ module Karma
           push_notifications: config_push_notifications,
           log_level: Karma.logger.level || :info,
           num_threads: config_num_threads,
+          sleep_time: config_sleep_time,
           version: version
         )
         Karma.notifier_instance.notify(message)
