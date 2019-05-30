@@ -109,7 +109,7 @@ module Karma
       end
 
       def sleep_time(val)
-        safe_assign_val(__method__, val) { |val| val.is_a?(Integer) && val > 0 }
+        safe_assign_val(__method__, val) { |val| val.is_a?(Float) && val > 0 }
       end
 
       def push_notifications(val)
