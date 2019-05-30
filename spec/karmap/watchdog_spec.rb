@@ -37,6 +37,7 @@ describe Karma::Watchdog do
       max_running: 'foo',
       auto_restart: 'foo',
       auto_start: 'foo',
+      sleep_time: 'foo',
       log_level: 'foo',
       num_threads: 'foo'
     )
