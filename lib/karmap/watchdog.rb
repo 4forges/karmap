@@ -326,7 +326,6 @@ module Karma
       if new_config == old_config
         # no changes in configuration
         Watchdog.logger.info { 'config not changed' }
-
       else
         # export new configuration
         Karma::ConfigEngine::ConfigImporterExporter.export_config(cls, new_config)
