@@ -90,8 +90,6 @@ module Karma
       @cpu_timelines = {}
       @last_cpu_checked_at = Time.now
       @queue_client = Karma::Queue::Client.new
-
-      airbrake_setup
     end
 
     def run
@@ -101,6 +99,8 @@ module Karma
       deregister_services # de-register all service no more present into the config
       start_queue_poller
       init_traps
+      airbrake_setup
+
       send_airbrake_notification('startup')
 
       # main loop:
