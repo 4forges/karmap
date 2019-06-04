@@ -2,7 +2,9 @@
 
 require 'karmap'
 require 'karmap/service_config'
-require 'airbrake-ruby'
+require 'net/http'
+require 'uri'
+require 'json'
 
 module Karma
   # Watchdog class check running services
@@ -99,7 +101,6 @@ module Karma
       deregister_services # de-register all service no more present into the config
       start_queue_poller
       init_traps
-      airbrake_setup
 
       send_airbrake_notification('startup')
 
@@ -381,30 +382,26 @@ module Karma
     end
 
     #
-    # Setup Airbrake configuration
-    #
-    # @return [Boolean] Return false if airbrake is disabled for this env.
-    #
-    def airbrake_setup
-      return false unless ENV['AIRBRAKE_KARMA_PROJECT_ID']
-
-      Airbrake.configure(karmap_watchdog) do |c|
-        c.project_id = ENV['AIRBRAKE_KARMA_PROJECT_ID']
-        c.project_key = ENV['AIRBRAKE_KARMA_PROJECT_KEY']
-      end
-      true
-    end
-
-    #
     # Send a startup notification to AirBrake
     #
     # @return [Bool] true if notification is sent, false otherwise
     #
     def send_airbrake_notification(notification)
-      return false unless Airbrake[:karmap_watchdog]
+      return false unless ENV['AIRBRAKE_KARMA_PROJECT_ID']
 
-      Airbrake[:karmap_watchdog].notify("Karma::WatchDog #{notification}")
-      true
+      uri = URI.parse("https://airbrake.io/api/v3/projects/#{ENV['AIRBRAKE_KARMA_PROJECT_ID']}/notices?key=#{ENV['AIRBRAKE_KARMA_PROJECT_KEY']}")
+      http = Net::HTTP.new(uri.host, uri.port)
+      header = { 'Content-Type': 'text/json' }
+      request = Net::HTTP::Post.new(uri.request_uri, header)
+      request.body = {
+        errors: [
+          {
+            type: 'notification',
+            message: "Karma::WatchDog #{notification}"
+          }
+        ]
+      }.to_json
+      http.request(request)
     end
   end
 end
