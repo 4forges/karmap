@@ -2,6 +2,7 @@
 
 require 'karmap'
 require 'karmap/service_config'
+require 'airbrake-ruby'
 
 module Karma
   # Watchdog class check running services
@@ -89,6 +90,8 @@ module Karma
       @cpu_timelines = {}
       @last_cpu_checked_at = Time.now
       @queue_client = Karma::Queue::Client.new
+
+      airbrake_setup
     end
 
     def run
@@ -98,6 +101,7 @@ module Karma
       deregister_services # de-register all service no more present into the config
       start_queue_poller
       init_traps
+      send_airbrake_notification('startup')
 
       # main loop:
       # check services status every CHECK_SERVICE_STATUS_EVERY_SEC (10) seconds
@@ -110,6 +114,7 @@ module Karma
         sleep ONE_SECOND
       end
 
+      send_airbrake_notification('stop')
       handle_traps
       shutdown_queue_poller
       shutdown_karma
@@ -374,5 +379,32 @@ module Karma
       end
       @service_statuses = new_service_statuses
     end
+  end
+
+  #
+  # Setup Airbrake configuration
+  #
+  # @return [Boolean] Return false if airbrake is disabled for this env.
+  #
+  def airbrake_setup
+    return false unless ENV['AIRBRAKE_KARMA_PROJECT_ID']
+
+    Airbrake.configure(:karmap_watchdog) do |c|
+      c.project_id = ENV['AIRBRAKE_KARMA_PROJECT_ID']
+      c.project_key = ENV['AIRBRAKE_KARMA_PROJECT_KEY']
+    end
+    true
+  end
+
+  #
+  # Send a startup notification to AirBrake
+  #
+  # @return [Bool] true if notification is sent, false otherwise
+  #
+  def send_airbrake_notification(notification)
+    return false unless Airbrake[:karmap_watchdog]
+
+    Airbrake[:karmap_watchdog].notify("Karma::WatchDog #{notification}")
+    true
   end
 end

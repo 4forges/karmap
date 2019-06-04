@@ -86,7 +86,7 @@ module Karma::Engine
           active_threads: params[:active_threads],
           execution_time: params[:execution_time],
           performance_execution_time: params[:performance_execution_time],
-          performance:  params[:performance]
+          performance: params[:performance]
         }
         attrs[:status] = params[:status] if params[:status].present?
         attrs[:current_version] = params[:current_version] if params[:current_version].present?
