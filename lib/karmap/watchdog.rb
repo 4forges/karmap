@@ -379,32 +379,32 @@ module Karma
       end
       @service_statuses = new_service_statuses
     end
-  end
 
-  #
-  # Setup Airbrake configuration
-  #
-  # @return [Boolean] Return false if airbrake is disabled for this env.
-  #
-  def airbrake_setup
-    return false unless ENV['AIRBRAKE_KARMA_PROJECT_ID']
+    #
+    # Setup Airbrake configuration
+    #
+    # @return [Boolean] Return false if airbrake is disabled for this env.
+    #
+    def airbrake_setup
+      return false unless ENV['AIRBRAKE_KARMA_PROJECT_ID']
 
-    Airbrake.configure(:karmap_watchdog) do |c|
-      c.project_id = ENV['AIRBRAKE_KARMA_PROJECT_ID']
-      c.project_key = ENV['AIRBRAKE_KARMA_PROJECT_KEY']
+      Airbrake.configure(:karmap_watchdog) do |c|
+        c.project_id = ENV['AIRBRAKE_KARMA_PROJECT_ID']
+        c.project_key = ENV['AIRBRAKE_KARMA_PROJECT_KEY']
+      end
+      true
     end
-    true
-  end
 
-  #
-  # Send a startup notification to AirBrake
-  #
-  # @return [Bool] true if notification is sent, false otherwise
-  #
-  def send_airbrake_notification(notification)
-    return false unless Airbrake[:karmap_watchdog]
+    #
+    # Send a startup notification to AirBrake
+    #
+    # @return [Bool] true if notification is sent, false otherwise
+    #
+    def send_airbrake_notification(notification)
+      return false unless Airbrake[:karmap_watchdog]
 
-    Airbrake[:karmap_watchdog].notify("Karma::WatchDog #{notification}")
-    true
+      Airbrake[:karmap_watchdog].notify("Karma::WatchDog #{notification}")
+      true
+    end
   end
 end
