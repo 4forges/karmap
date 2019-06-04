@@ -382,15 +382,17 @@ module Karma
     end
 
     #
-    # Send a startup notification to AirBrake
+    # Send a notification to AirBrake
     #
-    # @return [Bool] true if notification is sent, false otherwise
+    # @param [String] notification: message of the notification
+    # @return [Bool] true if notification is sent (with success), false otherwise
     #
     def send_airbrake_notification(notification)
       return false unless ENV['AIRBRAKE_KARMA_PROJECT_ID']
 
       uri = URI.parse("https://airbrake.io/api/v3/projects/#{ENV['AIRBRAKE_KARMA_PROJECT_ID']}/notices?key=#{ENV['AIRBRAKE_KARMA_PROJECT_KEY']}")
-      http = Net::HTTP.new(uri.host, uri.port)
+      https = Net::HTTP.new(uri.host, uri.port)
+      https.use_ssl = true
       header = { 'Content-Type': 'text/json' }
       request = Net::HTTP::Post.new(uri.request_uri, header)
       request.body = {
@@ -399,9 +401,16 @@ module Karma
             type: 'notification',
             message: "Karma::WatchDog #{notification}"
           }
-        ]
+        ],
+        context: {
+          notifier: {
+            name: 'Karma::WatchDog'
+          },
+          hostname: Socket.gethostname
+        }
       }.to_json
-      http.request(request)
+      resp = https.request(request)
+      resp.code.to_i == 201
     end
   end
 end
