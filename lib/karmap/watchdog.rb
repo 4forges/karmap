@@ -388,7 +388,7 @@ module Karma
     def airbrake_setup
       return false unless ENV['AIRBRAKE_KARMA_PROJECT_ID']
 
-      Airbrake.configure(:karmap_watchdog) do |c|
+      Airbrake.configure(karmap_watchdog) do |c|
         c.project_id = ENV['AIRBRAKE_KARMA_PROJECT_ID']
         c.project_key = ENV['AIRBRAKE_KARMA_PROJECT_KEY']
       end
