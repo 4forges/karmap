@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'karmap/engine'
 require 'sys/proctable'
 include Sys
@@ -44,7 +46,7 @@ module Karma::Engine
         started_at = Time.now
         instance_identifier = environment_vars['KARMA_IDENTIFIER']
         filename = pid_filename(identifier: instance_identifier)
-        while !File.exists?(filename) do
+        while !File.exists?(filename)
           Karma.logger.debug { "Waiting starting pid #{pid} - file #{filename}" }
           sleep 1
           if (Time.now - started_at) > START_TIMEOUT_SECONDS
@@ -65,7 +67,7 @@ module Karma::Engine
       filename = pid_filename(identifier: instance_identifier)
       Karma.logger.debug { File.exists?(filename) }
       started_at = Time.now
-      while File.exists?(filename) do
+      while File.exists?(filename)
         Karma.logger.debug { "Waiting stopping pid #{pid} - file #{filename}" }
         sleep 1
         if (Time.now - started_at) > START_TIMEOUT_SECONDS
