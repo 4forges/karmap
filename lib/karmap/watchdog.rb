@@ -407,6 +407,7 @@ module Karma
           notifier: {
             name: 'Karma::WatchDog'
           },
+          environment: Rails.env || 'global',
           hostname: Socket.gethostname
         }
       }.to_json
