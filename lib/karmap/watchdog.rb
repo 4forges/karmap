@@ -397,10 +397,12 @@ module Karma
       header = { 'Content-Type': 'text/json' }
       request = Net::HTTP::Post.new(uri.request_uri, header)
       request.body = {
-        errors: [{
+        errors: [
+          {
             type: notification_type,
-            message: "Karma::WatchDog event #{notification}"
-          }],
+            message: "Karma::WatchDog event #{notification_type}"
+          }
+        ],
         context: {
           notifier: {
             name: 'Karma::WatchDog'
