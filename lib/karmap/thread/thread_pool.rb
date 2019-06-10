@@ -99,7 +99,12 @@ module Karma::Thread
     def get_first_thread_index
       running_indexes = active.map(&:thread_index)
       Karma.logger.info { "Running indexes: #{running_indexes}" }
-      ((0..1000).to_a - running_indexes).first
+      index = 0
+      loop do
+        return index unless running_indexes.include?(index)
+
+        index += 1
+      end
     end
 
     def add_and_start(options = {})
