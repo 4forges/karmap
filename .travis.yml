@@ -19,11 +19,11 @@ install:
   - export PATH="/home/travis/.rbenv/bin:$PATH"
   - curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
   - /home/travis/.rbenv/bin/rbenv install 2.6.3
-  - /home/travis/.rbenv/bin/rbenv local 2.6.3
   - gem update --system
   - gem install bundler
   - gem install rails
   - pushd $TRAVIS_BUILD_DIR
+  - /home/travis/.rbenv/bin/rbenv local 2.6.3
   - bundle install
   - popd
 
