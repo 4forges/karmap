@@ -34,6 +34,7 @@ before_script:
   - sudo systemd-tmpfiles --create --prefix /var/log/journal
   - sudo systemctl restart systemd-journald
   - sudo chown -R travis:travis /var/log
+  - /home/travis/.rbenv/bin/rbenv local 2.6.3
   - bundle exec rake
 
 after_script:
