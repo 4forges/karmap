@@ -23,6 +23,7 @@ install:
   - gem install bundler
   - gem install rails
   - pushd $TRAVIS_BUILD_DIR
+  - /home/travis/.rbenv/bin/rbenv local 2.6.3
   - bundle install
   - popd
 
