@@ -99,12 +99,8 @@ module Karma::Thread
     def get_first_thread_index
       running_indexes = active.map(&:thread_index)
       Karma.logger.info { "Running indexes: #{running_indexes}" }
-      index = 0
-      loop do
-        return index unless running_indexes.include?(index)
-
-        index += 1
-      end
+      range = (0..)
+      range.lazy.find { |x| !running_indexes.include?(x) }
     end
 
     def add_and_start(options = {})
