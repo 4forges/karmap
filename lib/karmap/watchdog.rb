@@ -2,6 +2,9 @@
 
 require 'karmap'
 require 'karmap/service_config'
+require 'net/http'
+require 'uri'
+require 'json'
 
 module Karma
   # Watchdog class check running services
@@ -99,6 +102,8 @@ module Karma
       start_queue_poller
       init_traps
 
+      send_airbrake_notification('startup')
+
       # main loop:
       # check services status every CHECK_SERVICE_STATUS_EVERY_SEC (10) seconds
       # print 'alive message' every 60 seconds
@@ -110,6 +115,7 @@ module Karma
         sleep ONE_SECOND
       end
 
+      send_airbrake_notification('stop')
       handle_traps
       shutdown_queue_poller
       shutdown_karma
@@ -326,7 +332,6 @@ module Karma
       if new_config == old_config
         # no changes in configuration
         Watchdog.logger.info { 'config not changed' }
-
       else
         # export new configuration
         Karma::ConfigEngine::ConfigImporterExporter.export_config(cls, new_config)
@@ -374,6 +379,40 @@ module Karma
         end
       end
       @service_statuses = new_service_statuses
+    end
+
+    #
+    # Send a notification to AirBrake (using HTTP Api)
+    # use ENV['AIRBRAKE_KARMA_PROJECT_ID'] and ENV['AIRBRAKE_KARMA_PROJECT_KEY']
+    #
+    # @param [String] notification: message of the notification
+    # @return [Bool] true if notification is sent (with success), false otherwise
+    #
+    def send_airbrake_notification(notification_type = 'notification')
+      return false unless ENV['AIRBRAKE_KARMA_PROJECT_ID']
+
+      uri = URI.parse("https://airbrake.io/api/v3/projects/#{ENV['AIRBRAKE_KARMA_PROJECT_ID']}/notices?key=#{ENV['AIRBRAKE_KARMA_PROJECT_KEY']}")
+      https = Net::HTTP.new(uri.host, uri.port)
+      https.use_ssl = true
+      header = { 'Content-Type': 'text/json' }
+      request = Net::HTTP::Post.new(uri.request_uri, header)
+      request.body = {
+        errors: [
+          {
+            type: notification_type,
+            message: "Karma::WatchDog event #{notification_type}"
+          }
+        ],
+        context: {
+          notifier: {
+            name: 'Karma::WatchDog'
+          },
+          environment: Rails.env || 'global',
+          hostname: Socket.gethostname
+        }
+      }.to_json
+      resp = https.request(request)
+      resp.code.to_i == 201
     end
   end
 end

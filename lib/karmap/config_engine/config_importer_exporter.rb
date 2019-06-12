@@ -34,7 +34,7 @@ module Karma::ConfigEngine
       location = service_class.config_location
       FileUtils.mkdir_p(location)
       file_path = config_filepath(service_class)
-      Karma.logger.debug { "writing config #{service_class} to file: #{file_path}" }
+      Karma.logger.info { "writing config #{service_class} to file: #{file_path}" }
       Karma::FileHelper.write_file(file_path, config.to_json)
     end
 

@@ -7,6 +7,7 @@ module Karma
     DEFAULT_NUM_THREADS = 1
     DEFAULT_AUTO_START = true
     DEFAULT_AUTO_RESTART = true
+    DEFAULT_SLEEP_TIME = 10
     DEFAULT_MEMORY_MAX = nil
     DEFAULT_CPU_QUOTA = nil
     DEFAULT_LOG_LEVEL = :info
@@ -14,7 +15,7 @@ module Karma
     DEFAULT_NOTIFY_INTERVAL = 5
 
     def self.included(base)
-      base.class_attribute :config_port, :config_timeout_stop, :config_min_running, :config_max_running, :config_num_threads, :config_auto_start, :config_auto_restart, :config_memory_max, :config_cpu_quota, :config_log_level, :config_push_notifications, :config_notify_interval
+      base.class_attribute :config_port, :config_timeout_stop, :config_min_running, :config_max_running, :config_num_threads, :config_auto_start, :config_auto_restart, :config_sleep_time, :config_memory_max, :config_cpu_quota, :config_log_level, :config_push_notifications, :config_notify_interval
       base.extend(ClassMethods)
 
       ################################################
@@ -27,6 +28,7 @@ module Karma
       base.num_threads(DEFAULT_NUM_THREADS)
       base.auto_start(DEFAULT_AUTO_START)
       base.auto_restart(DEFAULT_AUTO_RESTART)
+      base.sleep_time(DEFAULT_SLEEP_TIME)
       base.memory_max(DEFAULT_MEMORY_MAX)
       base.cpu_quota(DEFAULT_CPU_QUOTA)
       base.log_level(DEFAULT_LOG_LEVEL)
@@ -106,6 +108,10 @@ module Karma
         safe_assign_val(__method__, val) { |val| val.is_a?(TrueClass) || val.is_a?(FalseClass) }
       end
 
+      def sleep_time(val)
+        safe_assign_val(__method__, val) { |val| val.is_a?(Numeric) && val > 0 }
+      end
+
       def push_notifications(val)
         safe_assign_val(__method__, val) { |val| val.is_a?(TrueClass) || val.is_a?(FalseClass) }
       end
@@ -152,7 +158,7 @@ module Karma
       # returns an hash with the complete class config hash
       def set_process_config(config)
         # note: port does not change
-        [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart, :push_notifications, :num_threads, :log_level, :notify_interval].each do |k|
+        [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart, :push_notifications, :num_threads, :log_level, :notify_interval, :sleep_time].each do |k|
           send(k, config[k]) if config.key?(k)
         end
         get_process_config
@@ -161,7 +167,7 @@ module Karma
       # returns an hash with the complete class config hash
       def get_process_config
         Hash.new.tap do |h|
-          [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart, :push_notifications, :num_threads, :log_level, :notify_interval].each do |k|
+          [:min_running, :max_running, :memory_max, :cpu_quota, :auto_start, :auto_restart, :push_notifications, :num_threads, :log_level, :notify_interval, :sleep_time].each do |k|
             h[k] = send("config_#{k}")
           end
         end
@@ -186,7 +192,7 @@ module Karma
       end
 
       def full_name
-        "#{Karma.project_name}-#{Karma::Helpers.dashify(name.demodulize)}".downcase
+        "#{Karma.project_name}-#{Karma::Helpers.dashify(name)}".downcase
       end
 
       def generate_instance_identifier(port:)

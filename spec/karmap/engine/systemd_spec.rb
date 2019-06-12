@@ -16,10 +16,10 @@ describe Karma::Engine::Systemd do
     it 'exports self' do
       Karma::Watchdog.export
       sleep 1
-      expect(File.file?("#{Karma.engine_instance.location}/karma-spec-watchdog.target")).to be_truthy
-      expect(File.file?("#{Karma.engine_instance.location}/karma-spec-watchdog@.service")).to be_truthy
-      expect(File.directory?("#{Karma.engine_instance.location}/karma-spec-watchdog.target.wants")).to be_truthy
-      expect(File.symlink?("#{Karma.engine_instance.location}/karma-spec-watchdog.target.wants/karma-spec-watchdog@#{Karma.watchdog_port}.service")).to be_truthy
+      expect(File.file?("#{Karma.engine_instance.location}/karma-spec-karma::-watchdog.target")).to be_truthy
+      expect(File.file?("#{Karma.engine_instance.location}/karma-spec-karma::-watchdog@.service")).to be_truthy
+      expect(File.directory?("#{Karma.engine_instance.location}/karma-spec-karma::-watchdog.target.wants")).to be_truthy
+      expect(File.symlink?("#{Karma.engine_instance.location}/karma-spec-karma::-watchdog.target.wants/karma-spec-karma::-watchdog@#{Karma.watchdog_port}.service")).to be_truthy
     end
 
     it 'discovers and exports service' do
