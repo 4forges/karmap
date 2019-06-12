@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     karmap (0.9.1)
-      activesupport (~> 5.0)
+      activesupport (>= 5)
       aws-sdk-sqs (~> 1)
       karma_messages (~> 0.1)
       sys-proctable (~> 1.1)
