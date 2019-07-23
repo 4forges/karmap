@@ -65,4 +65,7 @@ spec/solr/test/data/*
 # cassandra 2.1.2
 /spec/cassandra/apache-cassandra-2.1.2/data
 /spec/cassandra/apache-cassandra-2.1.2/logs
-/TAGS
+/TAGS.editorconfig
+.rubocop.yml
+.prettierrc.js
+.eslintrc.js
