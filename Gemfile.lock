@@ -33,7 +33,7 @@ GEM
     ffi (1.11.1)
     i18n (1.6.0)
       concurrent-ruby (~> 1.0)
-    jmespath (1.4.0)
+    jmespath (1.6.1)
     karma_messages (0.1.6)
     minitest (5.11.3)
     rake (10.5.0)
